@@ -144,16 +144,12 @@ void ofApp::setup(){
 
     // Add GUI parts -------------------------------------------------------------------------------
 
-    //gui.add(radius.setup("radius", 200, 0, 400));
-    //gui.add(color.setup("color", initColor, minColor, maxColor));
-    //gui.add(position.setup("position", initPos, minPos, maxPos));
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 3000, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
     gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
     gui.add(uiPlayMode.setup("playMode", 0, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnPlayPause.setup("Play / Stop", true, 40, 40));
-    //gui.add(uiBtnPlayRealtime.setup("Play Realtime mode", true, 40, 40));
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 40));
     gui.add(uiBtnGrid.setup("Grid", false, 40, 40));
     gui.add(uiBtnDebugInfo.setup("DebugInfo", false, 40, 40));
@@ -185,12 +181,7 @@ void ofApp::setup(){
     prevPosY = position->y;
     
     uiBtnReset.addListener(this, &ofApp::resetCam);
-    //position.addListener(this, &ofApp::setPos);
     
-    
-    //uiBtnGrid.addListener(this, &ofApp::gridSwitch);
-    //uiBtnDebugInfo.addListener(this, &ofApp::debugInfoSwitch);
-    //uiBtnTurnMesh.addListener(this, &ofApp::turnMeshSwitch);
     uiBtnSelectReset.addListener(this, &ofApp::turnMeshSwitch);
     
     guiPlayItem.setup("playItem");
@@ -251,11 +242,6 @@ void ofApp::update(){
     
     prevSelectModel = i;
     
-    
-    //eCam.setPosition(0,0,-300);
-    //eCam.setTarget(ofVec3f(0,0,0));
-    
-    
     if (mouseY >= (ofGetHeight() - 200)) {
         eCam.disableMouseInput();
     } else {
@@ -281,30 +267,9 @@ void ofApp::draw(){
     }
     
     // --------------------------
-    //ofBackground(0, 0, 0);
     ofBackground(240, 240, 240);        // gray bg
     
     ofEnableSmoothing();
-    
-    
-    //glClearDepth(20000.0);
-    /* temp
-    glClear(GL_DEPTH_BUFFER_BIT);
-    //glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LEQUAL);
-    */
-
-    //light.disable();
-    
-    
-    /*
-    ofEnableDepthTest();
-    ofEnableLighting();
-    
-    light.enable();
-    glEnable(GL_COLOR_MATERIAL);
-     */
-    
     
     if(frameCount==1){
         eCam.begin();
@@ -316,24 +281,6 @@ void ofApp::draw(){
     
     //  ---------------------------------------
     ofSetColor(255,255,255,255);
-
-    /*
-    if (uiBtnLight) {
-        ofEnableLighting();
-        light.enable();
-        light.setSpotlight();
-        if (uiBtnTurnMesh) {
-            light.setPosition(10000,1000,20000);
-            //light.setDirectional();
-        } else {
-            light.setPosition(-100,100,10000);
-        }
-        light.setAmbientColor(ofFloatColor(0.2, 0.2, 0.2, 1.0));
-        light.setDiffuseColor(ofFloatColor(0.4, 0.4, 0.4));
-        light.setSpecularColor(ofFloatColor(1.0, 1.0, 1.0));
-        ofEnableDepthTest();
-    }
-    */
     
     if (uiBtnLight) {
         ofEnableLighting();
@@ -355,17 +302,9 @@ void ofApp::draw(){
         ofEnableDepthTest();
     }
     
-    
     eCam.setFarClip( 100000.0f );
-    
-
-    
-    eCam.setFarClip( 100000.0f );
-    
-    //ofTranslatef(0.0,0.0,200.0);
     
     ofSetColor(255,255,255,255);
-    //ofRect(0,0,100,100);
     
     if (frameCount == 0) {
         font.drawString("Now Loading...", 500, 400);
@@ -378,7 +317,6 @@ void ofApp::draw(){
     } else {
         eCam.disableOrtho();
     }
-    //ofCam.begin();
     
     ofScale(1,-1);      // y-axis reverse! (for fix drawString text flips promblem)
 
@@ -397,21 +335,11 @@ void ofApp::draw(){
     }
     
     
-    ofSetColor(255,255,255,255);
-    //ofRect(0,0,100,100);
-
-
-    
-    //  -------------------
-    //glRotatef(180, 0, 1, 0);        //
-    
-//    glTranslatef(ofGetWidth()/4.0, ofGetHeight()/10*0, 400); //
     glTranslatef(0, 0, 0); //
     
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
-    //ofRect(indexX * uiThumbnailIconDistance, indexY * uiThumbnailIconDistance, uiThumbnailIconDistance, uiThumbnailIconDistance);
     
     for(int i=0; i<modelDataNum; i++) {
         
@@ -421,26 +349,7 @@ void ofApp::draw(){
             continue;
         }
         
-        /*
-        if (maxMeshNumList) {
-            continue;
-        }
-        */
-        
-        
         int counter = playCount;// % maxMeshNumList[i];
-        
-        
-        
-        if (viewerMode == 0) {
-            //glRotatef(mouseY, 0, 1, 0);
-            //glRotatef(mouseX*0.1, 0, 1, 0);
-        }
-        
-  
-        
-        
-        
         int playFrameSelector = 0;
         
         if (frameCount >= 1) {
@@ -451,7 +360,6 @@ void ofApp::draw(){
                 if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {
                     
                     if (uiBtnPlayPause) {
-                        //nowPlayTime =  (ofGetElapsedTimeMillis() % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) - playStartDateTime + playStartPrevPos;     // 0 start realtime incremental num (msec)
                         nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
                     }
                     cout << "playStartDateTime: " << playStartDateTime << " playStartPrevPos:" << playStartPrevPos << endl;
@@ -460,21 +368,15 @@ void ofApp::draw(){
                     
                     long virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
                     
-                    /*
-                    if (virtualPlayUnixTime >= scanUnixTimeModelMinList[i] &&
-                        virtualPlayUnixTime <= scanUnixTimeModelMaxList[i]) {
-                        */
-                        
-                         // scan play frame by time
-                         for (int j=0; j<maxMeshNumList[i]; j++) {
-                             if (virtualPlayUnixTime >= scanUnixTimeLongIntList[i][j] &&
-                                 virtualPlayUnixTime <= scanUnixTimeLongIntList[i][j+1]  ) {
-                                 playFrameSelector = j;
-                                 dispFlag = true;
-                                 break;
-                             }
+                     // scan play frame by time
+                     for (int j=0; j<maxMeshNumList[i]; j++) {
+                         if (virtualPlayUnixTime >= scanUnixTimeLongIntList[i][j] &&
+                             virtualPlayUnixTime <= scanUnixTimeLongIntList[i][j+1]  ) {
+                             playFrameSelector = j;
+                             dispFlag = true;
+                             break;
                          }
-                   // }
+                     }
                     
                     if (!dispFlag){
                         playFrameSelector = 0;
@@ -495,10 +397,6 @@ void ofApp::draw(){
                     }
                     
                     int passedTime = nowPlayTime % scanTimeRecordMaxTime[i];
-                    //cout << "passedTime[" << i << "]: " << passedTime << endl;
-                    
-                    
-                    
                     
                     for (int j=0; j<maxMeshNumList[i]; j++) {
                         if (passedTime <= scanTimeRecordList[i][j+1][1]) {
@@ -506,8 +404,6 @@ void ofApp::draw(){
                             break;
                         }
                     }
-                    
-                    //ƒcout << "playFrameSelector[" << i << "]: " << playFrameSelector << endl;
                     
                 } else {
 
@@ -526,7 +422,6 @@ void ofApp::draw(){
         ofSetLineWidth(1);
         
         if (viewerMode == 0) {
-            
             
             float modelSizeX = modelPosXList[selectMeshId]*1000;
             float modelSizeY = modelHeightList[selectMeshId]*1000;
@@ -596,30 +491,18 @@ void ofApp::draw(){
                     
                 }
                 
-                /*
-                ofPushMatrix();
-                ofTranslate(-200, -140, 100*j+9);
-                ofRotate(270, 0,0,1);
-                font.drawString(tSs.str(), 0, 0);
-                ofPopMatrix();
-                */
-                
             }
             
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             glPushMatrix();  //
             
-            //glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0); //√Å√Æ¬™√à√π¬¢‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥√Å√ü¬™√Ç√£√Ø
             // Draw Model Name
             {
                 glPushMatrix();  //
                 ofSetColor(255,255,255,255);
                 //glTranslatef(180, 400, 700); //
                 glTranslatef(-0,0,2);
-                
-                //glRotatef(180, 0, 0, 1);        // 6/29
-                
                 
                 ofDisableLighting();        //
                 fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
@@ -634,10 +517,6 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }
-            
-
-            
-            //glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
             
             ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
             ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
@@ -727,29 +606,6 @@ void ofApp::draw(){
                 int gridSize = 1000;
                 int gridDiv = 10;
                 int gridRowSize = gridSize / gridDiv;
-
-                /*
-                // draw grid per file
-                for(int i=0; i<=gridDiv; i++) {
-                    ofSetColor(255,255,255);
-                    ofLine(0,gridRowSize*i,0,0,gridRowSize*i,gridSize);
-                    
-                    stringstream tSs;
-                    tSs.str("");
-                    tSs << "" << (i*gridRowSize/10) << "mm";
-                    fontSmall.drawString(tSs.str(), 0, gridRowSize*i);
-                }
-                for(int i=0; i<=gridDiv; i++) {
-                    ofSetColor(255,255,255);
-                    ofLine(gridRowSize*i,0,0,gridRowSize*i,gridSize,0);
-                    stringstream tSs;
-                    tSs.str("");
-                    tSs << "" << (i*gridRowSize/10) << "mm ";
-                    
-                    fontSmall.drawString(tSs.str(), gridRowSize*i, 0);
-                }
-                 */
-
                 
                 // Draw Model Name
                 {
@@ -757,9 +613,6 @@ void ofApp::draw(){
                     ofSetColor(255,255,255,255);
                     //glTranslatef(180, 400, 700); //
                     glTranslatef(-0,0,2 );
-                    
-                    //glRotatef(180, 0, 0, 1);        // 6/29
-                    
 
                     ofDisableLighting();        //
                     fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
@@ -791,20 +644,8 @@ void ofApp::draw(){
                     //ofTranslate(0,0,-530);
                 }
 
-
-
-                //glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
-
-                //ofTranslate(0,-1000);
                 ofTranslate(0,-1*modelHeightList[i]*1000,0);
-                
-                
                 ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                
-                //ofTranslate(0,-1000,0);        // temp
-                
-                //cout << "height: " << modelHeightList[i] << endl;
-                
                 
                 glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
                 ofRotateX(mapNum[i][3]);
@@ -816,18 +657,6 @@ void ofApp::draw(){
                 
                 // 6/29
                 ofScale(1, 1, -1);      // fix model direction
-                
-                //glRotatef(180, 0, 1, 0);
-
-                // ---------------------------------------------------
-                
-                
-                //glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       // Y√ã¬™‚àè‚Äû√Ö√Ü√Ç√µ√ª√ã¬™¬¢√Ç‚à´√ü√ä¬Æ√¥‚Äû√á√≠‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥‚Äû√Ö¬™‚Äû√Ö¬∫√Ç√™√†‚Äû√á√®‚Äû√Ö√µ‚Äû√á√£
-                //           glTranslatef(1000, 0, -1000);       // Y√ã¬™‚àè‚Äû√Ö√Ü√Ç√µ√ª√ã¬™¬¢√Ç‚à´√ü√ä¬Æ√¥‚Äû√á√≠‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥‚Äû√Ö¬™‚Äû√Ö¬∫√Ç√™√†‚Äû√á√®‚Äû√Ö√µ‚Äû√á√£
-                
-                
-                //ofScale(mapNum[i][6]/100.0, mapNum[i][6]/100.0, mapNum[i][6]/100.0);
-
                 
                 // ---------------------------------------------------
                 if (modelFlagList[i] == 0) {            // not effect vertex color object
@@ -931,19 +760,9 @@ void ofApp::draw(){
                     //camPosY = 1*ofGetFrameNum();
                     
                     eCam.reset();
-                    /*
-                     same speed
-                     */
-                    //camPosY = ofGetFrameNum()*100;    same speed
                     
                     eCam.setPosition(5000,camPosY,1200);
                     eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY, 1200), ofVec3f(0,0,1));
-                    /*
-                    eCam.setPosition(5000,ofGetFrameNum()*100,1200);
-                    eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY+(ofGetFrameNum()*100), 1200), ofVec3f(0,0,1));
-                     */
-                    
-
                 
                     if (modelFlagList[i] == 0) {            // not effect vertex color object
                         ofSetColor(255, 255, 255, 255);
@@ -980,8 +799,6 @@ void ofApp::draw(){
                 glPopMatrix();
                     
             }
-            
-            
 
             ofSetColor(255, 255, 255, 255);
             
@@ -993,28 +810,19 @@ void ofApp::draw(){
             
             glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
             
- //           glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
             glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
             ofRotateX(mapNum[i][3]);
             ofRotateY(mapNum[i][4]);
             ofRotateZ(mapNum[i][5]);
             
-            
-            glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       // Y√ã¬™‚àè‚Äû√Ö√Ü√Ç√µ√ª√ã¬™¬¢√Ç‚à´√ü√ä¬Æ√¥‚Äû√á√≠‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥‚Äû√Ö¬™‚Äû√Ö¬∫√Ç√™√†‚Äû√á√®‚Äû√Ö√µ‚Äû√á√£
- //           glTranslatef(1000, 0, -1000);       // Y√ã¬™‚àè‚Äû√Ö√Ü√Ç√µ√ª√ã¬™¬¢√Ç‚à´√ü√ä¬Æ√¥‚Äû√á√≠‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥‚Äû√Ö¬™‚Äû√Ö¬∫√Ç√™√†‚Äû√á√®‚Äû√Ö√µ‚Äû√á√£
-            
+            glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       //
             
             ofScale(mapNum[i][6]/100.0, mapNum[i][6]/100.0, mapNum[i][6]/100.0);
-
             
             if (uiBtnTurnMesh) {
                 glRotatef(-90, 1, 0, 0);
                 
             }
-            
-            // 6/29
-            
-//            glRotatef(180, 0, 0, 1);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
             
             if (mapNum[i][9] == 0) {
             
@@ -1035,24 +843,14 @@ void ofApp::draw(){
         
     }
     
-    //mesh.draw(); // wavefront
-    
     glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
     
     eCam.end();
-    //ofCam.end();
-    
-    
     
     if (uiBtnLight) {
         
         ofDisableLighting();        // ‚Äû√Ö√¨‚Äû√á√•‚Äû√á√≠‚Äû√Ö√≥‚Äû√Ö‚Ñ¢‚Äû√Ö√ë‚Äû√Ö¬ÆUI‚Äû√Ö‚Ñ¢‚Äû√Ö¬©‚Äû√Ö√Ü√ã√¢‚â§‚Äû√Ö√•‚Äû√Ö√§‚Äû√Ö√£‚Äû√Ö√≥‚Äû√Ö√®‚Äû√Ö‚Ñ¢‚Äû√á√£
         light.disable();
-        /*
-        light.setAmbientColor(ofFloatColor(0.2, 0.2, 0.2, 1.0));
-        light.setDiffuseColor(ofFloatColor(0.4, 0.4, 0.4));
-        light.setSpecularColor(ofFloatColor(1.0, 1.0, 1.0));
-         */
         ofDisableDepthTest();
     }
 
@@ -1103,16 +901,7 @@ void ofApp::draw(){
         tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
         fontSmall.drawString(tSs.str(), 40, 440);
         
-        //maxLoadMeshNum = 10;
-        //startPlayMeshAnimNum = 9;
-
-
-        
-        //light.disable();
-        
         ofSetColor(255,255,255,255);
-        
-        //font.drawString("TimeBased 3d Viewer", 50, 70);
         
         if (uiBtnDebugInfo) {
             stringstream tSs;
@@ -1134,9 +923,6 @@ void ofApp::draw(){
             
             fontSmall.drawString(tSs3.str(), 50, 800);
         }
-
-        
-        //ofEllipse((playCount%50)*50, 1000, 50, 50);
 
         if (mouseX >= gui.getPosition().x
             && mouseX < (gui.getPosition().x + gui.getWidth())
@@ -1215,13 +1001,6 @@ void ofApp::draw(){
     //        fontSmall.drawString("now playing...", 100, 700);
         }
         
-        /*
-        light.enable();
-        light.setAmbientColor(ofFloatColor(0.3, 0.3, 0.3, 0.8));
-        light.setDiffuseColor(ofFloatColor(0.6, 0.6, 0.6));
-        light.setSpecularColor(ofFloatColor(1.0, 0.0, 1.0));
-         */
-
         ofDisableDepthTest();
         if (viewerMode == 0) {
             ofSetColor(255, 0, 0, 192);
@@ -1245,31 +1024,6 @@ void ofApp::draw(){
         ofSetColor(255,255,255,255);
         fontSmall.drawString("File List", 240, 735);
         
-        /*
-        if (viewerMode == 2) {
-            ofSetColor(255, 0, 0, 192);
-        } else {
-            //ofRect(0, 700, 200, 50);
-            ofSetColor(128, 128, 128, 192);
-        }
-        ofRectRounded(ofRectangle(410, 700, 180, 50), 10);
-
-        ofSetColor(255,255,255,255);
-        fontSmall.drawString("Scene", 440, 735);
-
-        if (uiBtnDebugInfo) {
-            if (viewerMode == 3) {
-                ofSetColor(255, 0, 0, 192);
-            } else {
-                ofSetColor(128, 128, 128, 192);
-            }
-            ofRectRounded(ofRectangle(610, 700, 180, 50), 10);
-            
-            ofSetColor(255,255,255,255);
-            fontSmall.drawString("MapEdit", 640, 735);
-        }
-        */
-        
         if (viewerMode == 0) {
             if (mouseX < 150 && mouseY < 500 && mouseY >= 150) {
                 ofSetColor(255, 128, 128, 192);
@@ -1288,8 +1042,6 @@ void ofApp::draw(){
             ofSetColor(255, 255, 255, 255);
             font.drawString("<", 60, ofGetHeight()/2+54);
             font.drawString(">", ofGetWidth()-87, ofGetHeight()/2+54);
-            
-            
         }
         
         // GUI‚Äû√á√≠√ã¬∞¬Æ√Å¬ß‚à´
@@ -1300,8 +1052,6 @@ void ofApp::draw(){
         }
         
     }
-    
-
     
     frameCount++;
     
@@ -1377,18 +1127,8 @@ void ofApp::keyPressed(int key){
     
     if (int(key) == 49) {
         viewerMode = 0;
-
         selectMeshId = 0;
-        
         eCam.reset();
-        
-        
-        /*
-        eCam.reset();
-        eCam.setPosition(posX2, posY2, 500);
-        */
-
-        
         
         float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
         float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
@@ -1398,79 +1138,6 @@ void ofApp::keyPressed(int key){
         eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
         
     }
-    
-    /*
-    if (int(key) >= 49 && int(key) <= 54) {
-        int id = int(key) - 49;
-        
-        int posX2 = int(id % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-        int posY2 = -1 * (int(id / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-        
-        eCam.reset();
-        eCam.setPosition(posX2, posY2, 500);
-        
-        viewerMode = 0;
-        
-        selectMeshId = id;
-        
-        cout << "id: " << id << " posX: " << posX2 << " posY: " << posY2 << endl;
-        
-        cout << "key number Check!: " << key << endl;
-    }
-    if (key >= 54 && key <= 57) {
-        int id = int(key) - 54;
-
-        viewerMode = id;
-        
-        if (id == 0) {
-            selectMeshId = 0;
-            
-            int posX2 = int(0 % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-            int posY2 = -1 * (int(0 / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-            
-            eCam.reset();
-            eCam.setPosition(posX2, posY2, 500);
-
-        }
-        
-    
-    }
-     */
-    
-    
-    
-        /*
-    if (key == 'o') {
-       // ofFileDialogResult openFileResult= ofSystemLoadDialog("Select a movie file");
-       // std::string file = openFileResult.getPath();
-        
-        
-        
-        //Open the Open File Dialog
-        ofFileDialogResult openFileResult= ofSystemLoadDialog("Select a jpg or png", true);
-        
-        //Check if the user opened a file
-        if (openFileResult.bSuccess){
-            
-            ofLogVerbose("User selected a file");
-            
-            //We have a file, check it and process it
-            //processOpenFileSelection(openFileResult);
-            
-        }else {
-            ofLogVerbose("User hit cancel");
-        }
-        
-        //if(!_player.loadMovie(file)){
-        //    return;
-        //}
-        //_player.play();
-        
-        //meshDataDirPath = ;
-    }
-     */
-    
-    
     
 }
     
@@ -1541,13 +1208,7 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
-    
-   // eCam.setTarget(ofVec3f(1000.0,1000.0,0.0));
-    /*
-    eCam.setPosition(ofVec3f(1000.0,1000.0,1000.0));
-    //eCam.setDistance(2000);
-    */
-    
+
     cout << "mouseX: " << mouseX << " mouseY: " << mouseY << endl;
     
     if (y >= 500 && y < 700) {
@@ -1608,27 +1269,17 @@ void ofApp::mouseReleased(int x, int y, int button){
         if (x >= 0 && x < 200) {
             viewerMode = 0;
             
-                selectMeshId = 1;
-                
-                //int posX2 = int(0 % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-                ///int posY2 = -1 * (int(0 / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-                
-                eCam.reset();
-                //eCam.setPosition(0, 400, 500);
+            selectMeshId = 1;
+        
+            eCam.reset();
+        
+            float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
+            float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
+            float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
             
-            /*
-                eCam.setPosition(0, 0, 1000);
-                eCam.setTarget(ofVec3f(0, 0, 0));
-            */
-            
-            
-                float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-                float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-                float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-                
-                eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-                eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
-            
+            eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
+            eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+        
 
         }
 
@@ -1639,18 +1290,6 @@ void ofApp::mouseReleased(int x, int y, int button){
             eCam.setTarget(ofVec3f(3000, -3000, 0));
             
         }
-        /*
-        if (x >= 400 && x < 600) {
-            viewerMode = 2;
-            eCam.reset();
-            eCam.setPosition(-1000, 9000, 10000);
-        }
-        if (uiBtnDebugInfo) {
-            if (x >= 600 && x < 800) {
-                viewerMode = 3;
-            }
-        }
-         */
     }
     
     if (viewerMode == 0 ) {
@@ -1715,10 +1354,8 @@ void ofApp::resetCam( ) {
 
 void ofApp::setPos( ) {
     
-    //position.setPosition(eCam.getX(), eCam.getY());
     auto posX = position->x;
     auto posY = position->y;
-//    eCam.setPosition(posX, posY, eCam.getZ());
     
 }
 
@@ -1752,9 +1389,7 @@ void ofApp::dataLoad() {
     modeldataDatasetNum = 0;
     modeldataFiles = 0;
     
-    
     ofDirectory ofDir;
-    //        ofDir.listDir("./");
     ofDir.listDir(meshDataDirPath);
     
     vector<ofFile> files = ofDir.getFiles();
@@ -1830,12 +1465,7 @@ void ofApp::dataLoad() {
             
             maxMeshNumList[dirNameLoopCount] = meshFileNum;
             
-            
-            
-            
             cout << "mesh file num: " << meshFileNum << endl;  // *√ä¬∫√Æ√Å√Ü√≥√Ç‚â†√™‚Äû√Ö√ü√à√±√¨√ä√©‚Ä¢√Ç√®√á√Å√ñ√ü
-            
-            
             
             if (staticModelFlag == false) {
 
@@ -2078,33 +1708,6 @@ void ofApp::dataLoad() {
     cout<<"modelDataNum:"<<modelDataNum<<endl;
     
     
-    
-    //glRotatef( 0, 0, 1, 0 );  //Y√ã¬™‚àè‚Äû√Ö¬¥√Ç√µ√ª√ã¬™¬¢
-    
-    /*
-     
-     // shader
-     string shaderProgram = STRINGIFY(
-     uniform sampler2DRect tex0; // ‚Äû√Ö√¨‚Äû√á√•‚Äû√Ö√£‚Äû√á√¢√ä√®√®√Å√Æ¬™‚Äû√Ö√¥‚Äû√á√£‚Äû√â√ú‚Äû√á√ò‚Äû√áœÄ‚Äû√â√Ö‚Äû√â¬£‚Äû√Ö√•√Ç√ñ‚Ä¢‚Äû√Ö¬£‚Äû√Ö¬∂‚Äû√Ö√ë‚Äû√á√£
-     uniform float brightness; // ‚Äû√â¬∞‚Äû√á¬ß‚Äû√â‚â•‚Äû√â√≥‚Äû√â‚â†‚Äû√á‚àû‚Äû√â¬©‚Äû√â‚Ä†‚Äû√Ö√£‚Äû√á√¢√ä‚àè¬∞‚Äû√Ö√Ø‚Äû√á√•‚Äû√Ö√º√Ç¬ß√¢√ä√Ø‚àû‚Äû√á√≠√Ç√®√≥‚Äû√Ö√´√Ç√®√±‚Äû√á√£
-     
-     void main (void){
-     vec2 pos = gl_TexCoord[0].st; // ‚Äû√â√ú‚Äû√á√ò‚Äû√áœÄ‚Äû√â√Ö‚Äû√â¬£‚Ä∞‚àè√§‚Äû√Ö√Ü√Ç‚à´√ü√ä¬Æ√¥‚Äû√á√≠√Ç√®√±√Ç√¶√≥‚Äû√Ö√¥‚Äû√á√£
-     
-     float r = texture2DRect(tex0, pos).r;
-     float g = texture2DRect(tex0, pos).g;
-     float b = texture2DRect(tex0, pos).b;
-     float a = texture2DRect(tex0, pos).a;
-     
-     vec4 color = vec4(r,g,b,a);
-     
-     gl_FragColor = color * brightness; // gl_FragColor‚Äû√Ö√Ü√Ç√Ñ¬ß‚Äû√Ö√•√ä√∫√Ñ√Å¬µ√á√Å√∂√ë‚Äû√Ö¬¥√Å√Æ¬™√à√π¬¢‚Äû√Ö¬¥√Ç√°‚à´√Ç√§√µ‚Äû√Ö√Ø‚Äû√á√•‚Äû√á√£√Å√Æ¬™√Å¬•‚Ä†√Ç√Ñ¬ß‚Äû√Ö¬¥‚Äû√Ö‚Ñ¢‚Äû√á√£‚Äû√Ñ√á
-     }
-     );
-     
-     shader.setupShaderFromSource(GL_FRAGMENT_SHADER, shaderProgram);
-     shader.linkProgram();
-     */
     modeldataLoadingEndTime = ofGetElapsedTimeMillis();
 
 }
