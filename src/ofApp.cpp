@@ -551,6 +551,12 @@ void ofApp::draw(){
             
             glPopMatrix();
             
+            glPushMatrix();
+            glRotatef(90, 1, 0, 0);
+            ofTranslate(0,0,1000);
+            ofScale(10,10,10);
+            modelImageList[i][playFrameSelector].draw(0,0);
+            glPopMatrix();
 
             
         }
@@ -1578,6 +1584,11 @@ void ofApp::dataLoad() {
                         ofFileObj.close();
                         ofxObjLoader::load(ss.str(), modelList[dirNameLoopCount][i], false);
                         
+                        
+                        // add
+                        ss.str("");
+                        ss << dirPath.str() << "mesh_" << (i+2+startPlayMeshAnimNum) << ".jpg";
+                        modelImageList[dirNameLoopCount][i].loadImage(ss.str());
                         
                         auto vertices = modelList[dirNameLoopCount][i].getVertices();
                         

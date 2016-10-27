@@ -10,13 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/ofApp.cpp"
-            timestampString = "498564353.274381"
+            timestampString = "499125921.155849"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1848"
-            endingLineNumber = "1848"
-            landmarkName = "ofApp::dataLoad()"
-            landmarkType = "7">
+            startingLineNumber = "1859"
+            endingLineNumber = "1859">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
