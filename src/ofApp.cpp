@@ -65,59 +65,7 @@ void ofApp::setup(){
     meshDataDirPath = fileDialogResult.getPath();
     
     // Read Map File ----------------------------------------------------------------
-    ///Users/doc100/Desktop/tempData/artdkt_structure3d
-    //mapFilePath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d/mapFile.csv";
-    
-    stringstream mapSs;
-    mapSs << fileDialogResult.getPath() << "/mapFile.csv";
-    mapFilePath = mapSs.str();
-    
-    cout << "mapFilePath: " << mapFilePath;
-    
-    ofFile mapFile(mapFilePath);
-    
-    if(!mapFile.exists()){
-        
-        ofLogError("The file " + mapFilePath + " is missing. I make it.");
-        
-        for(int i=0; i<256; i++) {
-            mapId[i] = "";
-            for(int j=0; j<16; j++) {
-                mapNum[i][j] = 0;
-                if (j == 6) {
-                    mapNum[i][j] = 0;
-                }
-            }
-        }
-    } else {
-        
-        mapFileExists = true;
-        ofBuffer buffer(mapFile);
-    
-        // ----------------------------------------------------------------------------------
-        // Read file line by line
-        // ------------------------------------------------------------------------------
-        int bufCounter = 0;
-        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
-            string line = *it;
-            //Split line into strings
-            vector<string> words = ofSplitString(line, ",");
-            
-            //Store strings into a custom container
-            if (words.size()>=2) {
-                
-                mapId[bufCounter] = words[0];
-                
-                for(int i=0; i<words.size()-1; i++) {
-                    mapNum[bufCounter][i] = stoi(words[i+1]);
-                }
-            }
-            
-            cout << line << endl;
-            bufCounter++;
-        }
-        
-    }
+    loadMapFile(meshDataDirPath);
     
     // load fonts --------------------------------------------------------------
     
@@ -1394,6 +1342,64 @@ void ofApp::saveMapFile() {
     
 }
 
+
+void ofApp::loadMapFile(string meshDataDirPath) {
+    
+    ///Users/doc100/Desktop/tempData/artdkt_structure3d
+    //mapFilePath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d/mapFile.csv";
+    
+    stringstream mapSs;
+    mapSs << meshDataDirPath << "/mapFile.csv";
+    mapFilePath = mapSs.str();
+    
+    cout << "mapFilePath: " << mapFilePath;
+    
+    ofFile mapFile(mapFilePath);
+    
+    if(!mapFile.exists()){
+        
+        ofLogError("The file " + mapFilePath + " is missing. I make it.");
+        
+        for(int i=0; i<256; i++) {
+            mapId[i] = "";
+            for(int j=0; j<16; j++) {
+                mapNum[i][j] = 0;
+                if (j == 6) {
+                    mapNum[i][j] = 0;
+                }
+            }
+        }
+    } else {
+        
+        mapFileExists = true;
+        ofBuffer buffer(mapFile);
+        
+        // ----------------------------------------------------------------------------------
+        // Read file line by line
+        // ------------------------------------------------------------------------------
+        int bufCounter = 0;
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
+            //Split line into strings
+            vector<string> words = ofSplitString(line, ",");
+            
+            //Store strings into a custom container
+            if (words.size()>=2) {
+                
+                mapId[bufCounter] = words[0];
+                
+                for(int i=0; i<words.size()-1; i++) {
+                    mapNum[bufCounter][i] = stoi(words[i+1]);
+                }
+            }
+            
+            cout << line << endl;
+            bufCounter++;
+        }
+        
+    }
+
+}
 
 
 // Read mesh files ----------------------------------------------------------------

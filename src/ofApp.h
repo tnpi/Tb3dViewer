@@ -41,7 +41,7 @@ public:
     void setPos();
     void dataLoad();
     void saveMapFile();
-    void loadMapFile();
+    void loadMapFile(string meshDataDirPath);
     
     ofxTrueTypeFontUC font;
     ofxTrueTypeFontUC fontSmall;
