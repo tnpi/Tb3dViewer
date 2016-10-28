@@ -1348,25 +1348,12 @@ void ofApp::resetCamDetailView( ) {
     eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
     eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
     
-    /*
-     int posX2 = int(selectMeshId % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-     int posY2 = -1 * (int(selectMeshId / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-     
-     eCam.reset();
-     
-     float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-     float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-     float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-     
-     eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-     eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
-
-     */
-
 }
 
 void ofApp::resetCamListView( ) {
+
     viewerMode = 1;
+    
     eCam.reset();
     eCam.setPosition(3000, -3000, 9000);
     eCam.setTarget(ofVec3f(3000, -3000, 0));
