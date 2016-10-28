@@ -2,12 +2,12 @@
 
 //--------------------------------------------------------------
 void ofApp::setup(){
-
     
     appInitStartTime = ofGetElapsedTimeMillis();
     
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
-    
+
+    // setting vars --------------------------------------------
     
     viewerMode = 1;
     //uiMeshDrawType = 1;
@@ -17,11 +17,16 @@ void ofApp::setup(){
     
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
+    
+    maxLoadMeshNum = 800;
 
+    playMode = 0;   // 1:timebased 0: frame
+
+    // initializing vars ---------------------------------------
+    
     frameCount = 0;
     playCount = 0;
     totalMaxMeshNum = 0;
-    maxLoadMeshNum = 800;
     startPlayMeshAnimNum = 0;
     
     nowPlayTime = 0;
@@ -32,7 +37,6 @@ void ofApp::setup(){
     dispPlayControlUiFlag = true;
     
     loopPlay = true;
-    playMode = 0;   // 1:timebased 0: frame
     
     prevSelectModel = -1;
 
@@ -51,14 +55,14 @@ void ofApp::setup(){
     scanGpsDataMaxLat = 0;
     scanGpsDataMaxLong = 0;
     
+    // get file load path --------------------------------------------------------------------------------
+    
     //meshDataDirPath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d";
     //meshDataDirPath = "/Users/doc100/Desktop/tempData/artdkt_structure3d";
     
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
     meshDataDirPath = fileDialogResult.getPath();
-    
-    ofSetFrameRate(60);
     
     // Read Map File ----------------------------------------------------------------
     ///Users/doc100/Desktop/tempData/artdkt_structure3d
@@ -114,7 +118,8 @@ void ofApp::setup(){
         }
         
     }
-    // --------------------------------------------------------------
+    
+    // load fonts --------------------------------------------------------------
     
     font.loadFont("hira.otf", 38);
     fontSmall.loadFont("hira.otf", 20);
@@ -124,6 +129,7 @@ void ofApp::setup(){
     ofxGuiSetDefaultWidth(300);
     
     // OfxGUI setup -----------------------------------------------------------------
+    
     ofColor initColor = ofColor(0, 127, 255, 255);
     ofColor minColor = ofColor(0,0,0,0);
     ofColor maxColor = ofColor(255,255,255,255);
@@ -1387,6 +1393,7 @@ void ofApp::saveMapFile() {
     return;
     
 }
+
 
 
 // Read mesh files ----------------------------------------------------------------
