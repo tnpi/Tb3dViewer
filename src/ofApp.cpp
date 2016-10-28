@@ -8,7 +8,10 @@ void ofApp::setup(){
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
 
     // setting vars --------------------------------------------
-    
+
+    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    colorMode = 1;
+
     viewerMode = 1;
     //uiMeshDrawType = 1;
     selectMeshId = 0;
@@ -101,6 +104,7 @@ void ofApp::setup(){
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 3000, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
     gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
+    gui.add(uiColorMode.setup("colorMode", 0, 0, 1));
     gui.add(uiPlayMode.setup("playMode", 0, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnPlayPause.setup("Play / Stop", true, 40, 40));
@@ -295,6 +299,8 @@ void ofApp::draw(){
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
     
+    int playFrameSelector;
+    
     for(int i=0; i<modelDataNum; i++) {
         
         ofSetColor(255,255,255);
@@ -304,7 +310,7 @@ void ofApp::draw(){
         }
         
         int counter = playCount;// % maxMeshNumList[i];
-        int playFrameSelector = 0;
+        playFrameSelector = 0;
         
         if (frameCount >= 1) {
             modelFlagList[i] = 0;
@@ -473,19 +479,52 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }
-            ofTranslate(0,0,1500);      // goto center
 
             
-            ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-            ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            if (uiColorMode == 0) {
+                ofTranslate(0,0,1500);      // goto center
+                ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+                ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
             
-            ofScale(1000, 1000, 1000);  // temp debug
-            
+                ofScale(1000, 1000, 1000);
+            }
             ofScale(1, 1, -1);      // fix model direction
+            if (uiColorMode == 1) {
+                ofScale(1, -1, 1);      // fix model direction
+                ofTranslate(1500,1100,-2500);      // goto center
+            }
 
             // 6/29
             //ofScale(1, -1);
+
             
+            
+                
+            if (dualColorSystem == true && uiColorMode == 1) {
+                if (uiMeshDrawType == 1) {
+                    ofSetLineWidth(1);
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                } else if (uiMeshDrawType == 2) {
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                } else {
+                    //asModelObj[i][counter].drawFaces();
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                }
+                
+            } else {
+                if (uiMeshDrawType == 1) {
+                    ofSetLineWidth(1);
+                    modelList[i][playFrameSelector].drawWireframe();
+                } else if (uiMeshDrawType == 2) {
+                    glPointSize(5);
+                    modelList[i][playFrameSelector].drawVertices();
+                } else {
+                    modelList[i][playFrameSelector].draw();
+                }
+            }
+            
+            /*
+
             if (uiMeshDrawType == 1) {
                 //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
                 //            asModelObj[i][counter].drawWireframe();
@@ -506,6 +545,7 @@ void ofApp::draw(){
                 //asModelObj[i][counter].drawFaces();
                 //asModelObj[i][counter].draw(OF_MESH_FILL);
             }
+             */
             
             glPopMatrix();
             
@@ -811,6 +851,20 @@ void ofApp::draw(){
     glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
     
     eCam.end();
+    
+    if (viewerMode == 0) {
+        glPopMatrix();
+        
+        glPushMatrix();
+        //glRotatef(90, 1, 0, 0);
+        /*
+        ofTranslate(0,0,0);
+        ofScale(10,10,10);
+         */
+        ofScale(0.5,0.5,0.5);
+        modelImageList[selectMeshId][playFrameSelector].draw(0,0);
+        glPopMatrix();
+    }
     
     if (uiBtnLight) {
         
@@ -1591,12 +1645,14 @@ void ofApp::dataLoad() {
                         //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
                         
                         cout << ss.str() << endl;
+                        
+                        string objFilePath = ss.str();
 
                         
                         oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
                         
                         ofFileObj.close();
-                        ofxObjLoader::load(ss.str(), modelList[dirNameLoopCount][i], false);
+                        ofxObjLoader::load(objFilePath, modelList[dirNameLoopCount][i], false);
                         
                         
                         // add
@@ -1633,6 +1689,14 @@ void ofApp::dataLoad() {
 
                         
                         cout << "vertice.y: " << maxPosY;
+                        
+                        
+                        if (dualColorSystem) {
+                            //Assimp ver.
+                            
+                            asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
+                            
+                        }
                         
                     } else {
                         cout << dirPath.str() << "mesh_" << (i+2+startPlayMeshAnimNum) << ".obj file not found" << endl;

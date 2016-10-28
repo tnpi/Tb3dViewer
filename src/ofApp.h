@@ -106,6 +106,7 @@ public:
     ofxIntSlider uiIconNumX;
     ofxIntSlider uiMeshDrawType;
     ofxIntSlider uiPlayMode;
+    ofxIntSlider uiColorMode;
     ofxIntSlider uiFramerate;
     ofxColorSlider color;
     ofxVec2Slider position;
@@ -124,6 +125,7 @@ public:
     ofxToggle uiBtnLoopPlay;
     ofxToggle uiBtnOrtho;
     ofxToggle uiBtnGpsMapMode;
+
     
     ofxFloatSlider uiEditPosX;
     ofxFloatSlider uiEditPosY;
@@ -205,5 +207,8 @@ public:
     
     bool prevFramePlayState;
     
+    bool dualColorSystem;
+    int colorMode = 0;
+
 };
 
