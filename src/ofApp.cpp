@@ -1233,8 +1233,6 @@ void ofApp::mouseReleased(int x, int y, int button){
         }
     }
     
-    
-    
     if (y >= 700 && y<900) {
         
         if (x >= 0 && x < 200) {
@@ -1369,6 +1367,7 @@ void ofApp::loadMapFile(string meshDataDirPath) {
                 }
             }
         }
+        
     } else {
         
         mapFileExists = true;
