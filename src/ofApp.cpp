@@ -11,7 +11,7 @@ void ofApp::setup(){
     
     viewerMode = 1;
     //uiMeshDrawType = 1;
-    selectMeshId = -1;
+    selectMeshId = 0;
     mapFileExists = false;
     mapDataColumns = 16;
     
@@ -445,7 +445,7 @@ void ofApp::draw(){
             
             ofSetLineWidth(3);
             ofSetColor(128,224,255, 128);
-            for(int j=-1; j<=20; j++) {
+            for(int j=-1; j<=40; j++) {
                 ofLine(-100,100*j,1,modelSizeX*2,100*j,1);
                 stringstream tSs;
                 tSs.str("");
@@ -460,7 +460,7 @@ void ofApp::draw(){
             }
 
             ofSetColor(128,224,255, 128);
-            for(int j=-1; j<=20; j++) {
+            for(int j=-1; j<=40; j++) {
                 ofLine(100*j,-100,1,100*j,modelSizeZ*2,1);
                 stringstream tSs;
                 tSs.str("");
@@ -479,6 +479,7 @@ void ofApp::draw(){
                 
             }
 
+            /*
             ofSetColor(128,255,128, 64);
             for(int j=-1; j<=20; j++) {
                 ofLine(0,1,100*j,2000,1,100*j);
@@ -492,6 +493,7 @@ void ofApp::draw(){
                 }
                 
             }
+             */
             
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
@@ -517,6 +519,8 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }
+            ofTranslate(0,0,1500);      // goto center
+
             
             ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
             ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
@@ -634,12 +638,13 @@ void ofApp::draw(){
                     
                 }
                 
-                
-                // tempolary
+                /*
+                // tempolary ( for combine)
                 if (i == 1) {
                     glRotatef(180, 0, 1, 0);
                     ofTranslate(0,0,-530);
                 }
+                */
 
                 if (mapNum[i][7] >= 1) {
                     glRotatef(180, 0, 1, 0);
@@ -1175,7 +1180,7 @@ void ofApp::keyReleased(int key){
         eCam.setPosition(0, 0, 1000);
         viewerMode = 1;
         
-        selectMeshId = -1;
+        selectMeshId = 0;
         
         cout << "key number 0 Check!: " << key << endl;
     }
@@ -1275,7 +1280,7 @@ void ofApp::mouseReleased(int x, int y, int button){
         if (x >= 0 && x < 200) {
             viewerMode = 0;
             
-            selectMeshId = 1;
+            selectMeshId = 0;
         
             eCam.reset();
         
