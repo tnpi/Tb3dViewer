@@ -33,6 +33,8 @@ public:
     void gotMessage(ofMessage msg);
     
     void resetCam();
+    void resetCamDetailView();
+    void resetCamListView();
     void gridSwitch();
     void debugInfoSwitch();
     void turnMeshSwitch();

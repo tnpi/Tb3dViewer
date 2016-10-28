@@ -1284,28 +1284,14 @@ void ofApp::mouseReleased(int x, int y, int button){
     if (y >= 700 && y<900) {
         
         if (x >= 0 && x < 200) {
-            viewerMode = 0;
-            
             selectMeshId = 0;
-        
-            eCam.reset();
-        
-            float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-            float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-            float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-            
-            eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-            eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
-        
-
+            resetCamDetailView();
         }
 
         if (x >= 200 && x < 400) {
-            viewerMode = 1;
-            eCam.reset();
-            eCam.setPosition(3000, -3000, 9000);
-            eCam.setTarget(ofVec3f(3000, -3000, 0));
             
+            selectMeshId = 0;
+            resetCamListView();
         }
     }
     
@@ -1313,33 +1299,13 @@ void ofApp::mouseReleased(int x, int y, int button){
         if (x < 150 && y < 500 && y >= 150) {
             
             selectMeshId = ((selectMeshId - 1) + modelDataNum) % modelDataNum;
-            int posX2 = int(selectMeshId % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-            int posY2 = -1 * (int(selectMeshId / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-            
-            eCam.reset();
-            
-            float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-            float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-            float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-            
-            eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-            eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+            resetCamDetailView();
             
         }
         if (x >= (ofGetWidth()-150) && y < 500 && y >= 150) {
             
             selectMeshId = (selectMeshId + 1) % modelDataNum;
-            int posX2 = int(selectMeshId % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
-            int posY2 = -1 * (int(selectMeshId / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
-            
-            eCam.reset();
-            
-            float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-            float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-            float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-            
-            eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-            eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+            resetCamDetailView();
             
         }
     }
@@ -1368,6 +1334,44 @@ void ofApp::resetCam( ) {
     
     eCam.reset();
 }
+
+void ofApp::resetCamDetailView( ) {
+    
+    viewerMode = 0;
+    
+    eCam.reset();
+    
+    float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
+    float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
+    float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
+    
+    eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
+    eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+    
+    /*
+     int posX2 = int(selectMeshId % uiIconNumX) * uiThumbnailIconDistance + uiThumbnailIconDistance/2;
+     int posY2 = -1 * (int(selectMeshId / uiIconNumX) * uiThumbnailIconDistance - uiThumbnailIconDistance/2);
+     
+     eCam.reset();
+     
+     float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
+     float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
+     float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
+     
+     eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
+     eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+
+     */
+
+}
+
+void ofApp::resetCamListView( ) {
+    viewerMode = 1;
+    eCam.reset();
+    eCam.setPosition(3000, -3000, 9000);
+    eCam.setTarget(ofVec3f(3000, -3000, 0));
+}
+
 
 void ofApp::setPos( ) {
     

@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/ofApp.cpp"
-            timestampString = "499332346.003913"
+            timestampString = "499359271.580699"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "1870"
-            endingLineNumber = "1870">
+            startingLineNumber = "1874"
+            endingLineNumber = "1874">
          </BreakpointContent>
       </BreakpointProxy>
    </Breakpoints>
