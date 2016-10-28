@@ -441,7 +441,7 @@ void ofApp::draw(){
             // draw base grid
             ofSetColor(128,224,255, 64);
             ofLine(0,0,0,0,0,0);
-            ofRect(0, 0, 10000, 10000);
+            //ofRect(0, 0, 10000, 10000);
             
             ofSetLineWidth(3);
             ofSetColor(128,224,255, 128);
@@ -911,7 +911,13 @@ void ofApp::draw(){
         tSs.str("");
         tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
         fontSmall.drawString(tSs.str(), 40, 440);
-        
+
+        if (viewerMode == 0) {
+            tSs.str("");
+            tSs << "meshName: " << meshNameList[selectMeshId];
+            fontSmall.drawString(tSs.str(), 40, 480);
+        }
+
         ofSetColor(255,255,255,255);
         
         if (uiBtnDebugInfo) {
