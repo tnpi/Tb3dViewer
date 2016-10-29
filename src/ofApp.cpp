@@ -490,7 +490,8 @@ void ofApp::draw(){
             }
             ofScale(1, 1, -1);      // fix model direction
             if (uiColorMode == 1) {
-                ofScale(1, -1, 1);      // fix model direction
+                asModelObj[i][playFrameSelector].setScaleNormalization(true);
+                ofScale(-1, -1, 1);      // fix model direction
                 ofTranslate(1500,1100,-2500);      // goto center
             }
 
@@ -498,8 +499,6 @@ void ofApp::draw(){
             //ofScale(1, -1);
 
             
-            
-                
             if (dualColorSystem == true && uiColorMode == 1) {
                 if (uiMeshDrawType == 1) {
                     ofSetLineWidth(1);
