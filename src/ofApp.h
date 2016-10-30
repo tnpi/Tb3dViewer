@@ -72,6 +72,9 @@ public:
     string mapId[1024];
     int mapNum[1024][16];
     float modelHeightList[1024];
+    ofPoint modelSceneMin[64];
+    ofPoint modelSceneMax[64];
+    ofPoint modelSceneCenter[64];
     float modelPosXList[1024];
     float modelPosZList[1024];
     vector<string> dataDirNameList;
@@ -210,5 +213,11 @@ public:
     bool dualColorSystem;
     int colorMode = 0;
 
+    
+    ofFbo fboFront;
+    ofFbo fboSide;
+    ofFbo fboTop;
+    ofFbo fboCam;
+    
 };
 

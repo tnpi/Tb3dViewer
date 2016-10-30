@@ -58,6 +58,12 @@ void ofApp::setup(){
     scanGpsDataMaxLat = 0;
     scanGpsDataMaxLong = 0;
     
+    fboFront.allocate(640, 480, GL_RGBA);
+    fboSide.allocate(640, 480, GL_RGBA);
+    fboTop.allocate(640, 480, GL_RGBA);
+    fboCam.allocate(640, 480, GL_RGBA);
+    
+    
     // get file load path --------------------------------------------------------------------------------
     
     //meshDataDirPath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d";
@@ -293,7 +299,7 @@ void ofApp::draw(){
     }
     
     
-    glTranslatef(0, 0, 0); //
+    //glTranslatef(0, 0, 0); //
     
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
@@ -383,10 +389,35 @@ void ofApp::draw(){
         
         if (viewerMode == 0) {
             
+            fboCam.begin();
+            ofPushMatrix();
+            
+            //ofPushView();
+            
+            ofCam.begin();
+            //ofCam.reset();
+            ofClear(255,255,255, 0);
+            ofSetColor(255,0,0,255);
+            font.drawString("test", 100,50);
+            //ofScale(0.25, 0.25, 0.25);
+            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+            
+            ofCam.end();
+            
+            //ofPopView();
+            ofPopMatrix();
+            
+            
+            
+            fboCam.end();
+            
+            
             float modelSizeX = modelPosXList[selectMeshId]*1000;
             float modelSizeY = modelHeightList[selectMeshId]*1000;
             float modelSizeZ = modelPosZList[selectMeshId]*1000;
+
             
+            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             // draw 3axis
             ofSetLineWidth(10);
             ofSetColor(255,64,64);
@@ -482,17 +513,20 @@ void ofApp::draw(){
 
             
             if (uiColorMode == 0) {
-                ofTranslate(0,0,1500);      // goto center
-                ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-                ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+                //ofTranslate(0,0,1500);      // goto center
+                //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+                //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
             
                 ofScale(1000, 1000, 1000);
             }
             ofScale(1, 1, -1);      // fix model direction
             if (uiColorMode == 1) {
-                asModelObj[i][playFrameSelector].setScaleNormalization(true);
+                asModelObj[i][playFrameSelector].setScaleNormalization(false);
                 ofScale(-1, -1, 1);      // fix model direction
-                ofTranslate(1500,1100,-2500);      // goto center
+                //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+//                ofTranslate(1500,1100,-2500);      // goto center
+                
+                ofScale(1000, 1000, 1000);
             }
 
             // 6/29
@@ -500,6 +534,12 @@ void ofApp::draw(){
 
             
             if (dualColorSystem == true && uiColorMode == 1) {
+
+                //ofTranslate(asModelObj[i][playFrameSelector].getSceneCenter().x, asModelObj[i][playFrameSelector].getSceneCenter().y, -asModelObj[i][playFrameSelector].getSceneCenter().z);
+                double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                ofTranslate(centerX, centerY, -centerZ);
                 if (uiMeshDrawType == 1) {
                     ofSetLineWidth(1);
                     asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
@@ -852,7 +892,6 @@ void ofApp::draw(){
     eCam.end();
     
     if (viewerMode == 0) {
-        glPopMatrix();
         
         glPushMatrix();
         //glRotatef(90, 1, 0, 0);
@@ -860,9 +899,11 @@ void ofApp::draw(){
         ofTranslate(0,0,0);
         ofScale(10,10,10);
          */
+        fboCam.draw(0,160);
         ofScale(0.5,0.5,0.5);
         modelImageList[selectMeshId][playFrameSelector].draw(0,0);
         glPopMatrix();
+        
     }
     
     if (uiBtnLight) {
@@ -1695,6 +1736,29 @@ void ofApp::dataLoad() {
                             
                             asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
                             
+                            ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
+                            ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
+                            if (tMin.x < modelSceneMin[dirNameLoopCount].x || (modelSceneMin[dirNameLoopCount].x == 0)) {
+                                modelSceneMin[dirNameLoopCount].x = tMin.x;
+                            }
+                            if (tMin.y < modelSceneMin[dirNameLoopCount].y || (modelSceneMin[dirNameLoopCount].y == 0)) {
+                                modelSceneMin[dirNameLoopCount].y = tMin.y;
+                            }
+                            if (tMin.z < modelSceneMin[dirNameLoopCount].z || (modelSceneMin[dirNameLoopCount].z == 0)) {
+                                modelSceneMin[dirNameLoopCount].z = tMin.z;
+                            }
+                            if (tMax.x > modelSceneMax[dirNameLoopCount].x || (modelSceneMax[dirNameLoopCount].x == 0)) {
+                                modelSceneMax[dirNameLoopCount].x = tMax.x;
+                            }
+                            if (tMax.y < modelSceneMax[dirNameLoopCount].y || (modelSceneMax[dirNameLoopCount].y == 0)) {
+                                modelSceneMax[dirNameLoopCount].y = tMax.y;
+                            }
+                            if (tMax.z < modelSceneMax[dirNameLoopCount].z || (modelSceneMax[dirNameLoopCount].z == 0)) {
+                                modelSceneMax[dirNameLoopCount].z = tMax.z;
+                            }
+                            
+                                
+   
                         }
                         
                     } else {
