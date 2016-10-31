@@ -42,6 +42,7 @@ public:
     void dataLoad();
     void saveMapFile();
     void loadMapFile(string meshDataDirPath);
+    void drawScaleGrid(float areaSize, int gridSpan);
     
     ofxTrueTypeFontUC font;
     ofxTrueTypeFontUC fontSmall;

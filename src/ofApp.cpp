@@ -410,81 +410,15 @@ void ofApp::draw(){
             
             
             fboCam.end();
+
+            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             
             
             float modelSizeX = modelPosXList[selectMeshId]*1000;
             float modelSizeY = modelHeightList[selectMeshId]*1000;
             float modelSizeZ = modelPosZList[selectMeshId]*1000;
-
             
-            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-            // draw 3axis
-            ofSetLineWidth(10);
-            ofSetColor(255,64,64);
-            ofLine(0,0,0,modelSizeX,0,0);
-            //font.drawString("X", 10200, 0);
-            ofSetColor(64,192,64);
-            ofLine(0,0,0,0,modelSizeY,0);
-            //font.drawString("Y", 0, 10200);
-            ofSetColor(64,64,255);
-            ofLine(0,0,0,0,0,modelSizeZ);
-            
-            // draw base grid
-            ofSetColor(128,224,255, 64);
-            ofLine(0,0,0,0,0,0);
-            //ofRect(0, 0, 10000, 10000);
-            
-            ofSetLineWidth(3);
-            ofSetColor(128,224,255, 128);
-            for(int j=-1; j<=40; j++) {
-                ofLine(-100,100*j,1,modelSizeX*2,100*j,1);
-                stringstream tSs;
-                tSs.str("");
-                if (j!= 0) {
-                    tSs << "" << j << "0cm";
-                } else {
-                    tSs << "" << j << "cm";
-                    
-                }
-                font.drawString(tSs.str(), -300, 100*j+19);
-                
-            }
-
-            ofSetColor(128,224,255, 128);
-            for(int j=-1; j<=40; j++) {
-                ofLine(100*j,-100,1,100*j,modelSizeZ*2,1);
-                stringstream tSs;
-                tSs.str("");
-                if (j!= 0) {
-                    tSs << "" << j << "0cm";
-                } else {
-                    tSs << "" << j << "cm";
-                    
-                }
-                
-                ofPushMatrix();
-                ofTranslate(100*j+19, -140, 0);
-                ofRotate(270, 0,0,1);
-                font.drawString(tSs.str(), 0, 0);
-                ofPopMatrix();
-                
-            }
-
-            /*
-            ofSetColor(128,255,128, 64);
-            for(int j=-1; j<=20; j++) {
-                ofLine(0,1,100*j,2000,1,100*j);
-                stringstream tSs;
-                tSs.str("");
-                if (j!= 0) {
-                    tSs << "" << j << "0cm";
-                } else {
-                    tSs << "" << j << "cm";
-                    
-                }
-                
-            }
-             */
+            drawScaleGrid(modelSizeX, 100);
             
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
@@ -599,42 +533,7 @@ void ofApp::draw(){
         }
         else if (viewerMode <= 1) {
             
-            // draw 3axis
-            ofSetLineWidth(10);
-            ofSetColor(255,64,64);
-            ofLine(0,0,0,10000,0,0);
-            font.drawString("X", 10200, 0);
-            ofSetColor(64,192,64);
-            ofLine(0,0,0,0,10000,0);
-            font.drawString("Y", 0, 10200);
-            ofSetColor(64,64,255);
-            ofLine(0,0,0,0,0,10000);
-            
-            // draw base grid
-            ofSetColor(128,224,255, 64);
-            ofLine(0,0,0,0,0,0);
-            ofRect(0, 0, 10000, 10000);
-            
-            ofSetLineWidth(5);
-            ofSetColor(128,224,255, 128);
-            for(int j=0; j<=10; j++) {
-                ofLine(0,1000*j,1,10000,1000*j,1);
-                stringstream tSs;
-                tSs.str("");
-                tSs << "" << j << "m";
-                fontLarge.drawString(tSs.str(), -300, 1000*j+50);
-                
-            }
-            
-            // d
-            for(int j=0; j<=10; j++) {
-                ofLine(1000*j,0,1,1000*j,10000,1);
-                
-                stringstream tSs;
-                tSs.str("");
-                tSs << "" << j << "m";
-                fontLarge.drawString(tSs.str(), 1000*j-100, -100);
-            }
+            drawScaleGrid(10000, 1000);
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             //displayTotalFaces += modelList[i][counter].getNum;
@@ -1495,6 +1394,84 @@ void ofApp::resetCamListView( ) {
     eCam.setTarget(ofVec3f(3000, -3000, 0));
 }
 
+
+void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
+    
+    float modelSizeX = areaSize;//modelPosXList[selectMeshId]*1000;
+    float modelSizeY = areaSize;//modelHeightList[selectMeshId]*1000;
+    float modelSizeZ = areaSize;//modelPosZList[selectMeshId]*1000;
+    
+    ofSetLineWidth(1);
+    
+    // draw 3axis
+    ofSetLineWidth(10);
+    ofSetColor(255,64,64);
+    ofLine(0,0,0,modelSizeX,0,0);
+    //font.drawString("X", 10200, 0);
+    ofSetColor(64,192,64);
+    ofLine(0,0,0,0,modelSizeY,0);
+    //font.drawString("Y", 0, 10200);
+    ofSetColor(64,64,255);
+    ofLine(0,0,0,0,0,modelSizeZ);
+    
+    // draw base grid
+    ofSetColor(128,224,255, 64);
+    ofLine(0,0,0,0,0,0);
+    //ofRect(0, 0, 10000, 10000);
+    
+    ofSetLineWidth(3);
+    ofSetColor(128,224,255, 128);
+    for(int j=0; j<=40; j++) {
+        ofLine(-100,gridSpan*j,1,modelSizeX*2,gridSpan*j,1);
+        stringstream tSs;
+        tSs.str("");
+        if (j!= 0) {
+            tSs << "" << j << "0cm";
+        } else {
+            tSs << "" << j << "cm";
+            
+        }
+        font.drawString(tSs.str(), -300, gridSpan*j+19);
+        
+    }
+    
+    ofSetColor(128,224,255, 128);
+    for(int j=0; j<=40; j++) {
+        ofLine(gridSpan*j,-gridSpan,1,gridSpan*j,modelSizeZ*2,1);
+        stringstream tSs;
+        tSs.str("");
+        if (j!= 0) {
+            tSs << "" << j << "0cm";
+        } else {
+            tSs << "" << j << "cm";
+            
+        }
+        
+        ofPushMatrix();
+        ofTranslate(gridSpan*j+19, -140, 0);
+        ofRotate(270, 0,0,1);
+        font.drawString(tSs.str(), 0, 0);
+        ofPopMatrix();
+        
+    }
+    
+    /*
+     ofSetColor(128,255,128, 64);
+     for(int j=-1; j<=20; j++) {
+     ofLine(0,1,100*j,2000,1,100*j);
+     stringstream tSs;
+     tSs.str("");
+     if (j!= 0) {
+     tSs << "" << j << "0cm";
+     } else {
+     tSs << "" << j << "cm";
+     
+     }
+     
+     }
+     */
+
+}
 
 void ofApp::setPos( ) {
     
