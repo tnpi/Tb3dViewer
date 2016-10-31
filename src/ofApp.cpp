@@ -441,7 +441,6 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }
-
             
             if (uiColorMode == 0) {
                 //ofTranslate(0,0,1500);      // goto center
@@ -530,15 +529,15 @@ void ofApp::draw(){
         }
         else if (viewerMode <= 1) {
             
-            
             if (i == 0) {
                 drawScaleGrid(10000, 1000);
             }
             
-            displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             //displayTotalFaces += modelList[i][counter].getNum;
             
             if (uiGpsMapMode == 0) {
+                displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+                
                 glPushMatrix();
                 
                 glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0); //√Å√Æ¬™√à√π¬¢‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥√Å√ü¬™√Ç√£√Ø
@@ -640,11 +639,12 @@ void ofApp::draw(){
                     }
                 }
             } else if (uiGpsMapMode == 1) {
-                glPushMatrix();
+                //glPushMatrix();
                 
-                cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+                //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
                 for(int z=0; z<maxMeshNumList[i]; z++) {
-                    
+                    displayTotalVertices += modelList[i][z].getNumVertices();
+
                     glPushMatrix();
                     
                     playFrameSelector = z;
@@ -655,7 +655,7 @@ void ofApp::draw(){
                     double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
                     double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
                     
-                    cout << "posX: " << posX << " posY: " << posY << endl;
+                    //cout << "posX: " << posX << " posY: " << posY << endl;
                     
                     
                     if (uiBtnTurnMesh) {
@@ -705,13 +705,8 @@ void ofApp::draw(){
                     glPopMatrix();
                     
                 }
-                glPopMatrix();
-            
-                ofSetColor(255, 255, 255, 255);
-            
-                glPopMatrix();
- 
-
+                //glPopMatrix();
+                
             } else {        // GPS Walk thru mode
                 
                 glPushMatrix();
