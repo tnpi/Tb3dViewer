@@ -120,7 +120,7 @@ void ofApp::setup(){
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 40));
     gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 40));
     gui.add(uiBtnOrtho.setup("Ortho", false, 40, 40));
-    gui.add(uiBtnGpsMapMode.setup("GPSMapMode", false, 40, 40));
+    gui.add(uiGpsMapMode.setup("GPSMapMode", 0, 0, 2));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnReset.setup("Reset", 40, 40));
     gui.add(uiBtnSelectReset.setup("quit", 40, 40));
@@ -639,7 +639,7 @@ void ofApp::draw(){
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             //displayTotalFaces += modelList[i][counter].getNum;
             
-            if (!uiBtnGpsMapMode) {
+            if (uiGpsMapMode == 0) {
                 glPushMatrix();
                 
                 glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0); //√Å√Æ¬™√à√π¬¢‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥√Å√ü¬™√Ç√£√Ø

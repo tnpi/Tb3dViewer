@@ -111,6 +111,7 @@ public:
     ofxIntSlider uiPlayMode;
     ofxIntSlider uiColorMode;
     ofxIntSlider uiFramerate;
+    ofxIntSlider uiGpsMapMode;
     ofxColorSlider color;
     ofxVec2Slider position;
     ofxToggle uiBtnPlayPause;
@@ -127,7 +128,6 @@ public:
     ofxToggle uiBtnTurnMesh;
     ofxToggle uiBtnLoopPlay;
     ofxToggle uiBtnOrtho;
-    ofxToggle uiBtnGpsMapMode;
 
     
     ofxFloatSlider uiEditPosX;
