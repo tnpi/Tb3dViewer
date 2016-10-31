@@ -1577,8 +1577,8 @@ void ofApp::dataLoad() {
             {
                 //cout << "*" << itr->getFileName() << endl;  //
                 if (!itr->isDirectory()) {
-                    
-                    if (itr->getFileName().substr(0,4) == "mesh") {
+                    string fName = itr->getFileName();
+                    if (fName.substr(0,4) == "mesh" && fName.substr(fName.size()-3,3) == "obj") {
                         meshFileNum++;
                         
                         //cout << "***" << itr->getFileName() << endl;  //
