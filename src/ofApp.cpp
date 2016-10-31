@@ -748,6 +748,79 @@ void ofApp::draw(){
                         }
                     }
                 }
+            } else if (uiGpsMapMode == 1) {
+                glPushMatrix();
+                
+                cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+                for(int z=0; z<maxMeshNumList[i]; z++) {
+                    
+                    glPushMatrix();
+                    
+                    playFrameSelector = z;
+                    
+                    double latScale = 10000*uiTestSlider/100;
+                    double longScale = 10000*uiTestSlider/100;
+                    
+                    double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+                    double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+                    
+                    cout << "posX: " << posX << " posY: " << posY << endl;
+                    
+                    
+                    if (uiBtnTurnMesh) {
+                        glRotatef(-90, 1, 0, 0);
+                        
+                    }
+                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+                    
+                    ofScale(100, 100, 100);  // temp debug
+                    
+                    // 6/29
+                    ofScale(1, 1, -1);      // fix model direction
+                    
+                    ofTranslate(0,0,posY);
+                    ofTranslate(posX,0,0);
+                    
+                    
+                    if (modelFlagList[i] == 0) {            // not effect vertex color object
+                        ofSetColor(255, 255, 255, 255);
+                    } else if (modelFlagList[i] == 1) {
+                        ofSetColor(255, 255, 255, 32);
+                    } else if (modelFlagList[i] == 2) {
+                        ofSetColor(0, 255, 0, 64);
+                    }
+                    ofSetColor(255, 255, 255, 255);
+                    
+                    if (mapNum[i][9] == 0) {
+                        
+                        if (uiMeshDrawType == 1) {
+                            //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                            //            asModelObj[i][counter].drawWireframe();
+                            ofSetLineWidth(1);
+                            
+                            modelList[i][playFrameSelector].drawWireframe();
+                        } else if (uiMeshDrawType == 2) {
+                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                            modelList[i][playFrameSelector].drawVertices();
+                        } else {
+                            
+                            modelList[i][playFrameSelector].draw();
+                            
+                            //asModelObj[i][counter].drawFaces();
+                            //asModelObj[i][counter].draw(OF_MESH_FILL);
+                        }
+                    }
+                    glPopMatrix();
+                    
+                }
+                glPopMatrix();
+            
+                ofSetColor(255, 255, 255, 255);
+            
+                glPopMatrix();
+ 
 
             } else {        // GPS Map mode
                 
