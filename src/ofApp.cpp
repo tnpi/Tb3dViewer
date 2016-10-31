@@ -21,7 +21,7 @@ void ofApp::setup(){
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
     
-    maxLoadMeshNum = 800;
+    maxLoadMeshNum = 4;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -697,10 +697,23 @@ void ofApp::draw(){
                 ofRotateZ(mapNum[i][5]);
                 
                 
-                ofScale(1000, 1000, 1000);  // temp debug
-                
-                // 6/29
+                if (uiColorMode == 0) {
+                    //ofTranslate(0,0,1500);      // goto center
+                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+                    
+                    ofScale(1000, 1000, 1000);
+                }
                 ofScale(1, 1, -1);      // fix model direction
+                if (uiColorMode == 1) {
+                    asModelObj[i][playFrameSelector].setScaleNormalization(false);
+                    ofScale(-1, -1, 1);      // fix model direction
+                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+                    //                ofTranslate(1500,1100,-2500);      // goto center
+                    
+                    ofScale(1000, 1000, 1000);
+                }
+                
                 
                 // ---------------------------------------------------
                 if (modelFlagList[i] == 0) {            // not effect vertex color object
@@ -713,22 +726,26 @@ void ofApp::draw(){
                 
                 if (mapNum[i][9] == 0) {
                     
-                    if (uiMeshDrawType == 1) {
-                        //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                        //            asModelObj[i][counter].drawWireframe();
-                        ofSetLineWidth(1);
-                        
-                        modelList[i][playFrameSelector].drawWireframe();
-                    } else if (uiMeshDrawType == 2) {
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        modelList[i][playFrameSelector].drawVertices();
+                    if (dualColorSystem == true && uiColorMode == 1) {
                     } else {
-                        
-                        modelList[i][playFrameSelector].draw();
-                        
-                        //asModelObj[i][counter].drawFaces();
-                        //asModelObj[i][counter].draw(OF_MESH_FILL);
+
+                        if (uiMeshDrawType == 1) {
+                            //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                            //            asModelObj[i][counter].drawWireframe();
+                            ofSetLineWidth(1);
+                            
+                            modelList[i][playFrameSelector].drawWireframe();
+                        } else if (uiMeshDrawType == 2) {
+                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                            modelList[i][playFrameSelector].drawVertices();
+                        } else {
+                            
+                            modelList[i][playFrameSelector].draw();
+                            
+                            //asModelObj[i][counter].drawFaces();
+                            //asModelObj[i][counter].draw(OF_MESH_FILL);
+                        }
                     }
                 }
 
