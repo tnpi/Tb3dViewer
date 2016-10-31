@@ -86,6 +86,7 @@ public:
     int totalMaxMeshNum;
     int totalScanTimeRecordMaxTime;
     long seekbarAddTime;
+    int skipLoadFrame;
 
     ofMesh mesh;
     ofLight light;

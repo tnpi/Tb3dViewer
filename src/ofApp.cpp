@@ -21,7 +21,9 @@ void ofApp::setup(){
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
     
-    maxLoadMeshNum = 4;
+    
+    maxLoadMeshNum = 6;
+    skipLoadFrame = 15;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -441,6 +443,9 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }
+            
+            
+            
             
             if (uiColorMode == 0) {
                 //ofTranslate(0,0,1500);      // goto center
@@ -1175,9 +1180,9 @@ void ofApp::draw(){
                 }
             } else {            // frame-based
                 if (viewerMode == 1) {
-                    playCount %= totalMaxMeshNum;
+                    playCount %= (totalMaxMeshNum / skipLoadFrame);
                 } else if (viewerMode == 0) {
-                    playCount %= maxMeshNumList[selectMeshId];
+                    playCount %= (maxMeshNumList[selectMeshId] / skipLoadFrame);
                 }
             }
             
@@ -1661,8 +1666,14 @@ void ofApp::dataLoad() {
                 if (ofFileObj.exists()) {
                     ofBuffer buffer(ofFileObj);
                     
-                    while (!buffer.isLastLine() && idx < maxLoadMeshNum) {
-                        string line = buffer.getNextLine();
+                    int targetFrame = (idx*skipLoadFrame);
+                    int maxFrameOverTest = targetFrame;
+                    cout << "maxMeshNumList[dirNameLoopCount]:" << maxMeshNumList[dirNameLoopCount] << endl;
+                    while (!buffer.isLastLine() && idx < maxLoadMeshNum && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
+                        
+                        string line;
+                        line = buffer.getNextLine();
+                        
                         //cout << ""line;
                         if (line != "") {
                             auto itemList = ofSplitString(line, ",");
@@ -1724,6 +1735,10 @@ void ofApp::dataLoad() {
                             idx++;
                         }
                         
+                        for(int p=0; p<(skipLoadFrame-1); p++) {
+                            line = buffer.getNextLine();
+                        }
+
                     }
                     scanTimeRecordMaxTime[dirNameLoopCount] = scanTimeRecordList[dirNameLoopCount][idx-1][1];
                     cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[dirNameLoopCount] << endl;
@@ -1732,14 +1747,14 @@ void ofApp::dataLoad() {
                     
                 }
                 
-                maxMeshNumList[dirNameLoopCount] = idx - 2;
+                //maxMeshNumList[dirNameLoopCount] = idx - 2;
                 if (idx > maxLoadedMeshNumInAllMesh) {
                     maxLoadedMeshNumInAllMesh = idx;
                 }
                 
                 oneModelFileSizeList.clear();
                 
-                for(int i=0; i<maxMeshNumList[dirNameLoopCount]; i++) {
+                for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
                     
                     auto& model = modelList[dirNameLoopCount][i];
                     
@@ -1747,7 +1762,7 @@ void ofApp::dataLoad() {
                     if (ofFileObj.exists()) {
 
                         ss.str("");
-                        ss << dirPath.str() << "mesh_" << (i+2+startPlayMeshAnimNum) << ".obj";
+                        ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
                         //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
                         
                         cout << ss.str() << endl;
@@ -1763,7 +1778,7 @@ void ofApp::dataLoad() {
                         
                         // add
                         ss.str("");
-                        ss << dirPath.str() << "mesh_" << (i+2+startPlayMeshAnimNum) << ".jpg";
+                        ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
                         modelImageList[dirNameLoopCount][i].loadImage(ss.str());
                         
                         auto vertices = modelList[dirNameLoopCount][i].getVertices();
@@ -1828,7 +1843,7 @@ void ofApp::dataLoad() {
                         }
                         
                     } else {
-                        cout << dirPath.str() << "mesh_" << (i+2+startPlayMeshAnimNum) << ".obj file not found" << endl;
+                        cout << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj file not found" << endl;
                     }
                     /*
 
