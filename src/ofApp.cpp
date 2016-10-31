@@ -470,6 +470,7 @@ void ofApp::draw(){
                 double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
                 double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
                 ofTranslate(centerX, centerY, -centerZ);
+                
                 if (uiMeshDrawType == 1) {
                     ofSetLineWidth(1);
                     asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
@@ -533,9 +534,8 @@ void ofApp::draw(){
                 drawScaleGrid(10000, 1000);
             }
             
-            //displayTotalFaces += modelList[i][counter].getNum;
-            
             if (uiGpsMapMode == 0) {
+                
                 displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
                 
                 glPushMatrix();
@@ -556,6 +556,7 @@ void ofApp::draw(){
                     glTranslatef(-0,0,2 );
 
                     ofDisableLighting();        //
+                    ofSetColor(0,0,0);
                     fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
                     ofEnableLighting();
 
@@ -617,6 +618,17 @@ void ofApp::draw(){
                 if (mapNum[i][9] == 0) {
                     
                     if (dualColorSystem == true && uiColorMode == 1) {
+                        
+                        if (uiMeshDrawType == 1) {
+                            ofSetLineWidth(1);
+                            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                        } else if (uiMeshDrawType == 2) {
+                            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                        } else {
+                            //asModelObj[i][counter].drawFaces();
+                            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                        }
+                        
                     } else {
 
                         if (uiMeshDrawType == 1) {
@@ -639,9 +651,9 @@ void ofApp::draw(){
                     }
                 }
             } else if (uiGpsMapMode == 1) {
-                //glPushMatrix();
                 
                 //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+                
                 for(int z=0; z<maxMeshNumList[i]; z++) {
                     displayTotalVertices += modelList[i][z].getNumVertices();
 
@@ -684,28 +696,43 @@ void ofApp::draw(){
                     
                     if (mapNum[i][9] == 0) {
                         
-                        if (uiMeshDrawType == 1) {
-                            //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                            //            asModelObj[i][counter].drawWireframe();
-                            ofSetLineWidth(1);
+                        if (dualColorSystem == true && uiColorMode == 1) {
                             
-                            modelList[i][playFrameSelector].drawWireframe();
-                        } else if (uiMeshDrawType == 2) {
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            modelList[i][playFrameSelector].drawVertices();
+                            if (uiMeshDrawType == 1) {
+                                ofSetLineWidth(1);
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                            } else if (uiMeshDrawType == 2) {
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                            } else {
+                                //asModelObj[i][counter].drawFaces();
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                            }
+                            
                         } else {
-                            
-                            modelList[i][playFrameSelector].draw();
-                            
-                            //asModelObj[i][counter].drawFaces();
-                            //asModelObj[i][counter].draw(OF_MESH_FILL);
+
+                            if (uiMeshDrawType == 1) {
+                                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                                //            asModelObj[i][counter].drawWireframe();
+                                ofSetLineWidth(1);
+                                
+                                modelList[i][playFrameSelector].drawWireframe();
+                            } else if (uiMeshDrawType == 2) {
+                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                                modelList[i][playFrameSelector].drawVertices();
+                            } else {
+                                
+                                modelList[i][playFrameSelector].draw();
+                                
+                                //asModelObj[i][counter].drawFaces();
+                                //asModelObj[i][counter].draw(OF_MESH_FILL);
+                            }
                         }
                     }
                     glPopMatrix();
                     
                 }
-                //glPopMatrix();
+
                 
             } else {        // GPS Walk thru mode
                 
