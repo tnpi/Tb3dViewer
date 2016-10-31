@@ -309,8 +309,6 @@ void ofApp::draw(){
     
     for(int i=0; i<modelDataNum; i++) {
         
-        ofSetColor(255,255,255);
-        
         if (viewerMode == 0 && selectMeshId != i) {
             continue;
         }
@@ -385,8 +383,6 @@ void ofApp::draw(){
             
         }
         
-        ofSetLineWidth(1);
-        
         if (viewerMode == 0) {
             
             fboCam.begin();
@@ -418,8 +414,9 @@ void ofApp::draw(){
             float modelSizeY = modelHeightList[selectMeshId]*1000;
             float modelSizeZ = modelPosZList[selectMeshId]*1000;
             
-            drawScaleGrid(modelSizeX, 100);
-            
+            if (i == selectMeshId) {
+                drawScaleGrid(modelSizeX, 100);
+            }
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             glPushMatrix();  //
@@ -533,7 +530,10 @@ void ofApp::draw(){
         }
         else if (viewerMode <= 1) {
             
-            drawScaleGrid(10000, 1000);
+            
+            if (i == 0) {
+                drawScaleGrid(10000, 1000);
+            }
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
             //displayTotalFaces += modelList[i][counter].getNum;
@@ -570,14 +570,6 @@ void ofApp::draw(){
                     
                 }
                 
-                /*
-                // tempolary ( for combine)
-                if (i == 1) {
-                    glRotatef(180, 0, 1, 0);
-                    ofTranslate(0,0,-530);
-                }
-                */
-
                 if (mapNum[i][7] >= 1) {
                     glRotatef(180, 0, 1, 0);
                     ofTranslate(0,0,-530);
@@ -681,7 +673,6 @@ void ofApp::draw(){
                     ofTranslate(0,0,posY);
                     ofTranslate(posX,0,0);
                     
-                    
                     if (modelFlagList[i] == 0) {            // not effect vertex color object
                         ofSetColor(255, 255, 255, 255);
                     } else if (modelFlagList[i] == 1) {
@@ -721,7 +712,7 @@ void ofApp::draw(){
                 glPopMatrix();
  
 
-            } else {        // GPS Map mode
+            } else {        // GPS Walk thru mode
                 
                 glPushMatrix();
 
@@ -874,7 +865,7 @@ void ofApp::draw(){
 
         }
         
-    }
+    }       // for loop
     
     glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
     
@@ -1401,8 +1392,6 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     float modelSizeY = areaSize;//modelHeightList[selectMeshId]*1000;
     float modelSizeZ = areaSize;//modelPosZList[selectMeshId]*1000;
     
-    ofSetLineWidth(1);
-    
     // draw 3axis
     ofSetLineWidth(10);
     ofSetColor(255,64,64);
@@ -1415,37 +1404,25 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     ofLine(0,0,0,0,0,modelSizeZ);
     
     // draw base grid
-    ofSetColor(128,224,255, 64);
-    ofLine(0,0,0,0,0,0);
+    //ofSetColor(128,224,255, 64);
+    //ofLine(0,0,0,0,0,0);
     //ofRect(0, 0, 10000, 10000);
     
-    ofSetLineWidth(3);
+    ofSetLineWidth(1);
     ofSetColor(128,224,255, 128);
-    for(int j=0; j<=40; j++) {
-        ofLine(-100,gridSpan*j,1,modelSizeX*2,gridSpan*j,1);
-        stringstream tSs;
+    stringstream tSs;
+    for(int j=0; j<=(areaSize/gridSpan); j++) {
+        ofLine(0,gridSpan*j,0,modelSizeX,gridSpan*j,0);
         tSs.str("");
-        if (j!= 0) {
-            tSs << "" << j << "0cm";
-        } else {
-            tSs << "" << j << "cm";
-            
-        }
+        tSs << "" << j*gridSpan/10 << "cm";
         font.drawString(tSs.str(), -300, gridSpan*j+19);
-        
     }
     
     ofSetColor(128,224,255, 128);
-    for(int j=0; j<=40; j++) {
-        ofLine(gridSpan*j,-gridSpan,1,gridSpan*j,modelSizeZ*2,1);
-        stringstream tSs;
+    for(int j=0; j<=(areaSize/gridSpan); j++) {
+        ofLine(gridSpan*j,0,0,gridSpan*j,modelSizeZ,0);
         tSs.str("");
-        if (j!= 0) {
-            tSs << "" << j << "0cm";
-        } else {
-            tSs << "" << j << "cm";
-            
-        }
+        tSs << "" << j*gridSpan/10 << "cm";
         
         ofPushMatrix();
         ofTranslate(gridSpan*j+19, -140, 0);
