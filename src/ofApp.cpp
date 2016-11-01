@@ -9,7 +9,7 @@ void ofApp::setup(){
 
     // setting vars --------------------------------------------
 
-    dualColorSystem = false;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     colorMode = 1;
 
     viewerMode = 1;
@@ -24,8 +24,8 @@ void ofApp::setup(){
     
     //maxLoadMeshNum = 6;
     //skipLoadFrame = 15;
-    maxLoadMeshNum = 15;
-    skipLoadFrame = 2;
+    maxLoadMeshNum = 800;
+    skipLoadFrame = 1;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -210,11 +210,12 @@ void ofApp::update(){
     
     prevSelectModel = i;
     
+    /*
     if (mouseY >= (ofGetHeight() - 200)) {
         eCam.disableMouseInput();
     } else {
         eCam.enableMouseInput();
-    }
+    }*/
     
     if (prevFramePlayState == false && uiBtnPlayPause) {
         playStartPrevPos = nowPlayTime;
@@ -288,13 +289,6 @@ void ofApp::draw(){
     
     ofScale(1,-1);      // y-axis reverse! (for fix drawString text flips promblem)
 
-    
-    if (viewerMode == 0) {
-        eCam.disableMouseInput();
-    } else {
-        eCam.enableMouseInput();
-    }
-    
     glPushMatrix();
 
     if (uiBtnGrid) {
@@ -998,6 +992,7 @@ void ofApp::draw(){
             fontSmall.drawString(tSs3.str(), 50, 800);
         }
 
+        /*
         if (mouseX >= gui.getPosition().x
             && mouseX < (gui.getPosition().x + gui.getWidth())
             && mouseY >= gui.getPosition().y
@@ -1006,6 +1001,7 @@ void ofApp::draw(){
         } else {
             eCam.enableMouseInput();
         }
+        */
         
         auto posX = position->x;
         auto posY = position->y;
