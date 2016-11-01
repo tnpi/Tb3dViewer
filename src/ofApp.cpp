@@ -1678,6 +1678,7 @@ void ofApp::dataLoad() {
                             //cout << itemList[1] << endl;
                             scanTimeRecordList[dirNameLoopCount][idx][0] = stoi(itemList[0]);
                             scanTimeRecordList[dirNameLoopCount][idx][1] = stoi(itemList[1]);
+                            cout << "scanTimeRecordList[dirNameLoopCount][idx][1]: " << scanTimeRecordList[dirNameLoopCount][idx][1] << endl;
                             
                             //itemlist[2] ... "2016/10/09 17:26:56.432"
                             string strDateTime = itemList[2].substr(0, 19);           // 2016/10/09 17:26:56
@@ -1728,16 +1729,17 @@ void ofApp::dataLoad() {
                                 }
                             }
                             
+                            idx++;
                             
                             //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[dirNameLoopCount][idx] << endl;
                         }
-                        idx++;
                         
                         for(int p=0; p<(skipLoadFrame-1); p++) {
                             line = buffer.getNextLine();
                         }
 
                     }
+                    
                     scanTimeRecordMaxTime[dirNameLoopCount] = scanTimeRecordList[dirNameLoopCount][idx-1][1];
                     cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[dirNameLoopCount] << endl;
                     
@@ -1755,18 +1757,18 @@ void ofApp::dataLoad() {
                 for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
                     
                     auto& model = modelList[dirNameLoopCount][i];
+
                     
-                    ofFileObj.open(ss.str());
+                    // getTimestamp
+                    ss.str("");
+                    ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
+                    //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
+                    string objFilePath = ss.str();
+                    
+                    //cout << ss.str() << endl;
+
+                    ofFileObj.open(objFilePath);       //
                     if (ofFileObj.exists()) {
-
-                        ss.str("");
-                        ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
-                        //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
-                        
-                        cout << ss.str() << endl;
-                        
-                        string objFilePath = ss.str();
-
                         
                         oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
                         
@@ -1776,8 +1778,10 @@ void ofApp::dataLoad() {
                         
                         // add
                         ss.str("");
-                        ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
-                        modelImageList[dirNameLoopCount][i].loadImage(ss.str());
+                        //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
+                        ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
+                        string objImageFilePath = ss.str();
+                        modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
                         
                         auto vertices = modelList[dirNameLoopCount][i].getVertices();
                         
@@ -1841,7 +1845,7 @@ void ofApp::dataLoad() {
                         }
                         
                     } else {
-                        cout << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj file not found" << endl;
+                        cout << objFilePath << " file not found." << endl;
                     }
                     /*
 
