@@ -9,7 +9,7 @@ void ofApp::setup(){
 
     // setting vars --------------------------------------------
 
-    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    dualColorSystem = false;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     colorMode = 1;
 
     viewerMode = 1;
@@ -22,8 +22,10 @@ void ofApp::setup(){
     maxLoadedMeshNumInAllMesh = 0;
     
     
-    maxLoadMeshNum = 6;
-    skipLoadFrame = 15;
+    //maxLoadMeshNum = 6;
+    //skipLoadFrame = 15;
+    maxLoadMeshNum = 15;
+    skipLoadFrame = 2;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -112,7 +114,7 @@ void ofApp::setup(){
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 3000, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
     gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
-    gui.add(uiColorMode.setup("colorMode", 0, 0, 1));
+    gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
     gui.add(uiPlayMode.setup("playMode", 0, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnPlayPause.setup("Play / Stop", true, 40, 40));
@@ -445,7 +447,7 @@ void ofApp::draw(){
             }
             
             
-            
+            ofTranslate(2000, 0, 2000);
             
             if (uiColorMode == 0) {
                 //ofTranslate(0,0,1500);      // goto center
@@ -1669,7 +1671,7 @@ void ofApp::dataLoad() {
                     int targetFrame = (idx*skipLoadFrame);
                     int maxFrameOverTest = targetFrame;
                     cout << "maxMeshNumList[dirNameLoopCount]:" << maxMeshNumList[dirNameLoopCount] << endl;
-                    while (!buffer.isLastLine() && idx < maxLoadMeshNum && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
+                    while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
                         
                         string line;
                         line = buffer.getNextLine();
@@ -1732,8 +1734,8 @@ void ofApp::dataLoad() {
                             
                             
                             //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[dirNameLoopCount][idx] << endl;
-                            idx++;
                         }
+                        idx++;
                         
                         for(int p=0; p<(skipLoadFrame-1); p++) {
                             line = buffer.getNextLine();
