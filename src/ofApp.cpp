@@ -10,6 +10,7 @@ void ofApp::setup(){
     // setting vars --------------------------------------------
 
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    loadPictureMode = false;
     colorMode = 1;
 
     viewerMode = 1;
@@ -438,10 +439,9 @@ void ofApp::draw(){
             if (uiBtnTurnMesh) {
                 glRotatef(-90, 1, 0, 0);
                 
-            }
+            }             
             
-            
-            ofTranslate(2000, 0, 2000);
+            //ofTranslate(2000, 0, 2000);
             
             if (uiColorMode == 0) {
                 //ofTranslate(0,0,1500);      // goto center
@@ -453,7 +453,7 @@ void ofApp::draw(){
             ofScale(1, 1, -1);      // fix model direction
             if (uiColorMode == 1) {
                 asModelObj[i][playFrameSelector].setScaleNormalization(false);
-                ofScale(-1, -1, 1);      // fix model direction
+                //ofScale(-1, -1, 1);      // fix model direction
                 //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
 //                ofTranslate(1500,1100,-2500);      // goto center
                 
@@ -577,6 +577,10 @@ void ofApp::draw(){
                 }
                 if (mapNum[i][8] >= 1) {
                     glRotatef(180, 1, 0, 0);
+                    //ofTranslate(0,0,-530);
+                }
+                if (mapNum[i][6] >= 1) {
+                    glRotatef(180, 0, 0, 1);
                     //ofTranslate(0,0,-530);
                 }
 
@@ -1294,12 +1298,12 @@ void ofApp::mousePressed(int x, int y, int button){
         } else if (uiPlayMode == 1) {
             
             seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-            uiBtnPlayPause = false;
+            //uiBtnPlayPause = false;
             
         } else {
             
             playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-            uiBtnPlayPause = false;
+            //uiBtnPlayPause = false;
             
         }
         
@@ -1781,8 +1785,9 @@ void ofApp::dataLoad() {
                         //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
                         ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
                         string objImageFilePath = ss.str();
-                        modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
-                        
+                        if (loadPictureMode) {
+                            modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
+                        }
                         auto vertices = modelList[dirNameLoopCount][i].getVertices();
                         
                         float maxPosY = 0;

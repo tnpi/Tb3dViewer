@@ -221,5 +221,7 @@ public:
     ofFbo fboTop;
     ofFbo fboCam;
     
+    
+    bool loadPictureMode;
 };
 
