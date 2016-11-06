@@ -1449,23 +1449,29 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     ofSetLineWidth(1);
     ofSetColor(128,224,255, 128);
     stringstream tSs;
-    for(int j=0; j<=(areaSize/gridSpan); j++) {
-        ofLine(0,gridSpan*j,0,modelSizeX,gridSpan*j,0);
+    
+    int lineNumX = (areaSize/gridSpan);
+    
+    for(int j=0; j<lineNumX; j++) {
+        int y = j - (lineNumX/2);
+        ofLine(-modelSizeX/2, gridSpan*y, 0, modelSizeX/2, gridSpan*y, 0);
         tSs.str("");
-        tSs << "" << j*gridSpan/10 << "cm";
-        font.drawString(tSs.str(), -300, gridSpan*j+19);
+        tSs << "" << y*gridSpan/10 << "cm";
+        fontSmall.drawString(tSs.str(), -130, gridSpan*y+10);
     }
     
+    int lineNumY = (areaSize/gridSpan);
     ofSetColor(128,224,255, 128);
-    for(int j=0; j<=(areaSize/gridSpan); j++) {
-        ofLine(gridSpan*j,0,0,gridSpan*j,modelSizeZ,0);
+    for(int j=0; j<lineNumY; j++) {
+        int x = j - (lineNumY/2);
+        ofLine(gridSpan*x, -modelSizeZ/2, 0, gridSpan*x, modelSizeZ/2, 0);
         tSs.str("");
-        tSs << "" << j*gridSpan/10 << "cm";
+        tSs << "" << x*gridSpan/10 << "cm";
         
         ofPushMatrix();
-        ofTranslate(gridSpan*j+19, -140, 0);
+        ofTranslate(gridSpan*x+10, -30, 0);
         ofRotate(270, 0,0,1);
-        font.drawString(tSs.str(), 0, 0);
+        fontSmall.drawString(tSs.str(), 0, 0);
         ofPopMatrix();
         
     }
