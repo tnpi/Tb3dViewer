@@ -11,6 +11,7 @@ void ofApp::setup(){
 
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     loadPictureMode = false;
+    loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
     colorMode = 1;
 
     viewerMode = 1;
@@ -26,7 +27,7 @@ void ofApp::setup(){
     //maxLoadMeshNum = 6;
     //skipLoadFrame = 15;
     maxLoadMeshNum = 2000;
-    skipLoadFrame = 10;
+    skipLoadFrame = 1;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -462,7 +463,6 @@ void ofApp::draw(){
 
             // 6/29
             //ofScale(1, -1);
-
             
             if (dualColorSystem == true && uiColorMode == 1) {
 
@@ -476,6 +476,10 @@ void ofApp::draw(){
                     ofSetLineWidth(1);
                     asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
                 } else if (uiMeshDrawType == 2) {
+                    
+                    glPointSize(4);
+                    //ofBlendMode(OF_BLENDMODE_ALPHA);
+
                     asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
                 } else {
                     //asModelObj[i][counter].drawFaces();
@@ -494,37 +498,16 @@ void ofApp::draw(){
                 }
             }
             
-            /*
-
-            if (uiMeshDrawType == 1) {
-                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                //            asModelObj[i][counter].drawWireframe();
-                ofSetLineWidth(1);
-                modelList[i][playFrameSelector].drawWireframe();
-            } else if (uiMeshDrawType == 2) {
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                //stroke(10);
-                glPointSize(5);
-                ofBlendMode(OF_BLENDMODE_ALPHA);
-
-                modelList[i][playFrameSelector].drawVertices();
-            } else {
-                
-                modelList[i][playFrameSelector].draw();
-                
-                //asModelObj[i][counter].drawFaces();
-                //asModelObj[i][counter].draw(OF_MESH_FILL);
-            }
-             */
             
             glPopMatrix();
             
             glPushMatrix();
-            glRotatef(90, 1, 0, 0);
-            ofTranslate(0,0,1000);
-            ofScale(10,10,10);
-            modelImageList[i][playFrameSelector].draw(0,0);
+            {
+                glRotatef(90, 1, 0, 0);
+                ofTranslate(0,0,1000);
+                ofScale(10,10,10);
+                modelImageList[i][playFrameSelector].draw(0,0);
+            }
             glPopMatrix();
 
             
@@ -1409,7 +1392,7 @@ void ofApp::resetCamDetailView( ) {
     float modelSizeY = (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) * 1000;
     float modelSizeZ = (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) * 1000;
     
-    eCam.setPosition(0, -modelSizeY*1.5, modelSizeY*1.5);
+    eCam.setPosition(0, -modelSizeY*1.2, modelSizeY*1.2);
     eCam.setTarget(ofVec3f(0, 0, 0));
     
 }
@@ -1801,7 +1784,10 @@ void ofApp::dataLoad() {
                         oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
                         
                         ofFileObj.close();
-                        ofxObjLoader::load(objFilePath, modelList[dirNameLoopCount][i], false);
+                        
+                        if (loadVertexColorObj) {
+                            ofxObjLoader::load(objFilePath, modelList[dirNameLoopCount][i], false);
+                        }
                         
                         // add
                         ss.str("");

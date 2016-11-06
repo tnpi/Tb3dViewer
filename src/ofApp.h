@@ -224,5 +224,6 @@ public:
     
     
     bool loadPictureMode;
+    bool loadVertexColorObj;
 };
 
