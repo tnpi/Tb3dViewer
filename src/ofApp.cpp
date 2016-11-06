@@ -25,8 +25,8 @@ void ofApp::setup(){
     
     //maxLoadMeshNum = 6;
     //skipLoadFrame = 15;
-    maxLoadMeshNum = 800;
-    skipLoadFrame = 1;
+    maxLoadMeshNum = 2000;
+    skipLoadFrame = 10;
 
     playMode = 0;   // 1:timebased 0: frame
 
@@ -112,11 +112,11 @@ void ofApp::setup(){
 
     // Add GUI parts -------------------------------------------------------------------------------
 
-    gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 3000, 0, 5000));
+    gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
     gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
     gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
-    gui.add(uiPlayMode.setup("playMode", 0, 0, 2));
+    gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnPlayPause.setup("Play / Stop", true, 40, 40));
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 40));
@@ -132,7 +132,7 @@ void ofApp::setup(){
     
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setPosition(800, 100);
-    guiMapEdit.setDefaultWidth(500);
+    guiMapEdit.setDefaultWidth(1200);
     guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
     guiMapEdit.add(uiEditPosY.setup("posY",0,-5000,5000));
@@ -453,7 +453,7 @@ void ofApp::draw(){
             ofScale(1, 1, -1);      // fix model direction
             if (uiColorMode == 1) {
                 asModelObj[i][playFrameSelector].setScaleNormalization(false);
-                //ofScale(-1, -1, 1);      // fix model direction
+                ofScale(-1, -1, 1);      // fix model direction
                 //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
 //                ofTranslate(1500,1100,-2500);      // goto center
                 
@@ -541,6 +541,8 @@ void ofApp::draw(){
                 
                 glPushMatrix();
                 
+                
+                // リスト配置分
                 glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0); //√Å√Æ¬™√à√π¬¢‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥√Å√ü¬™√Ç√£√Ø
                 
                 //glRotatef(180, 0, 1, 0);        //
@@ -583,11 +585,6 @@ void ofApp::draw(){
                     glRotatef(180, 0, 0, 1);
                     //ofTranslate(0,0,-530);
                 }
-
-                ofTranslate(0,-1*modelHeightList[i]*1000,0);
-                ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                
-                glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
                 ofRotateX(mapNum[i][3]);
                 ofRotateY(mapNum[i][4]);
                 ofRotateZ(mapNum[i][5]);
@@ -621,6 +618,14 @@ void ofApp::draw(){
                 }
                 
                 if (mapNum[i][9] == 0) {
+                    
+                    
+                    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+                    
+                    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+                    ofTranslate(centerX, centerY, -centerZ);
                     
                     if (dualColorSystem == true && uiColorMode == 1) {
                         
@@ -707,6 +712,8 @@ void ofApp::draw(){
                                 ofSetLineWidth(1);
                                 asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
                             } else if (uiMeshDrawType == 2) {
+                                glPointSize(5);
+
                                 asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
                             } else {
                                 //asModelObj[i][counter].drawFaces();
@@ -724,6 +731,8 @@ void ofApp::draw(){
                             } else if (uiMeshDrawType == 2) {
                                 //asModelObj[i][counter].draw(OF_MESH_POINTS);
                                 //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                                glPointSize(5);
+
                                 modelList[i][playFrameSelector].drawVertices();
                             } else {
                                 
@@ -1597,6 +1606,15 @@ void ofApp::dataLoad() {
         ++itr;
     }
     
+    for(int i=0; i<MAX_MODEL_ARRAY; i++) {
+        modelSceneMin[i].x = INT_MAX;
+        modelSceneMin[i].y = INT_MAX;
+        modelSceneMin[i].z = INT_MAX;
+        modelSceneMax[i].x = 0;
+        modelSceneMax[i].y = 0;
+        modelSceneMax[i].z = 0;
+    }
+    
 
     
     //  --------------------------------------------------------------------
@@ -1779,7 +1797,6 @@ void ofApp::dataLoad() {
                         ofFileObj.close();
                         ofxObjLoader::load(objFilePath, modelList[dirNameLoopCount][i], false);
                         
-                        
                         // add
                         ss.str("");
                         //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
@@ -1798,7 +1815,6 @@ void ofApp::dataLoad() {
                         }
                         modelHeightList[dirNameLoopCount] = maxPosY;
                         
-                        
                         float maxPosX = 0;
                         for(auto vertice : vertices) {
                             if (maxPosX <= vertice.x) {
@@ -1815,9 +1831,7 @@ void ofApp::dataLoad() {
                         }
                         modelPosZList[dirNameLoopCount] = maxPosX;
 
-                        
-                        cout << "vertice.y: " << maxPosY;
-                        
+                        cout << "vertice.y: " << maxPosY<< endl;
                         
                         if (dualColorSystem) {
                             //Assimp ver.
@@ -1826,32 +1840,41 @@ void ofApp::dataLoad() {
                             
                             ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
                             ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
-                            if (tMin.x < modelSceneMin[dirNameLoopCount].x || (modelSceneMin[dirNameLoopCount].x == 0)) {
-                                modelSceneMin[dirNameLoopCount].x = tMin.x;
-                            }
-                            if (tMin.y < modelSceneMin[dirNameLoopCount].y || (modelSceneMin[dirNameLoopCount].y == 0)) {
-                                modelSceneMin[dirNameLoopCount].y = tMin.y;
-                            }
-                            if (tMin.z < modelSceneMin[dirNameLoopCount].z || (modelSceneMin[dirNameLoopCount].z == 0)) {
-                                modelSceneMin[dirNameLoopCount].z = tMin.z;
-                            }
-                            if (tMax.x > modelSceneMax[dirNameLoopCount].x || (modelSceneMax[dirNameLoopCount].x == 0)) {
-                                modelSceneMax[dirNameLoopCount].x = tMax.x;
-                            }
-                            if (tMax.y < modelSceneMax[dirNameLoopCount].y || (modelSceneMax[dirNameLoopCount].y == 0)) {
-                                modelSceneMax[dirNameLoopCount].y = tMax.y;
-                            }
-                            if (tMax.z < modelSceneMax[dirNameLoopCount].z || (modelSceneMax[dirNameLoopCount].z == 0)) {
-                                modelSceneMax[dirNameLoopCount].z = tMax.z;
-                            }
+                            cout << "tMin: " << tMin << " tMax: " << tMax << endl;
                             
-                                
+                            if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
+                                cout << "======---------- Hit! ----------------==============================================" << endl;
+                            } else  {
+                            
+                                if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
+                                    modelSceneMin[dirNameLoopCount].x = tMin.x;
+                                }
+                                if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
+                                    modelSceneMin[dirNameLoopCount].y = tMin.y;
+                                }
+                                if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
+                                    modelSceneMin[dirNameLoopCount].z = tMin.z;
+                                }
+                                if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
+                                    modelSceneMax[dirNameLoopCount].x = tMax.x;
+                                }
+                                if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
+                                    modelSceneMax[dirNameLoopCount].y = tMax.y;
+                                }
+                                if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
+                                    modelSceneMax[dirNameLoopCount].z = tMax.z;
+                                }
+                            }
    
                         }
                         
                     } else {
                         cout << objFilePath << " file not found." << endl;
                     }
+                    
+                    cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
+                    cout << "modelSceneMax[" << dirNameLoopCount << "]: " << modelSceneMax[dirNameLoopCount] << endl;
+                    
                     /*
 
                      Assimp ver.

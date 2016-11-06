@@ -13,6 +13,7 @@
 
 #define STRINGIFY(A) #A
 
+#define MAX_MODEL_ARRAY 200
 
 class ofApp : public ofBaseApp{
     
