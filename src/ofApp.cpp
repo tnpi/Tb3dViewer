@@ -297,7 +297,6 @@ void ofApp::draw(){
         ofDrawGrid(uiThumbnailIconDistance);
     }
     
-    
     //glTranslatef(0, 0, 0); //
     
     ofSetColor(255,255,255,255);
@@ -385,36 +384,37 @@ void ofApp::draw(){
         if (viewerMode == 0) {
             
             fboCam.begin();
-            ofPushMatrix();
+            {
+                ofPushMatrix();
             
-            //ofPushView();
+                //ofPushView();
             
-            ofCam.begin();
-            //ofCam.reset();
-            ofClear(255,255,255, 0);
-            ofSetColor(255,0,0,255);
-            font.drawString("test", 100,50);
-            //ofScale(0.25, 0.25, 0.25);
-            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                ofCam.begin();
+                //ofCam.reset();
+                ofClear(255,255,255, 0);
+                ofSetColor(255,0,0,255);
+                font.drawString("test", 100,50);
+                //ofScale(0.25, 0.25, 0.25);
+                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                
+                ofCam.end();
             
-            ofCam.end();
-            
-            //ofPopView();
-            ofPopMatrix();
-            
-            
-            
+                //ofPopView();
+                ofPopMatrix();
+            }
             fboCam.end();
 
             asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             
-            
+            /*
             float modelSizeX = modelPosXList[selectMeshId]*1000;
             float modelSizeY = modelHeightList[selectMeshId]*1000;
             float modelSizeZ = modelPosZList[selectMeshId]*1000;
+            */
             
             if (i == selectMeshId) {
-                drawScaleGrid(modelSizeX, 100);
+                float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
+                drawScaleGrid(modelSize*1000, 100);
             }
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
@@ -1405,12 +1405,12 @@ void ofApp::resetCamDetailView( ) {
     
     eCam.reset();
     
-    float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-    float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-    float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
+    float modelSizeX = (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) *1000;
+    float modelSizeY = (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) * 1000;
+    float modelSizeZ = (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) * 1000;
     
-    eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-    eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+    eCam.setPosition(0, -modelSizeY*1.5, modelSizeY*1.5);
+    eCam.setTarget(ofVec3f(0, 0, 0));
     
 }
 
