@@ -18,6 +18,19 @@
 
 #define MAX_MODEL_ARRAY 200
 
+
+class MyGuiItem {
+private:
+public:
+    ofRectangle rect;
+    string name;
+    string label;
+    int type;
+    int status;
+};
+
+
+
 class ofApp : public ofBaseApp{
     
 public:
@@ -41,14 +54,15 @@ public:
     void resetCamListView();
     void gridSwitch();
     void debugInfoSwitch();
-    void turnMeshSwitch();
-    void setPos();
+     void setPos();
     void dataLoad();
     void saveMapFile();
     void loadMapFile(string meshDataDirPath);
     void drawScaleGrid(float areaSize, int gridSpan);
+    ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
     void detailViewNextModel(int mod);
+    void myGuiSetup();
     
     ofxTrueTypeFontUC font;
     ofxTrueTypeFontUC fontSmall;
@@ -113,6 +127,7 @@ public:
     ofxPanel gui;
     ofxPanel guiMapEdit;
     ofxPanel guiPlayItem;
+    ofxPanel guiPlayControl;
     ofxFloatSlider radius;
     ofxFloatSlider uiThumbnailIconDistance;
     ofxIntSlider uiIconNumX;
@@ -235,8 +250,26 @@ public:
     ofxNI2::ColorStream oniColor;
     ofxNI2::DepthStream oniDepth;
     
+    ofRectangle mainView;
+    ofRectangle myGuiMain;
+    ofRectangle myGuiMainMenu;
+    ofRectangle myGuiMainMenuDiff;
+    ofRectangle myGuiMainTimebar;
+    ofRectangle myGuiMainTimebarDiff;
+    ofRectangle myGuiSub;
+    ofRectangle myGuiDetailLeftButton;
+    ofRectangle myGuiDetailRightButton;
+    ofRectangle myGuiDispGuiToggle;
+    
+    ofRectangle myGuiPlayButton;
+    
     
     ofMatrix4x4 modelMatrixList[200];
+    
+    MyGuiItem myGuiItemList[100];
+    MyGuiItem myGuiItemDetailLeftButton;
+    MyGuiItem myGuiItemDetailRightButton;
+    
     
     bool useOpenNi;
 };

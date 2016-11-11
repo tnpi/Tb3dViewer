@@ -32,8 +32,8 @@ void ofApp::setup(){
     //maxLoadMeshNum = 6;
     //skipLoadFrame = 15;
     maxLoadMeshNum = 2000;
-    skipLoadFrame = 1;
-
+    skipLoadFrame = 10;
+    
     playMode = 0;   // 1:timebased 0: frame
 
     // initializing vars ---------------------------------------
@@ -74,7 +74,6 @@ void ofApp::setup(){
     fboTop.allocate(640, 480, GL_RGBA);
     fboCam.allocate(640, 480, GL_RGBA);
     
-    
     // get file load path --------------------------------------------------------------------------------
     
     //meshDataDirPath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d";
@@ -98,6 +97,10 @@ void ofApp::setup(){
     ofxGuiSetTextPadding(4);
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
     
+    // myGuiSetup ----------------------------------------------------------------------
+    
+    myGuiSetup();
+    
     // OfxGUI setup -----------------------------------------------------------------
     
     ofColor initColor = ofColor(0, 127, 255, 255);
@@ -110,6 +113,12 @@ void ofApp::setup(){
    
     uiBtnPlayPause.setSize(100, 100);
     
+
+    // Set GUI parts -------------------------------------------------------------------------------
+    guiPlayControl.setup("PlayControl");
+    guiPlayControl.setPosition(0, ofGetHeight()-100);
+    guiPlayControl.setDefaultHeight(30);
+    
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
     
@@ -117,8 +126,7 @@ void ofApp::setup(){
     
     gui.setPosition(500, 50);
     gui.setDefaultHeight(30);
-
-    // Add GUI parts -------------------------------------------------------------------------------
+    gui.setBackgroundColor(ofColor(0,0,0,32));
 
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
@@ -126,7 +134,6 @@ void ofApp::setup(){
     gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
     gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
-    gui.add(uiBtnPlayPause.setup("Play / Stop", true, 40, 40));
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 40));
     gui.add(uiBtnGrid.setup("Grid", false, 40, 40));
     gui.add(uiBtnDebugInfo.setup("DebugInfo", false, 40, 40));
@@ -138,6 +145,7 @@ void ofApp::setup(){
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnReset.setup("Reset", 40, 40));
     gui.add(uiBtnSelectReset.setup("quit", 40, 40));
+    
     
     guiMapEdit.setDefaultWidth(500);
     guiMapEdit.setup("MapEdit");
@@ -162,8 +170,6 @@ void ofApp::setup(){
     prevPosY = position->y;
     
     uiBtnReset.addListener(this, &ofApp::resetCam);
-    
-    uiBtnSelectReset.addListener(this, &ofApp::turnMeshSwitch);
     
     guiPlayItem.setup("playItem");
     
@@ -202,11 +208,7 @@ void ofApp::setup(){
     
     // ------------------------------------------------
     
-    
-    
     appInitEndTime = ofGetElapsedTimeMillis();
-
-    
     playStartDateTime = ofGetElapsedTimeMillis();
 
     uiPlayMode = playMode;
@@ -215,14 +217,41 @@ void ofApp::setup(){
 
 }
 
+// setup end ----------------------------------------------------------------------------------
 
-void ofApp::turnMeshSwitch(){
+void ofApp::myGuiSetup() {
+
+    guiPlayControl.setPosition(0, ofGetHeight()-100);
     
-    OF_EXIT_APP(0);
+    myGuiMain = ofRectangle(0, ofGetHeight()-100, ofGetWidth(), 100);
+    mainView = ofRectangle(0, 0, ofGetWidth(),ofGetHeight() - myGuiMain.height);
     
+    myGuiMainMenuDiff = ofRectangle(0, 50, ofGetWidth(), 50);
+    myGuiMainTimebarDiff = ofRectangle(0, 0, ofGetWidth(), 50);
+    
+    myGuiMainMenu = myGuiMain;
+    myGuiMainMenu.y += 50;
+    
+    myGuiMainTimebar = myGuiMain;
+    myGuiMainTimebar.setHeight(50);
+    
+    myGuiDetailLeftButton = getSubRect( mainView, ofRectangle(0, 100, 100, ofGetHeight()-100-myGuiMain.getHeight() ) );
+    
+    myGuiDetailRightButton = getSubRect( mainView, ofRectangle(ofGetWidth()-100, 100, 100, ofGetHeight()-100-myGuiMain.getHeight() ) );
+    
+    myGuiDispGuiToggle = getSubRect( myGuiMainMenu, ofRectangle(ofGetWidth()-50, ofGetHeight()-50, 50, 50) );
+    
+    
+    myGuiPlayButton = getSubRect( myGuiMainMenu, ofRectangle(0,0,50,50) );
+
 }
 
-//--------------------------------------------------------------
+
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+//   Update Functions
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 void ofApp::update(){
     
     int i = uiEditModelSelector;
@@ -259,12 +288,6 @@ void ofApp::update(){
     } else {
         eCam.enableMouseInput();
     }
-    /*
-    if (mouseY >= (ofGetHeight() - 200)) {
-        eCam.disableMouseInput();
-    } else {
-        eCam.enableMouseInput();
-    }*/
     
     if (prevFramePlayState == false && uiBtnPlayPause) {
         playStartPrevPos = nowPlayTime;
@@ -273,7 +296,11 @@ void ofApp::update(){
     
 }
 
-//--------------------------------------------------------------
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+//   Draw Functions
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+
 void ofApp::draw(){
     
     ofSetFrameRate(uiFramerate);
@@ -286,6 +313,11 @@ void ofApp::draw(){
     
     // --------------------------
     ofBackground(240, 240, 240);        // gray bg
+    
+    
+    
+    ofSetColor(0, 0, 0, 32);
+    ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
     
     ofEnableSmoothing();
     
@@ -1318,6 +1350,7 @@ void ofApp::draw(){
         if (dispGui) {
             guiMapEdit.draw();
             gui.draw();
+            guiPlayControl.draw();
         }
         
     }
@@ -1388,262 +1421,8 @@ void ofApp::draw(){
     }
 
 }
+// Main Draw Meshod end ----------------------------------------------------------------------------------
 
-//--------------------------------------------------------------
-void ofApp::keyPressed(int key){
-    
-    cout << "key number: " << key << endl;
-    
-    if (int(key) == 49) {
-        viewerMode = 0;
-        selectMeshId = 0;
-        eCam.reset();
-        
-        float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-        float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-        float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-        
-        eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-        eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
-        
-    }
-    
-}
-    
-
-
-//--------------------------------------------------------------
-void ofApp::keyReleased(int key){
-    
-    if (key == ' ') {
-        if (dispAllUiFlag == false) {
-            dispAllUiFlag = true;
-        } else {
-            dispAllUiFlag = false;
-        }
-    }
-    if (key == 57) {
-        if (uiBtnPlayPause == false) {
-            uiBtnPlayPause = true;
-        } else {
-            uiBtnPlayPause = false;
-        }
-        
-        
-    }
-    
-    if (key == 52) {     //
-        if (mapNum[0][9] == 0) {
-            mapNum[0][9] = 1;
-            if (selectMeshId == 0){
-                uiEditDisplayFlag = 1;
-            }
-        } else {
-            mapNum[0][9] = 0;
-            if (selectMeshId == 0){
-                uiEditDisplayFlag = 0;
-            }
-            
-        }
-        
-    }
-    
-    if (key == 53) {     //
-        if (mapNum[1][9] == 0) {
-            mapNum[1][9] = 1;
-            if (selectMeshId == 1){
-                uiEditDisplayFlag = 1;
-            }
-        } else {
-            mapNum[1][9] = 0;
-            if (selectMeshId == 1){
-                uiEditDisplayFlag = 0;
-            }
-        }
-    }
-    
-    if (key == 51) {
-        if (uiBtnTimerControl) {
-            uiBtnTimerControl = false;
-        } else {
-            uiBtnTimerControl = true;
-        }
-        
-    }
-    
-    if (key == 48) {
-        
-        eCam.reset();
-        eCam.setPosition(0, 0, 1000);
-        viewerMode = 1;
-        
-        selectMeshId = 0;
-        
-        cout << "key number 0 Check!: " << key << endl;
-    }
-    
-    if (viewerMode == 0) {
-        if (key == OF_KEY_LEFT) {
-            detailViewNextModel(-1);
-        }
-        if (key == OF_KEY_RIGHT) {
-            detailViewNextModel(1);
-        }
-    }
-    
-    if (key == OF_KEY_TAB) {
-        
-    }
-
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseMoved(int x, int y ){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseDragged(int x, int y, int button){
-    
-    
-    if (uiBtnTimerControl) {
-    //if (y >= 500 && y < 700) {
-        
-        if (uiPlayMode == 2) {
-            
-            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
-            
-            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
-
-        } else if (uiPlayMode == 1) {
-            
-            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-            
-        } else {
-            
-            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-            
-        }
-        
-    }
-}
-
-//--------------------------------------------------------------
-void ofApp::mousePressed(int x, int y, int button){
-
-    cout << "mouseX: " << mouseX << " mouseY: " << mouseY << endl;
-
-    if (uiBtnTimerControl) {
-    //if (y >= 500 && y < 700) {
-        
-        if (uiPlayMode == 2) {
-            
-            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
-            
-            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
-            
-            //uiBtnPlayPause = false;
-            
-        } else if (uiPlayMode == 1) {
-            
-            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-            //uiBtnPlayPause = false;
-            
-        } else {
-            
-            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-            //uiBtnPlayPause = false;
-            
-        }
-        
-    }
-}
-
-
-
-void ofApp::exit() {
-    
-//    if (viewerMode = 3) {      // EDIT‚Äû√â¬¢‚Äû√â¬∫‚Äû√â√¢
-   // if (uiBtnDebugInfo) {
-        cout << "save map file." << endl;
-        saveMapFile();
-    //}
-//    }
-    
-    
-    //oniDevice->exit();
-    //delete oniDevice;
-    
-    cout << "program exit." << endl;
-}
-
-//--------------------------------------------------------------
-void ofApp::mouseReleased(int x, int y, int button){
-    
-    if (uiBtnTimerControl){
-        return;
-    }
-    
-    if (x<100 && y<100) {
-        if (!dispGui) {
-            dispGui = true;
-        } else {
-            dispGui = false;
-        }
-    }
-    
-    // メニュー選択
-    if (y >= 700 && y<900) {
-        
-        if (x >= 0 && x < 200) {
-            selectMeshId = 0;
-            resetCamDetailView();
-        }
-
-        if (x >= 200 && x < 400) {
-            
-            selectMeshId = 0;
-            resetCamListView();
-        }
-    }
-    
-    // 左右のモデルセレクタ
-    if (viewerMode == 0 ) {
-        if (x < 150 && y < 500 && y >= 150) {
-            
-            detailViewNextModel(-1);
-            
-        }
-        if (x >= (ofGetWidth()-150) && y < 500 && y >= 150) {
-            
-            detailViewNextModel(1);
-            
-        }
-    }
-    
-}
-
-void ofApp::detailViewNextModel(int mod) {
-    selectMeshId = ((selectMeshId - mod) + modelDataNum) % modelDataNum;
-    resetCamDetailView();
-    
-}
-
-
-//--------------------------------------------------------------
-void ofApp::windowResized(int w, int h){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::gotMessage(ofMessage msg){
-    
-}
-
-//--------------------------------------------------------------
-void ofApp::dragEvent(ofDragInfo dragInfo){ 
-    
-}
 
 void ofApp::resetCam( ) {
     
@@ -1666,7 +1445,7 @@ void ofApp::resetCamDetailView( ) {
 }
 
 void ofApp::resetCamListView( ) {
-
+    
     viewerMode = 1;
     
     eCam.reset();
@@ -1674,6 +1453,11 @@ void ofApp::resetCamListView( ) {
     eCam.setTarget(ofVec3f(3000, -3000, 0));
 }
 
+void ofApp::detailViewNextModel(int mod) {
+    selectMeshId = ((selectMeshId - mod) + modelDataNum) % modelDataNum;
+    resetCamDetailView();
+    
+}
 
 void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     
@@ -1745,8 +1529,279 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
      
      }
      */
+    
+}
+
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+//   Control Functions
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+void ofApp::keyPressed(int key){
+    
+    cout << "keyPressed. key number: " << key << endl;
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::keyReleased(int key){
+    
+    if (key == ' ') {
+        if (dispAllUiFlag == false) {
+            dispAllUiFlag = true;
+        } else {
+            dispAllUiFlag = false;
+        }
+    }
+    if (key == 57) {
+        if (uiBtnPlayPause == false) {
+            uiBtnPlayPause = true;
+        } else {
+            uiBtnPlayPause = false;
+        }
+        
+    }
+    
+    if (key == 52) {     //
+        if (mapNum[0][9] == 0) {
+            mapNum[0][9] = 1;
+            if (selectMeshId == 0){
+                uiEditDisplayFlag = 1;
+            }
+        } else {
+            mapNum[0][9] = 0;
+            if (selectMeshId == 0){
+                uiEditDisplayFlag = 0;
+            }
+            
+        }
+        
+    }
+    
+    if (key == 53) {     //
+        if (mapNum[1][9] == 0) {
+            mapNum[1][9] = 1;
+            if (selectMeshId == 1){
+                uiEditDisplayFlag = 1;
+            }
+        } else {
+            mapNum[1][9] = 0;
+            if (selectMeshId == 1){
+                uiEditDisplayFlag = 0;
+            }
+        }
+    }
+    
+    if (key == 51) {
+        if (uiBtnTimerControl) {
+            uiBtnTimerControl = false;
+        } else {
+            uiBtnTimerControl = true;
+        }
+        
+    }
+    
+    if (key == 48) {
+        
+        eCam.reset();
+        eCam.setPosition(0, 0, 1000);
+        viewerMode = 1;
+        
+        selectMeshId = 0;
+        
+        cout << "key number 0 Check!: " << key << endl;
+    }
+    
+    if (int(key) == 49) {
+        viewerMode = 0;
+        selectMeshId = 0;
+        eCam.reset();
+        
+        float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
+        float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
+        float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
+        
+        eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
+        eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
+        
+    }
+    
+    if (viewerMode == 0) {
+        if (key == OF_KEY_LEFT) {
+            detailViewNextModel(-1);
+        }
+        if (key == OF_KEY_RIGHT) {
+            detailViewNextModel(1);
+        }
+    }
+    
+    if (key == OF_KEY_TAB) {
+        
+    }
 
 }
+
+//--------------------------------------------------------------
+void ofApp::mouseMoved(int x, int y ){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseDragged(int x, int y, int button){
+    
+    
+    if (uiBtnTimerControl) {
+    //if (y >= 500 && y < 700) {
+        
+        if (uiPlayMode == 2) {
+            
+            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
+            
+            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+
+        } else if (uiPlayMode == 1) {
+            
+            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
+            
+        } else {
+            
+            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
+            
+        }
+        
+    }
+}
+
+//--------------------------------------------------------------
+void ofApp::mousePressed(int x, int y, int button){
+
+    //cout << "mousePressed. mouseX: " << mouseX << " mouseY: " << mouseY << endl;
+
+    /*
+    if (uiBtnTimerControl) {
+    //if (y >= 500 && y < 700) {
+        
+        if (uiPlayMode == 2) {
+            
+            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
+            
+            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+            
+            //uiBtnPlayPause = false;
+            
+        } else if (uiPlayMode == 1) {
+            
+            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
+            //uiBtnPlayPause = false;
+            
+        } else {
+            
+            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
+            //uiBtnPlayPause = false;
+            
+        }
+        
+    }
+     */
+}
+
+//--------------------------------------------------------------
+void ofApp::mouseReleased(int x, int y, int button){
+    
+    ofPoint mousePos = ofPoint(x, y);
+    
+    if (uiBtnTimerControl){
+        return;
+    }
+    
+    if (x<100 && y<100) {
+        if (!dispGui) {
+            dispGui = true;
+        } else {
+            dispGui = false;
+        }
+        
+    } else if (myGuiMainMenu.inside(mousePos)) {
+        
+        if (myGuiMainMenu.inside(mousePos)) {    // メニュー選択
+        
+            if (x >= 0 && x < 200) {
+                selectMeshId = 0;
+                resetCamDetailView();
+            }
+
+            if (x >= 200 && x < 400) {
+                
+                selectMeshId = 0;
+                resetCamListView();
+            }
+            
+        }
+        
+    } else if (myGuiDetailLeftButton.inside(mousePos)) {
+        
+        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+        
+            detailViewNextModel(-1);
+            
+        }
+        
+    } else if (myGuiDetailRightButton.inside(mousePos)) {
+        
+        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+            
+            detailViewNextModel(1);
+            
+        }
+    }
+    
+}
+
+void ofApp::exit() {
+    
+    //    if (viewerMode = 3) {      // EDIT‚Äû√â¬¢‚Äû√â¬∫‚Äû√â√¢
+    // if (uiBtnDebugInfo) {
+    cout << "save map file." << endl;
+    saveMapFile();
+    //}
+    //    }
+    
+    
+    //oniDevice->exit();
+    //delete oniDevice;
+    
+    cout << "program exit." << endl;
+}
+
+//--------------------------------------------------------------
+void ofApp::windowResized(int w, int h){
+    
+    myGuiSetup();
+}
+
+//--------------------------------------------------------------
+void ofApp::gotMessage(ofMessage msg){
+    
+}
+
+//--------------------------------------------------------------
+void ofApp::dragEvent(ofDragInfo dragInfo){ 
+    
+}
+
+/*
+void ofApp::windowResized () {
+    
+}
+ */
+
+
+
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+//   Utility Functions
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ofApp::setPos( ) {
     
@@ -1755,6 +1810,39 @@ void ofApp::setPos( ) {
     
 }
 
+ofRectangle ofApp::getSubRect( ofRectangle parentRect, ofRectangle subRect ) {
+    
+    ofRectangle newRect = subRect;
+    
+    //ofRectangle newRect = ofRectangle(baseRect.x + subRect.x, baseRect.y + subRect.y, subRect.width, subRect.height);
+    newRect.translate(parentRect.getPosition());
+    
+    if (subRect.getRight() > parentRect.getRight()) {
+        newRect.width -= subRect.getRight() - parentRect.getRight();
+    }
+    
+    if (subRect.getBottom() > parentRect.getBottom()) {
+        newRect.height -= subRect.getBottom() - parentRect.getBottom();
+    }
+    
+    newRect.width = ofClamp(subRect.width, 0, INT_MAX);
+    newRect.height = ofClamp(subRect.height, 0, INT_MAX);
+    
+    return newRect;
+}
+
+
+
+
+
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+//   File I/O Control Functions
+// ///////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+// --------------------------------------------------------------------------------------------
+// Save Map File
+// --------------------------------------------------------------------------------------------
 void ofApp::saveMapFile() {
     
     ofstream ofs( mapFilePath);
@@ -1777,6 +1865,9 @@ void ofApp::saveMapFile() {
 }
 
 
+// --------------------------------------------------------------------------------------------
+// Load Map File
+// --------------------------------------------------------------------------------------------
 void ofApp::loadMapFile(string meshDataDirPath) {
     
     ///Users/doc100/Desktop/tempData/artdkt_structure3d
@@ -1809,9 +1900,7 @@ void ofApp::loadMapFile(string meshDataDirPath) {
         mapFileExists = true;
         ofBuffer buffer(mapFile);
         
-        // ----------------------------------------------------------------------------------
-        // Read file line by line
-        // ------------------------------------------------------------------------------
+        // Read file line by line ------------------------------------------------------------------------------
         int bufCounter = 0;
         for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
             string line = *it;
@@ -1837,7 +1926,9 @@ void ofApp::loadMapFile(string meshDataDirPath) {
 }
 
 
-// Read mesh files ----------------------------------------------------------------
+// -------------------------------------------------------------------------------------------------------------
+// Read mesh files
+// -------------------------------------------------------------------------------------------------------------
 void ofApp::dataLoad() {
     
     modeldataLoadingStartTime = ofGetElapsedTimeMillis();
@@ -2220,15 +2311,12 @@ void ofApp::dataLoad() {
     modelDataNum = dirNameLoopCount;
     //modeldataDatasetNum = dirNameLoopCount;
     
-    
-    
     loadFileSizeAll = 0;
     for(auto oneModelList : modelFileSizeList) {
         for(auto fileSize : oneModelFileSizeList) {
             loadFileSizeAll += fileSize;
         }
     }
-    
     
     totalMaxMeshNum = 0;
     for (auto meshNum : maxMeshNumList) {
@@ -2245,7 +2333,6 @@ void ofApp::dataLoad() {
     }
     
     cout<<"modelDataNum:"<<modelDataNum<<endl;
-    
     
     modeldataLoadingEndTime = ofGetElapsedTimeMillis();
 
