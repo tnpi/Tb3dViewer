@@ -92,9 +92,9 @@ void ofApp::setup(){
     fontSmall.loadFont("hira.otf", 20);
     fontLarge.loadFont("hira.otf", 100);
     fontDebugPrint.loadFont("hira.otf", 12);
-    ofxGuiSetFont("hira.otf", 13, true, true);
+    ofxGuiSetFont("hira.otf", 11, true, true);
     
-    ofxGuiSetTextPadding(4);
+    ofxGuiSetTextPadding(3);
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
     
     // myGuiSetup ----------------------------------------------------------------------
@@ -117,16 +117,17 @@ void ofApp::setup(){
     // Set GUI parts -------------------------------------------------------------------------------
     guiPlayControl.setup("PlayControl");
     guiPlayControl.setPosition(0, ofGetHeight()-100);
-    guiPlayControl.setDefaultHeight(30);
+    guiPlayControl.setDefaultHeight(24);
     
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
     
     gui.setDefaultBackgroundColor(ofColor(255,0,0));
     
-    gui.setPosition(500, 50);
-    gui.setDefaultHeight(30);
+    gui.setPosition(0, 0);
+    gui.setDefaultHeight(24);
     gui.setBackgroundColor(ofColor(0,0,0,32));
+    gui.setShowHeader(false);
 
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
@@ -147,10 +148,13 @@ void ofApp::setup(){
     gui.add(uiBtnSelectReset.setup("quit", 40, 40));
     
     
-    guiMapEdit.setDefaultWidth(500);
+    guiMapEdit.setDefaultWidth(300);
     guiMapEdit.setup("MapEdit");
-    guiMapEdit.setPosition(800, 100);
-    guiMapEdit.setWidthElements(500);
+    gui.setDefaultHeight(24);
+    guiMapEdit.setPosition(0, 0);
+    guiMapEdit.setWidthElements(300);
+    guiMapEdit.setShowHeader(false);
+
     
     guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0));
     //guiMapEdit.setDefaultHeight(30);
@@ -177,6 +181,22 @@ void ofApp::setup(){
     guiPlayItem.add(uiBtnPlaySelectB.setup("B", 50, 40));
     guiPlayItem.add(uiBtnPlaySelectC.setup("C", 50, 40));
     guiPlayItem.add(uiBtnPlaySelectBack.setup("Reset", 50, 40));
+    
+    
+    guiPage.setup("single page");
+    guiPage.setSize(300, 300);
+    guiPage.add(&gui);
+    
+    guiPage2.setup("page 1");
+    guiPage2.add(&guiMapEdit);
+    //guiPage2.add(&rotary);
+    
+    guiTabbedPages.setup("tabbed pages", "", 100);
+    guiTabbedPages.setSize(300, 700);
+    guiTabbedPages.setTabWidth(70);
+    guiTabbedPages.setTabHeight(30);
+    guiTabbedPages.add(&guiPage);
+    guiTabbedPages.add(&guiPage2);
     
     // OpenNI ----------------------------------------------
     
@@ -1348,9 +1368,10 @@ void ofApp::draw(){
         // GUI‚Äû√á√≠√ã¬∞¬Æ√Å¬ß‚à´
         
         if (dispGui) {
-            guiMapEdit.draw();
-            gui.draw();
+            //guiMapEdit.draw();
+            //gui.draw();
             guiPlayControl.draw();
+            guiTabbedPages.draw();
         }
         
     }

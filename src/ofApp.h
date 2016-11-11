@@ -8,6 +8,7 @@
 #include "ofxAssimpModelLoader.h"
 #include "ofxTrueTypeFontUC.h"
 #include "ofxGui.h"
+#include "ofxGuiExtended.h"
 
 #include "ofxObjLoader.h"
 
@@ -124,10 +125,17 @@ public:
     string defaultMeshDataDirPath;
     
     // GUIのパラメーター
-    ofxPanel gui;
-    ofxPanel guiMapEdit;
-    ofxPanel guiPlayItem;
-    ofxPanel guiPlayControl;
+    ofxPanelExtended gui;
+    ofxPanelExtended guiMapEdit;
+    ofxPanelExtended guiPlayItem;
+    ofxPanelExtended guiPlayControl;
+    
+    ofxGuiPage guiPage;
+    
+    ofxTabbedPages guiTabbedPages;
+    ofxGuiPage guiPage1, guiPage2;
+
+    
     ofxFloatSlider radius;
     ofxFloatSlider uiThumbnailIconDistance;
     ofxIntSlider uiIconNumX;
