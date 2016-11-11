@@ -124,6 +124,7 @@ public:
     ofxToggle uiBtnPlayPause;
     ofxToggle uiBtnPlayRealtime;
     ofxToggle uiBtnLight;
+    ofxToggle uiBtnTimerControl;
     ofxButton uiBtnReset;
     ofxButton uiBtnSelectReset;
     ofxButton uiBtnPlaySelectA;
