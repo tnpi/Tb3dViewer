@@ -11,6 +11,9 @@
 
 #include "ofxObjLoader.h"
 
+#include "ofxNi2.h"
+#include "ofxNiTE2.h"
+
 #define STRINGIFY(A) #A
 
 #define MAX_MODEL_ARRAY 200
@@ -44,6 +47,8 @@ public:
     void saveMapFile();
     void loadMapFile(string meshDataDirPath);
     void drawScaleGrid(float areaSize, int gridSpan);
+    
+    void detailViewNextModel(int mod);
     
     ofxTrueTypeFontUC font;
     ofxTrueTypeFontUC fontSmall;
@@ -115,7 +120,6 @@ public:
     ofxIntSlider uiColorMode;
     ofxIntSlider uiFramerate;
     ofxIntSlider uiGpsMapMode;
-    ofxColorSlider color;
     ofxVec2Slider position;
     ofxToggle uiBtnPlayPause;
     ofxToggle uiBtnPlayRealtime;
@@ -225,5 +229,16 @@ public:
     
     bool loadPictureMode;
     bool loadVertexColorObj;
+    
+    
+    ofxNI2::Device *oniDevice;
+    ofxNI2::IrStream oniIr;
+    ofxNI2::ColorStream oniColor;
+    ofxNI2::DepthStream oniDepth;
+    
+    
+    ofMatrix4x4 modelMatrixList[200];
+    
+    bool useOpenNi;
 };
 

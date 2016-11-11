@@ -3,12 +3,17 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
+    // 全力再生
+    ofSetVerticalSync(false);
+    ofSetFrameRate(0);
+    
     appInitStartTime = ofGetElapsedTimeMillis();
     
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
 
     // setting vars --------------------------------------------
 
+    useOpenNi = false;
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     loadPictureMode = false;
     loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
@@ -126,15 +131,18 @@ void ofApp::setup(){
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 40));
     gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 40));
     gui.add(uiBtnOrtho.setup("Ortho", false, 40, 40));
-    gui.add(uiGpsMapMode.setup("GPSMapMode", 0, 0, 2));
+    gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnReset.setup("Reset", 40, 40));
     gui.add(uiBtnSelectReset.setup("quit", 40, 40));
     
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setPosition(800, 100);
-    guiMapEdit.setDefaultWidth(1200);
-    guiMapEdit.setDefaultHeight(30);
+    guiMapEdit.setWidthElements(500);
+    guiMapEdit.setDefaultWidth(500);
+    
+    guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0));
+    //guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
     guiMapEdit.add(uiEditPosY.setup("posY",0,-5000,5000));
     guiMapEdit.add(uiEditPosZ.setup("posZ",0,-5000,5000));
@@ -160,6 +168,37 @@ void ofApp::setup(){
     guiPlayItem.add(uiBtnPlaySelectB.setup("B", 50, 40));
     guiPlayItem.add(uiBtnPlaySelectC.setup("C", 50, 40));
     guiPlayItem.add(uiBtnPlaySelectBack.setup("Reset", 50, 40));
+    
+    // OpenNI ----------------------------------------------
+    
+    if (useOpenNi) {
+        oniDevice = new ofxNI2::Device;
+        oniDevice->setup();
+        if (oniDepth.setup(*oniDevice))
+        {
+            oniDepth.setSize(320, 240);
+            oniDepth.setFps(30);
+            oniDepth.start();
+        }
+        
+        if (oniIr.setup(*oniDevice)) // only for xtion device (OpenNI2-FreenectDriver issue)
+        {
+            oniIr.setSize(320, 240);
+            oniIr.setFps(30);
+            oniIr.start();
+        }
+        
+        //	if (color.setup(*device)) // only for kinect device
+        //	{
+        //		color.setSize(320, 240);
+        //		color.setFps(60);
+        //		color.start();
+        //	}
+
+    }
+    
+    // ------------------------------------------------
+    
     
     
     appInitEndTime = ofGetElapsedTimeMillis();
@@ -309,7 +348,7 @@ void ofApp::draw(){
     for(int i=0; i<modelDataNum; i++) {
         
         if (viewerMode == 0 && selectMeshId != i) {
-            continue;
+            //continue;
         }
         
         int counter = playCount;// % maxMeshNumList[i];
@@ -441,8 +480,8 @@ void ofApp::draw(){
                 glRotatef(-90, 1, 0, 0);
                 
             }             
-            
-            //ofTranslate(2000, 0, 2000);
+            glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+
             
             if (uiColorMode == 0) {
                 //ofTranslate(0,0,1500);      // goto center
@@ -460,44 +499,58 @@ void ofApp::draw(){
                 
                 ofScale(1000, 1000, 1000);
             }
-
-            // 6/29
-            //ofScale(1, -1);
+            ofRotateX(mapNum[i][3]);
+            ofRotateY(mapNum[i][4]);
+            ofRotateZ(mapNum[i][5]);
             
-            if (dualColorSystem == true && uiColorMode == 1) {
-
-                //ofTranslate(asModelObj[i][playFrameSelector].getSceneCenter().x, asModelObj[i][playFrameSelector].getSceneCenter().y, -asModelObj[i][playFrameSelector].getSceneCenter().z);
-                double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                ofTranslate(centerX, centerY, -centerZ);
-                
-                if (uiMeshDrawType == 1) {
-                    ofSetLineWidth(1);
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                } else if (uiMeshDrawType == 2) {
-                    
-                    glPointSize(4);
-                    //ofBlendMode(OF_BLENDMODE_ALPHA);
-
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                } else {
-                    //asModelObj[i][counter].drawFaces();
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                }
-                
-            } else {
-                if (uiMeshDrawType == 1) {
-                    ofSetLineWidth(1);
-                    modelList[i][playFrameSelector].drawWireframe();
-                } else if (uiMeshDrawType == 2) {
-                    glPointSize(5);
-                    modelList[i][playFrameSelector].drawVertices();
-                } else {
-                    modelList[i][playFrameSelector].draw();
-                }
+            double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            ofTranslate(centerX, centerY, -centerZ);
+            
+            if (mapNum[i][7] >= 1) {
+                glRotatef(180, 0, 1, 0);
+                ofTranslate(0,0,0);
+            }
+            if (mapNum[i][8] >= 1) {
+                glRotatef(180, 1, 0, 0);
+                //ofTranslate(0,0,-530);
+            }
+            if (mapNum[i][6] >= 1) {
+                glRotatef(180, 0, 0, 1);
+                //ofTranslate(0,0,-530);
             }
             
+            
+            if (mapNum[i][9] == 0) {
+                if (dualColorSystem == true && uiColorMode == 1) {
+                    
+                    if (uiMeshDrawType == 1) {
+                        ofSetLineWidth(1);
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                    } else if (uiMeshDrawType == 2) {
+                        
+                        glPointSize(4);
+                        //ofBlendMode(OF_BLENDMODE_ALPHA);
+
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                    } else {
+                        //asModelObj[i][counter].drawFaces();
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                    }
+                    
+                } else {
+                    if (uiMeshDrawType == 1) {
+                        ofSetLineWidth(1);
+                        modelList[i][playFrameSelector].drawWireframe();
+                    } else if (uiMeshDrawType == 2) {
+                        glPointSize(5);
+                        modelList[i][playFrameSelector].drawVertices();
+                    } else {
+                        modelList[i][playFrameSelector].draw();
+                    }
+                }
+            }
             
             glPopMatrix();
             
@@ -730,7 +783,108 @@ void ofApp::draw(){
                     
                 }
 
+            } else if (uiGpsMapMode == 3) {
                 
+                //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+                
+                for(int z=0; z<maxMeshNumList[i]; z++) {
+                    displayTotalVertices += modelList[i][z].getNumVertices();
+                    
+                    glPushMatrix();
+                    
+                    playFrameSelector = z;
+                    
+                    ofVec3f tr = modelMatrixList[z].getTranslation();
+                    double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+                    double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+                    
+                    cout << "posX: " << posX << " posY: " << posY << endl;
+                    
+                    
+                    if (uiBtnTurnMesh) {
+                        glRotatef(-90, 1, 0, 0);
+                        
+                    }
+                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+                    
+                    // 6/29
+                    ofScale(1, 1, -1);      // fix model direction
+                    if (uiColorMode == 1) {
+                        ofScale(-1, -1, 1);      // fix model direction
+                    }
+                    
+                    ofTranslate(0,0,posY);
+                    ofTranslate(posX,0,0);
+                    
+                    ofScale(1000, 1000, 1000);  // temp debug
+                    
+                    if (modelFlagList[i] == 0) {            // not effect vertex color object
+                        ofSetColor(255, 255, 255, 255);
+                    } else if (modelFlagList[i] == 1) {
+                        ofSetColor(255, 255, 255, 32);
+                    } else if (modelFlagList[i] == 2) {
+                        ofSetColor(0, 255, 0, 64);
+                    }
+                    ofSetColor(255, 255, 255, 255);
+                    
+                    if (mapNum[i][9] == 0) {
+                        
+                        if (dualColorSystem == true && uiColorMode == 1) {
+                            
+                            if (uiMeshDrawType == 1) {
+                                ofSetLineWidth(1);
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                            } else if (uiMeshDrawType == 2) {
+                                glPointSize(5);
+                                
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                            } else {
+                                //asModelObj[i][counter].drawFaces();
+                                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                            }
+                            
+                        } else {
+                            
+                            if (uiMeshDrawType == 1) {
+                                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                                //            asModelObj[i][counter].drawWireframe();
+                                ofSetLineWidth(1);
+                                
+                                modelList[i][playFrameSelector].drawWireframe();
+                            } else if (uiMeshDrawType == 2) {
+                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                                glPointSize(5);
+                                
+                                modelList[i][playFrameSelector].drawVertices();
+                            } else {
+                                
+                                modelList[i][playFrameSelector].draw();
+                                
+                                //asModelObj[i][counter].drawFaces();
+                                //asModelObj[i][counter].draw(OF_MESH_FILL);
+                            }
+                        }
+                    }
+                    glPopMatrix();
+                    
+                }
+                
+                ofSetLineWidth(5);
+                ofSetColor(0,64,255);
+                for(int z=0; z<maxMeshNumList[i]-1; z++) {
+                    ofMatrix4x4 matrixA = modelMatrixList[z];
+                    ofMatrix4x4 matrixB = modelMatrixList[z+1];
+                    
+                    ofVec3f posA = matrixA.getTranslation();
+                    ofVec3f posB = matrixB.getTranslation();
+                    
+                    ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+                    
+                    //cout << "posX: " << posX << " posY: " << posY << endl;
+                }
+            
             } else {        // GPS Walk thru mode
                 
                 glPushMatrix();
@@ -885,6 +1039,43 @@ void ofApp::draw(){
         }
         
     }       // for loop
+    
+    
+    
+    // openNI scanner --------------------------------------------------------------
+    
+    
+    if (useOpenNi && frameCount >= 1) {  // app start
+        //ofShortPixels& depthPixels = oniDepth.getPixelsRef();
+        ofMesh oniMesh;
+        
+        for(int i=0; i<240; i++) {
+
+            for(int j=0; j<320; j++) {
+                
+                ofVec3f worldPos = oniDepth.getWorldCoordinateAt(j, i);
+                //worldPos.x *= 10.0;
+                //worldPos.y *= 10.0;
+                //worldPos.z *= 10.0;
+                oniMesh.addColor(ofFloatColor(0.0,1.0,0));
+                oniMesh.addVertex(worldPos);
+                
+            }
+        }
+        //ofEndShape();
+        ofTranslate(0,1000,0);
+        ofRotate(-90, 0, 0, 1);
+        ofRotate(90, 1, 0, 0);
+        ofRotate(90, 0, 1, 0);
+        //ofScale(100.0,100.0,100.0);
+        glPointSize(2);
+        oniMesh.drawVertices();
+        //tMesh.drawFaces();
+        //tMesh.drawWireframes();
+    }
+    // --------------------------------------------------------------
+    
+
     
     glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
     
@@ -1239,6 +1430,19 @@ void ofApp::keyReleased(int key){
         
         cout << "key number 0 Check!: " << key << endl;
     }
+    
+    if (viewerMode == 0) {
+        if (key == OF_KEY_LEFT) {
+            detailViewNextModel(-1);
+        }
+        if (key == OF_KEY_RIGHT) {
+            detailViewNextModel(1);
+        }
+    }
+    
+    if (key == OF_KEY_TAB) {
+        
+    }
 
 }
 
@@ -1314,6 +1518,9 @@ void ofApp::exit() {
 //    }
     
     
+    //oniDevice->exit();
+    //delete oniDevice;
+    
     cout << "program exit." << endl;
 }
 
@@ -1328,6 +1535,7 @@ void ofApp::mouseReleased(int x, int y, int button){
         }
     }
     
+    // メニュー選択
     if (y >= 700 && y<900) {
         
         if (x >= 0 && x < 200) {
@@ -1342,25 +1550,28 @@ void ofApp::mouseReleased(int x, int y, int button){
         }
     }
     
+    // 左右のモデルセレクタ
     if (viewerMode == 0 ) {
         if (x < 150 && y < 500 && y >= 150) {
             
-            selectMeshId = ((selectMeshId - 1) + modelDataNum) % modelDataNum;
-            resetCamDetailView();
+            detailViewNextModel(-1);
             
         }
         if (x >= (ofGetWidth()-150) && y < 500 && y >= 150) {
             
-            selectMeshId = (selectMeshId + 1) % modelDataNum;
-            resetCamDetailView();
+            detailViewNextModel(1);
             
         }
     }
     
-    
+}
 
+void ofApp::detailViewNextModel(int mod) {
+    selectMeshId = ((selectMeshId - mod) + modelDataNum) % modelDataNum;
+    resetCamDetailView();
     
 }
+
 
 //--------------------------------------------------------------
 void ofApp::windowResized(int w, int h){
@@ -1392,7 +1603,7 @@ void ofApp::resetCamDetailView( ) {
     float modelSizeY = (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) * 1000;
     float modelSizeZ = (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) * 1000;
     
-    eCam.setPosition(0, -modelSizeY*1.2, modelSizeY*1.2);
+    eCam.setPosition(0, -modelSizeZ*1.2, modelSizeZ*1.2);
     eCam.setTarget(ofVec3f(0, 0, 0));
     
 }
@@ -1408,6 +1619,8 @@ void ofApp::resetCamListView( ) {
 
 
 void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
+    
+    areaSize *= 4;
     
     float modelSizeX = areaSize;//modelPosXList[selectMeshId]*1000;
     float modelSizeY = areaSize;//modelHeightList[selectMeshId]*1000;
@@ -1429,7 +1642,8 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     //ofLine(0,0,0,0,0,0);
     //ofRect(0, 0, 10000, 10000);
     
-    ofSetLineWidth(1);
+    //ofSetLineWidth(1);
+    ofSetLineWidth(2);
     ofSetColor(128,224,255, 128);
     stringstream tSs;
     
@@ -1738,6 +1952,19 @@ void ofApp::dataLoad() {
                                 if (scanGpsDataMinLong > stod(itemList[4])) {
                                     scanGpsDataMinLong = stod(itemList[4]);
                                 }
+                                
+                            }
+                            
+                            if (itemList.size() >= 20) {
+                                cout << "load floatMatrix:";
+                                float floatMatrix[16];
+                                for(int z2=0; z2 < 16; z2++) {
+                                    //floatMatrix[z2] = stof(itemList[12+z2]);
+                                    floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
+                                    cout << floatMatrix[z2] << ", ";
+                                }
+                                modelMatrixList[dirNameLoopCount] = ofMatrix4x4(floatMatrix);
+                                cout << endl;
                             }
                             
                             idx++;

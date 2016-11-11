@@ -1,5 +1,6 @@
 ofxAssimpModelLoader
 ofxGui
+ofxNI2
 ofxObjLoader
 ofxTrueTypeFontUC
 ofxXmlSettings
