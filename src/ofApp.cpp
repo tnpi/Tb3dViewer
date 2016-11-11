@@ -92,9 +92,11 @@ void ofApp::setup(){
     font.loadFont("hira.otf", 38);
     fontSmall.loadFont("hira.otf", 20);
     fontLarge.loadFont("hira.otf", 100);
+    fontDebugPrint.loadFont("hira.otf", 12);
     ofxGuiSetFont("hira.otf", 13, true, true);
+    
     ofxGuiSetTextPadding(4);
-    ofxGuiSetDefaultWidth(300);
+    ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
     
     // OfxGUI setup -----------------------------------------------------------------
     
@@ -131,6 +133,7 @@ void ofApp::setup(){
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 40));
     gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 40));
     gui.add(uiBtnOrtho.setup("Ortho", false, 40, 40));
+    gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 40));
     gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnReset.setup("Reset", 40, 40));
@@ -251,6 +254,11 @@ void ofApp::update(){
     
     prevSelectModel = i;
     
+    if (uiBtnTimerControl) {
+        eCam.disableMouseInput();
+    } else {
+        eCam.enableMouseInput();
+    }
     /*
     if (mouseY >= (ofGetHeight() - 200)) {
         eCam.disableMouseInput();
@@ -1108,52 +1116,56 @@ void ofApp::draw(){
     // UI ---------------------------------------------------
     stringstream tSs;
     
+    int pX = 40;
+    int pY = 80;
+    int fSize = 10;
+    int lineHeight = fSize*2;
     if (dispAllUiFlag) {
     
         tSs.str("");
         tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
-        fontSmall.drawString(tSs.str(), 40, 80);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "Vertices: " << displayTotalVertices << "pts";
-        fontSmall.drawString(tSs.str(), 40, 120);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
-        fontSmall.drawString(tSs.str(), 40, 160);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
         tSs.str("");
         tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
-        fontSmall.drawString(tSs.str(), 40, 200);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "modelNum: " << modelDataNum;
-        fontSmall.drawString(tSs.str(), 40, 240);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "files: " << modeldataFiles;
-        fontSmall.drawString(tSs.str(), 40, 280);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
         tSs.str("");
         tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
-        fontSmall.drawString(tSs.str(), 40, 320);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
         tSs.str("");
         tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
-        fontSmall.drawString(tSs.str(), 40, 360);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
-        fontSmall.drawString(tSs.str(), 40, 400);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         
         tSs.str("");
         tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
-        fontSmall.drawString(tSs.str(), 40, 440);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
         if (viewerMode == 0) {
             tSs.str("");
             tSs << "meshName: " << meshNameList[selectMeshId];
-            fontSmall.drawString(tSs.str(), 40, 480);
+            fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
         }
 
         ofSetColor(255,255,255,255);
@@ -1163,14 +1175,14 @@ void ofApp::draw(){
             tSs.str("");
             tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
             
-            fontSmall.drawString(tSs.str(), 50, 700);
+            fontDebugPrint.drawString(tSs.str(), 50, 700);
 
             
             ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
             stringstream tSs2;
             tSs2.str("");
             tSs2 << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
-            fontSmall.drawString(tSs2.str(), 50, 750);
+            fontDebugPrint.drawString(tSs2.str(), 50, 750);
 
             stringstream tSs3;
             
@@ -1225,7 +1237,7 @@ void ofApp::draw(){
 
         tSs.str("");
         tSs << "nowPlayTime: " << nowPlayTime << "    /  endTime: " << totalScanTimeRecordMaxTime;
-        fontSmall.drawString(tSs.str(), 40, ofGetHeight() - 230);
+        fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 230);
 
         tSs.str("");
         if (viewerMode == 1) {
@@ -1233,7 +1245,7 @@ void ofApp::draw(){
         } else if (viewerMode == 0) {
             tSs << "playCount: " << playCount << "   /  endMeshNum: " << maxMeshNumList[selectMeshId];
         }
-        fontSmall.drawString(tSs.str(), 40, ofGetHeight() - 190);
+        fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 190);
         
         
         if (uiPlayMode == 2) {
@@ -1249,7 +1261,7 @@ void ofApp::draw(){
             ::strftime(charDateTime, sizeof(charDateTime), "%Y-%m-%d %H:%M:%S", &tempTimeStruct);
             string strCharDateTime = charDateTime;
             tSs <<  "VirtualTime: " << strCharDateTime << "." << nowPlayTimeTemp%1000;
-            fontSmall.drawString(tSs.str(), 40, ofGetHeight() - 150);
+            fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 150);
         }
         
         
@@ -1410,13 +1422,52 @@ void ofApp::keyReleased(int key){
             dispAllUiFlag = false;
         }
     }
-    if (key == 49) {
+    if (key == 57) {
         if (uiBtnPlayPause == false) {
             uiBtnPlayPause = true;
         } else {
             uiBtnPlayPause = false;
         }
         
+        
+    }
+    
+    if (key == 52) {     //
+        if (mapNum[0][9] == 0) {
+            mapNum[0][9] = 1;
+            if (selectMeshId == 0){
+                uiEditDisplayFlag = 1;
+            }
+        } else {
+            mapNum[0][9] = 0;
+            if (selectMeshId == 0){
+                uiEditDisplayFlag = 0;
+            }
+            
+        }
+        
+    }
+    
+    if (key == 53) {     //
+        if (mapNum[1][9] == 0) {
+            mapNum[1][9] = 1;
+            if (selectMeshId == 1){
+                uiEditDisplayFlag = 1;
+            }
+        } else {
+            mapNum[1][9] = 0;
+            if (selectMeshId == 1){
+                uiEditDisplayFlag = 0;
+            }
+        }
+    }
+    
+    if (key == 51) {
+        if (uiBtnTimerControl) {
+            uiBtnTimerControl = false;
+        } else {
+            uiBtnTimerControl = true;
+        }
         
     }
     
@@ -1455,7 +1506,8 @@ void ofApp::mouseMoved(int x, int y ){
 void ofApp::mouseDragged(int x, int y, int button){
     
     
-    if (y >= 500 && y < 700) {
+    if (uiBtnTimerControl) {
+    //if (y >= 500 && y < 700) {
         
         if (uiPlayMode == 2) {
             
@@ -1480,8 +1532,9 @@ void ofApp::mouseDragged(int x, int y, int button){
 void ofApp::mousePressed(int x, int y, int button){
 
     cout << "mouseX: " << mouseX << " mouseY: " << mouseY << endl;
-    
-    if (y >= 500 && y < 700) {
+
+    if (uiBtnTimerControl) {
+    //if (y >= 500 && y < 700) {
         
         if (uiPlayMode == 2) {
             
@@ -1526,6 +1579,10 @@ void ofApp::exit() {
 
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
+    
+    if (uiBtnTimerControl){
+        return;
+    }
     
     if (x<100 && y<100) {
         if (!dispGui) {

@@ -53,6 +53,7 @@ public:
     ofxTrueTypeFontUC font;
     ofxTrueTypeFontUC fontSmall;
     ofxTrueTypeFontUC fontLarge;
+    ofxTrueTypeFontUC fontDebugPrint;
     
     ofxAssimpModelLoader asModelObj[200][1000];
     ofMesh modelList[200][1000];
@@ -221,16 +222,13 @@ public:
     bool dualColorSystem;
     int colorMode = 0;
 
-    
     ofFbo fboFront;
     ofFbo fboSide;
     ofFbo fboTop;
     ofFbo fboCam;
     
-    
     bool loadPictureMode;
     bool loadVertexColorObj;
-    
     
     ofxNI2::Device *oniDevice;
     ofxNI2::IrStream oniIr;
