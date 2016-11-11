@@ -131,16 +131,18 @@ void ofApp::setup(){
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 40));
     gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 40));
     gui.add(uiBtnOrtho.setup("Ortho", false, 40, 40));
-    gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 40));
     gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnReset.setup("Reset", 40, 40));
     gui.add(uiBtnSelectReset.setup("quit", 40, 40));
     
+    guiMapEdit.setDefaultWidth(500);
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setPosition(800, 100);
-    guiMapEdit.setDefaultWidth(500);
-    guiMapEdit.setDefaultHeight(30);
+    guiMapEdit.setWidthElements(500);
+    
+    guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0));
+    //guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
     guiMapEdit.add(uiEditPosY.setup("posY",0,-5000,5000));
     guiMapEdit.add(uiEditPosZ.setup("posZ",0,-5000,5000));
@@ -248,12 +250,6 @@ void ofApp::update(){
     mapNum[i][9] = uiEditDisplayFlag;
     
     prevSelectModel = i;
-    
-    if (uiBtnTimerControl) {
-        eCam.disableMouseInput();
-    } else {
-        eCam.enableMouseInput();
-    }
     
     /*
     if (mouseY >= (ofGetHeight() - 200)) {
@@ -1414,7 +1410,7 @@ void ofApp::keyReleased(int key){
             dispAllUiFlag = false;
         }
     }
-    if (key == 57) {
+    if (key == 49) {
         if (uiBtnPlayPause == false) {
             uiBtnPlayPause = true;
         } else {
@@ -1435,57 +1431,6 @@ void ofApp::keyReleased(int key){
         cout << "key number 0 Check!: " << key << endl;
     }
     
-    if (key == 52) {     //
-        if (mapNum[0][9] == 0) {
-            mapNum[0][9] = 1;
-            if (selectMeshId == 0){
-                uiEditDisplayFlag = 1;
-            }
-        } else {
-            mapNum[0][9] = 0;
-            if (selectMeshId == 0){
-                uiEditDisplayFlag = 0;
-            }
-            
-        }
-
-        /*
-        if (selectMeshId == 0){
-            if (uiEditDisplayFlag == 0) {
-                uiEditDisplayFlag = 1;
-            } else {
-                uiEditDisplayFlag = 0;
-            }
-        } else {
-            
-        }
-         */
-        
-    }
-
-    if (key == 53) {     //
-        if (mapNum[1][9] == 0) {
-            mapNum[1][9] = 1;
-            if (selectMeshId == 1){
-                uiEditDisplayFlag = 1;
-            }
-        } else {
-            mapNum[1][9] = 0;
-            if (selectMeshId == 1){
-                uiEditDisplayFlag = 0;
-            }
-        }
-    }
-    
-    if (key == 51) {
-        if (uiBtnTimerControl) {
-            uiBtnTimerControl = false;
-        } else {
-            uiBtnTimerControl = true;
-        }
-        
-    }
-
     if (viewerMode == 0) {
         if (key == OF_KEY_LEFT) {
             detailViewNextModel(-1);
@@ -1509,8 +1454,8 @@ void ofApp::mouseMoved(int x, int y ){
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
     
-    //if (y >= 500 && y < 700) {
-    if (uiBtnTimerControl) {
+    
+    if (y >= 500 && y < 700) {
         
         if (uiPlayMode == 2) {
             
@@ -1536,8 +1481,7 @@ void ofApp::mousePressed(int x, int y, int button){
 
     cout << "mouseX: " << mouseX << " mouseY: " << mouseY << endl;
     
-    //if (y >= 500 && y < 700 ) {
-    if (uiBtnTimerControl) {
+    if (y >= 500 && y < 700) {
         
         if (uiPlayMode == 2) {
             
@@ -1583,10 +1527,6 @@ void ofApp::exit() {
 //--------------------------------------------------------------
 void ofApp::mouseReleased(int x, int y, int button){
     
-    if (uiBtnTimerControl){
-        return;
-    }
-     
     if (x<100 && y<100) {
         if (!dispGui) {
             dispGui = true;
