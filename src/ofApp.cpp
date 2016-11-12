@@ -93,7 +93,7 @@ void ofApp::initAppVars() {
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
     
-    dispGui = true;
+    uiBtnDispWindow = true;
     dispDebugInfoFlag = true;
     dispAllUiFlag = true;
     dispPlayControlUiFlag = true;
@@ -150,11 +150,13 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
     guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
-    guiPlayControlMenu.add(new ofxGuiSpacer(20));
+    guiPlayControlMenu.add(new ofxGuiSpacer(10));
     guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
-    guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
-    guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
+    guiPlayControlMenu.add(uiBtnDispWindowParts.setup(uiBtnDispWindow.set("Window", false), 80, 20) );
+    guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
+    guiPlayControlMenu.add(new ofxGuiSpacer(10));
+    guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
     
     //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
     
@@ -653,7 +655,11 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     if (uiBtnGrid && i == selectMeshId) {
         float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
-        drawScaleGrid(modelSize*1000, 100);
+        if (modelSize < 1) {
+            drawScaleGrid(modelSize*1000, 100);
+        } else {
+            drawScaleGrid(modelSize*1000, 1000);
+        }
     }
     
     displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
@@ -1479,9 +1485,10 @@ void ofApp::drawUi() {
             font.drawString(">", ofGetWidth()-87, ofGetHeight()/2+54);
         }
         
-        // GUI
         
-        if (dispGui) {
+        // draw ofxGUI ----------------------------
+        
+        if (uiBtnDispWindow) {
             //guiMapEdit.draw();
             //gui.draw();
             guiTabbedPages.draw();
@@ -1534,13 +1541,20 @@ void ofApp::drawOpenNi() {
 void ofApp::resetCam( ) {
     
     eCam.reset();
+    
+    if (viewerMode == 0) {
+        resetCamDetailView();
+    } else {
+        resetCamListView();
+    }
+    
 }
 
 void ofApp::resetCamDetailView( ) {
     
     viewerMode = 0;
     
-    eCam.reset();
+//    eCam.reset();
     
     float modelSizeX = (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) *1000;
     float modelSizeY = (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) * 1000;
@@ -1555,7 +1569,7 @@ void ofApp::resetCamListView( ) {
     
     viewerMode = 1;
     
-    eCam.reset();
+    //eCam.reset();
     eCam.setPosition(3000, -3000, 9000);
     eCam.setTarget(ofVec3f(3000, -3000, 0));
 }
@@ -1775,6 +1789,25 @@ void ofApp::mouseDragged(int x, int y, int button){
 
 //--------------------------------------------------------------
 void ofApp::mousePressed(int x, int y, int button){
+    
+    ofPoint mousePos = ofPoint(x, y);
+    
+    if (myGuiDetailLeftButton.inside(mousePos)) {
+        
+        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+            
+            detailViewNextModel(-1);
+            
+        }
+        
+    } else if (myGuiDetailRightButton.inside(mousePos)) {
+        
+        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+            
+            detailViewNextModel(1);
+            
+        }
+    }
 
     //cout << "mousePressed. mouseX: " << mouseX << " mouseY: " << mouseY << endl;
 
@@ -1816,10 +1849,10 @@ void ofApp::mouseReleased(int x, int y, int button){
     }
     
     if (x<100 && y<100) {
-        if (!dispGui) {
-            dispGui = true;
+        if (!uiBtnDispWindow) {
+            uiBtnDispWindow = true;
         } else {
-            dispGui = false;
+            uiBtnDispWindow = false;
         }
         
     } else if (myGuiMainMenu.inside(mousePos)) {
@@ -1839,23 +1872,7 @@ void ofApp::mouseReleased(int x, int y, int button){
             
         }
         
-    } else if (myGuiDetailLeftButton.inside(mousePos)) {
-        
-        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
-        
-            detailViewNextModel(-1);
-            
-        }
-        
-    } else if (myGuiDetailRightButton.inside(mousePos)) {
-        
-        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
-            
-            detailViewNextModel(1);
-            
-        }
     }
-    
 }
 
 void ofApp::exit() {

@@ -175,8 +175,11 @@ public:
     ofxToggle uiBtnTurnMesh;
     ofxToggle uiBtnLoopPlay;
     ofxToggle uiBtnOrtho;
-    ofParameter<bool> toggle_param, uiBtnPlayPause;
+    ofParameter<bool> toggle_param;
+    ofParameter<bool> uiBtnPlayPause;
+    ofParameter<bool> uiBtnDispWindow;
     ofxMinimalToggle uiBtnPlayPauseParts;
+    ofxMinimalToggle uiBtnDispWindowParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;
