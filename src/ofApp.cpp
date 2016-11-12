@@ -369,14 +369,9 @@ void ofApp::draw(){
         dataLoad();
     }
     
-    
+    // BG ---------------------------------------------
     ofBackground(240, 240, 240);        // gray bg
     
-    
-    if (dispPlayControl) {
-        ofSetColor(0, 0, 0, 32);
-        ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
-    }
     
     ofEnableSmoothing();
     
@@ -1206,8 +1201,17 @@ void ofApp::draw(){
     }
 
     
+#pragma mark - UI
     
     // UI ---------------------------------------------------
+
+    // Play Control Menu
+    if (dispPlayControl && dispAllUiFlag) {
+        ofSetColor(0, 0, 0, 32);
+        ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
+    }
+
+    // display Debug Info -----------------------------------------------
     stringstream tSs;
     
     int pX = 40;
@@ -1641,7 +1645,7 @@ void ofApp::keyReleased(int key){
     if (key == ' ') {
         dispAllUiFlag ^= true;
     }
-        
+    
     if (key == '0') {
         
         if (viewerMode == 0) {
