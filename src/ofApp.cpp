@@ -1299,8 +1299,20 @@ void ofApp::drawUi() {
         if (dispPlayControl) {
             ofSetColor(0, 0, 0, 32);
             ofDrawRectangle(myGuiMain);
+            
+            pY = myGuiMain.getTop()-30;
+            ofSetColor(64,64,64,255);
+            tSs.str("");
+            tSs << fixed << setprecision(1) << ofGetFrameRate() << " fps ";
+            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs <<  "ModelName: " << meshNameList[selectMeshId];
+            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
         }
         
+        
+        pY = 80;
         // display Debug Info -------------------------
         if (uiBtnDebugInfo) {
             ofSetColor(255,255,255,255);
@@ -1484,7 +1496,7 @@ void ofApp::drawUi() {
             
             ofSetColor(255, 255, 255, 255);
             font.drawString("<", myGuiDetailLeftButton.getCenter().x-14, myGuiDetailLeftButton.getCenter().y+14);
-            font.drawString(">", myGuiDetailRightButton.getCenter().x-16, myGuiDetailRightButton.getCenter().y+14);
+            font.drawString(">", myGuiDetailRightButton.getCenter().x-12, myGuiDetailRightButton.getCenter().y+14);
         }
         
         
