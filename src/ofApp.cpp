@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+#pragma mark -  Setup Functions
+
 //--------------------------------------------------------------
 void ofApp::setup(){
     
@@ -27,6 +29,8 @@ void ofApp::setup(){
     
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
+    
+    dispPlayControl = true;
     
     
     //maxLoadMeshNum = 6;
@@ -94,9 +98,6 @@ void ofApp::setup(){
     fontDebugPrint.loadFont("hira.otf", 12);
     ofxGuiSetFont("hira.otf", 11, true, true);
     
-    ofxGuiSetTextPadding(3);
-    ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
-    
     // myGuiSetup ----------------------------------------------------------------------
     
     myGuiSetup();
@@ -111,22 +112,56 @@ void ofApp::setup(){
     ofVec2f minPos = ofVec2f(-ofGetWidth() * 3, -ofGetHeight() * 4);
     ofVec2f maxPos = ofVec2f(ofGetWidth() * 2, ofGetHeight() * 3);
    
-    uiBtnPlayPause.setSize(100, 100);
     
-
     // Set GUI parts -------------------------------------------------------------------------------
-    guiPlayControl.setup("PlayControl");
-    guiPlayControl.setPosition(0, ofGetHeight()-100);
-    guiPlayControl.setDefaultHeight(24);
+    ofxGuiSetTextPadding(10);
+    //ofxGuiSetFillColor(ofColor(255,0,0));
+    //ofxGuiSetBackgroundColor(ofColor(0,255,0));
+    ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
+    
+    guiPlayControlBar.setup("PlayControlBar");
+    guiPlayControlBar.setPosition(0, ofGetHeight()-100);
+    guiPlayControlBar.setSize(ofGetWidth(), 50);
+    guiPlayControlBar.setDefaultWidth(70);
+    guiPlayControlBar.setAlignHorizontal();        // ボタンを横並びにする
+    guiPlayControlBar.setWidthElements(70);
+    ///guiPlayControl.setDefaultHeight(25);
+    guiPlayControlBar.setShowHeader(false);
+    //guiPlayControl.add(uiBtnPlayPause.setup("Play", true, 40, 25));
+
+    //uiBtnPlayPause = panel1.add(new ofxMinimalToggle(ofParameter<bool>("show header", true), 0, 30));
+    
+    guiPlayControlBar.add(uiBtnPlayPauseParts.setup(uiBtnPlayPause.set("Play", true), 70, 50) );
+    
+    guiPlayControlMenu.setup("PlayControlMenu");
+    guiPlayControlMenu.setPosition(400, ofGetHeight()-50);
+    guiPlayControlMenu.setSize(ofGetWidth(), 50);
+    guiPlayControlMenu.setDefaultWidth(70);
+    guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
+    guiPlayControlMenu.setWidthElements(70);
+    ///guiPlayControl.setDefaultHeight(25);
+    guiPlayControlMenu.setShowHeader(false);
+
+    //guiPlayControlMenu.add(new ofxGuiSpacer(300) );
+    guiPlayControlMenu.add(new ofxMinimalButton("button", 0, 50));
+    
+    //uiBtnPlayPauseParts.setDefaultWidth(70);
+    //uiBtnPlayPauseParts.setPosition(100, 50);
+
+    //uiBtnPlayPause = *(new ofxMinimalToggle(ofParameter<bool>("Play", true), 70, 50)) ;
+    //uiBtnPlayPause.setup(ofParameter<bool>("Play", true), 70, 50) ;
+    //guiPlayControl.add(uiBtnPlayPause.setup(ofParameter<bool>("Play", true), 70, 50) );
+    
+    //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
     
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
     
-    gui.setDefaultBackgroundColor(ofColor(255,0,0));
+    //gui.setDefaultBackgroundColor(ofColor(255,0,0,224));
     
     gui.setPosition(0, 0);
-    gui.setDefaultHeight(24);
-    gui.setBackgroundColor(ofColor(0,0,0,32));
+    gui.setDefaultHeight(25);
+    //gui.setBackgroundColor(ofColor(0,0,0,32));
     gui.setShowHeader(false);
 
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
@@ -135,28 +170,31 @@ void ofApp::setup(){
     gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
     gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
-    gui.add(uiBtnLight.setup("Light on/off", true, 40, 40));
-    gui.add(uiBtnGrid.setup("Grid", false, 40, 40));
-    gui.add(uiBtnDebugInfo.setup("DebugInfo", false, 40, 40));
-    gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 40));
-    gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 40));
-    gui.add(uiBtnOrtho.setup("Ortho", false, 40, 40));
-    gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 40));
+    gui.add(uiBtnLight.setup("Light on/off", true, 40, 25));
+    gui.add(uiBtnGrid.setup("Grid", false, 40, 24));
+    gui.add(uiBtnDebugInfo.setup("DebugInfo", false, 40, 25));
+    gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 25));
+    gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 25));
+    gui.add(uiBtnOrtho.setup("Ortho", false, 40, 25));
+    gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 25));
     gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
-    gui.add(uiBtnReset.setup("Reset", 40, 40));
-    gui.add(uiBtnSelectReset.setup("quit", 40, 40));
+    gui.add(uiBtnReset.setup("Reset", 40, 25));
+    gui.add(uiBtnSelectReset.setup("quit", 40, 25));
     
     
     guiMapEdit.setDefaultWidth(300);
+    //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
     gui.setDefaultHeight(24);
+    /*
+    gui.setDefaultBorderColor(ofColor(255,0,0));
+    gui.setTextColor(ofColor(255,0,0));
+    */
     guiMapEdit.setPosition(0, 0);
     guiMapEdit.setWidthElements(300);
     guiMapEdit.setShowHeader(false);
-
     
-    guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0));
     //guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
     guiMapEdit.add(uiEditPosY.setup("posY",0,-5000,5000));
@@ -177,10 +215,10 @@ void ofApp::setup(){
     
     guiPlayItem.setup("playItem");
     
-    guiPlayItem.add(uiBtnPlaySelectA.setup("A", 50, 40));
-    guiPlayItem.add(uiBtnPlaySelectB.setup("B", 50, 40));
-    guiPlayItem.add(uiBtnPlaySelectC.setup("C", 50, 40));
-    guiPlayItem.add(uiBtnPlaySelectBack.setup("Reset", 50, 40));
+    guiPlayItem.add(uiBtnPlaySelectA.setup("A", 50, 25));
+    guiPlayItem.add(uiBtnPlaySelectB.setup("B", 50, 25));
+    guiPlayItem.add(uiBtnPlaySelectC.setup("C", 50, 25));
+    guiPlayItem.add(uiBtnPlaySelectBack.setup("Reset", 50, 25));
     
     
     guiPage.setup("single page");
@@ -192,7 +230,8 @@ void ofApp::setup(){
     //guiPage2.add(&rotary);
     
     guiTabbedPages.setup("tabbed pages", "", 100);
-    guiTabbedPages.setSize(300, 700);
+    guiTabbedPages.setSize(300, 550);
+    //guiTabbedPages.setBackgroundColor(ofColor(0,0,0,32));
     guiTabbedPages.setTabWidth(70);
     guiTabbedPages.setTabHeight(30);
     guiTabbedPages.add(&guiPage);
@@ -241,13 +280,16 @@ void ofApp::setup(){
 
 void ofApp::myGuiSetup() {
 
-    guiPlayControl.setPosition(0, ofGetHeight()-100);
+    guiPlayControlBar.setPosition(0, ofGetHeight()-100);
+    guiPlayControlMenu.setPosition(guiPlayControlMenu.getPosition().x, ofGetHeight()-50);
     
     myGuiMain = ofRectangle(0, ofGetHeight()-100, ofGetWidth(), 100);
     mainView = ofRectangle(0, 0, ofGetWidth(),ofGetHeight() - myGuiMain.height);
     
     myGuiMainMenuDiff = ofRectangle(0, 50, ofGetWidth(), 50);
     myGuiMainTimebarDiff = ofRectangle(0, 0, ofGetWidth(), 50);
+    
+    myGuiSeekBar = ofRectangle(100, ofGetHeight()-100, ofGetWidth()-150, 50);
     
     myGuiMainMenu = myGuiMain;
     myGuiMainMenu.y += 50;
@@ -267,6 +309,7 @@ void ofApp::myGuiSetup() {
 }
 
 
+#pragma mark -  Update Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 //   Update Functions
@@ -317,6 +360,8 @@ void ofApp::update(){
 }
 
 
+#pragma mark -  Draw Functions
+
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 //   Draw Functions
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -331,13 +376,14 @@ void ofApp::draw(){
         dataLoad();
     }
     
-    // --------------------------
+    
     ofBackground(240, 240, 240);        // gray bg
     
     
-    
-    ofSetColor(0, 0, 0, 32);
-    ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
+    if (dispPlayControl) {
+        ofSetColor(0, 0, 0, 32);
+        ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
+    }
     
     ofEnableSmoothing();
     
@@ -1260,9 +1306,9 @@ void ofApp::draw(){
             //eCam.setPosition(posX, posY, eCam.getZ());
         }
         
-        
-        int barWidth = ofGetWidth()*10/10;
-        int barX = 0;//ofGetWidth() / 10;
+        // Time Bar -------------------------------------------------------------
+        int barWidth = myGuiSeekBar.getWidth();
+        int barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
         int progressPosX;
         
         if (frameCount>1) {
@@ -1282,11 +1328,12 @@ void ofApp::draw(){
         
         ofSetColor(64,64,64, 64);
         ofSetLineWidth(3);
-        ofDrawLine(barX, ofGetHeight() - 130, barX+barWidth, ofGetHeight() - 130);
-        ofDrawCircle(progressPosX+barX+2, ofGetHeight() - 130+2, 24);
+        ofDrawLine(barX, myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, barX+barWidth,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2);
+        ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 24);
         ofSetColor(255,255,255);
-        ofDrawCircle(progressPosX+barX, ofGetHeight() - 130, 20);
+        ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 20);
 
+        // Play Time Display ----------------------------------------------------------
         tSs.str("");
         tSs << "nowPlayTime: " << nowPlayTime << "    /  endTime: " << totalScanTimeRecordMaxTime;
         fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 230);
@@ -1323,16 +1370,18 @@ void ofApp::draw(){
         }
         
         ofDisableDepthTest();
+        
+        // viewerMode change ----------------------------------------------------------------------------
         if (viewerMode == 0) {
             ofSetColor(255, 0, 0, 192);
         } else {
             ofSetColor(128, 128, 128, 192);
         }
         //ofRect(0, 700, 200, 50);
-        ofRectRounded(ofRectangle(10, 700, 180, 50), 10);
+        ofRectRounded(ofRectangle(10, myGuiMainMenu.getTop()+5, 180, 40), 10);
         
         ofSetColor(255,255,255,255);
-        fontSmall.drawString("Detail", 40, 735);
+        fontSmall.drawString("Detail", 40, myGuiMainMenu.getTop()+35);
 
         if (viewerMode == 1) {
             ofSetColor(255, 1, 0, 192);
@@ -1340,11 +1389,12 @@ void ofApp::draw(){
         //ofRect(0, 700, 200, 50);
             ofSetColor(128, 128, 128, 192);
         }
-        ofRectRounded(ofRectangle(210, 700, 180, 50), 10);
+        ofRectRounded(ofRectangle(210, myGuiMainMenu.getTop()+5, 180, 40), 10);
         
         ofSetColor(255,255,255,255);
-        fontSmall.drawString("File List", 240, 735);
+        fontSmall.drawString("File List", 240, myGuiMainMenu.getTop()+35);
         
+        // L-R arrow -----------------------------------------------------------------
         if (viewerMode == 0) {
             if (mouseX < 150 && mouseY < 500 && mouseY >= 150) {
                 ofSetColor(255, 128, 128, 192);
@@ -1370,10 +1420,13 @@ void ofApp::draw(){
         if (dispGui) {
             //guiMapEdit.draw();
             //gui.draw();
-            guiPlayControl.draw();
             guiTabbedPages.draw();
         }
-        
+        if (dispPlayControl) {
+            guiPlayControlBar.draw();
+            guiPlayControlMenu.draw();
+        }
+
     }
     
     frameCount++;
@@ -1553,6 +1606,8 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
     
 }
 
+
+#pragma mark -  User Interface Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 //   Control Functions
@@ -1819,6 +1874,7 @@ void ofApp::windowResized () {
 
 
 
+#pragma mark -  Utility Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 //   Utility Functions
@@ -1855,6 +1911,7 @@ ofRectangle ofApp::getSubRect( ofRectangle parentRect, ofRectangle subRect ) {
 
 
 
+#pragma mark -  File I/O Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 //   File I/O Control Functions

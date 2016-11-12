@@ -128,7 +128,8 @@ public:
     ofxPanelExtended gui;
     ofxPanelExtended guiMapEdit;
     ofxPanelExtended guiPlayItem;
-    ofxPanelExtended guiPlayControl;
+    ofxPanelExtended guiPlayControlBar;
+    ofxPanelExtended guiPlayControlMenu;
     
     ofxGuiPage guiPage;
     
@@ -145,7 +146,6 @@ public:
     ofxIntSlider uiFramerate;
     ofxIntSlider uiGpsMapMode;
     ofxVec2Slider position;
-    ofxToggle uiBtnPlayPause;
     ofxToggle uiBtnPlayRealtime;
     ofxToggle uiBtnLight;
     ofxToggle uiBtnTimerControl;
@@ -160,7 +160,9 @@ public:
     ofxToggle uiBtnTurnMesh;
     ofxToggle uiBtnLoopPlay;
     ofxToggle uiBtnOrtho;
-
+    ofParameter<bool> toggle_param, uiBtnPlayPause;
+    ofxMinimalToggle uiBtnPlayPauseParts;
+    ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;
     ofxFloatSlider uiEditPosY;
@@ -209,6 +211,7 @@ public:
     int mapDataColumns;
     
     bool dispGui;
+    bool dispPlayControl;
     bool dispDebugInfoFlag;
     bool dispAllUiFlag;
     bool dispPlayControlUiFlag;
@@ -268,6 +271,7 @@ public:
     ofRectangle myGuiDetailLeftButton;
     ofRectangle myGuiDetailRightButton;
     ofRectangle myGuiDispGuiToggle;
+    ofRectangle myGuiSeekBar;
     
     ofRectangle myGuiPlayButton;
     
