@@ -350,6 +350,66 @@ void ofApp::update(){
         playStartDateTime = ofGetElapsedTimeMillis();
     }
     
+    
+    if (frameCount>1) {
+        
+        if (!uiBtnLoopPlay) {       // Stop Pattern
+            
+            if (uiPlayMode == 1) {      // time-based
+                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
+                    uiBtnPlayPause = false;
+                    nowPlayTime = totalScanTimeRecordMaxTime-1;
+                    //playCount = totalMaxMeshNum;
+                }
+                
+            } else if (uiPlayMode == 2) {      // datetime-based sync
+                
+                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
+                    uiBtnPlayPause = false;
+                    nowPlayTime = totalScanTimeRecordMaxTime-1;
+                    //playCount = totalMaxMeshNum;
+                }
+                
+            } else {                   // frame-based
+                
+                if (viewerMode == 0) {
+                    if (playCount >= maxMeshNumList[selectMeshId] ) {
+                        uiBtnPlayPause = false;
+                        playCount = totalMaxMeshNum-1;
+                    }
+                    
+                } else if (viewerMode == 1) {
+                    if (playCount >= totalMaxMeshNum) {
+                        uiBtnPlayPause = false;
+                        playCount = totalMaxMeshNum-1;
+                    }
+                }
+            }
+            
+        } else {                    // Loop Pattern
+            
+            if (uiPlayMode == 1) {      // time-based
+                nowPlayTime %= totalScanTimeRecordMaxTime;
+            } else if (uiPlayMode == 2) {
+                if (viewerMode == 1) {
+                    nowPlayTime %= totalScanTimeRecordMaxTime;
+                } else if (viewerMode == 2) {
+                    
+                } else if (viewerMode == 0) {
+                    
+                }
+            } else {            // frame-based
+                if (viewerMode == 1) {
+                    playCount %= (totalMaxMeshNum / skipLoadFrame);
+                } else if (viewerMode == 0) {
+                    playCount %= (maxMeshNumList[selectMeshId] / skipLoadFrame);
+                }
+            }
+            
+        }
+        
+    }
+
 }
 
 
@@ -1205,21 +1265,22 @@ void ofApp::draw(){
     
     // UI ---------------------------------------------------
 
-    // Play Control Menu
-    if (dispPlayControl && dispAllUiFlag) {
-        ofSetColor(0, 0, 0, 32);
-        ofDrawRectangle(myGuiMain);//0,ofGetHeight()-100, ofGetWidth(), 100);
-    }
-
-    // display Debug Info -----------------------------------------------
     stringstream tSs;
     
     int pX = 40;
     int pY = 80;
     int fSize = 10;
     int lineHeight = fSize*2;
-    if (dispAllUiFlag) {
     
+    if (dispAllUiFlag) {
+        
+        // Play Control Menu --------------------------
+        if (dispPlayControl) {
+            ofSetColor(0, 0, 0, 32);
+            ofDrawRectangle(myGuiMain);
+        }
+    
+        // display Debug Info -------------------------
         if (uiBtnDebugInfo) {
             ofSetColor(255,255,255,255);
             
@@ -1269,45 +1330,22 @@ void ofApp::draw(){
                 fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
             }
 
-        
-            stringstream tSs;
             tSs.str("");
             tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
-            
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
             
+            tSs.str("");
             ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
-            stringstream tSs2;
-            tSs2.str("");
-            tSs2 << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
+            tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
-            stringstream tSs3;
-            
-            tSs3 << "viewerMode: " << viewerMode << endl;
+            tSs.str("");
+            tSs << "viewerMode: " << viewerMode << endl;
             
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         }
-
-        /*
-        if (mouseX >= gui.getPosition().x
-            && mouseX < (gui.getPosition().x + gui.getWidth())
-            && mouseY >= gui.getPosition().y
-            && mouseY < (gui.getPosition().y + gui.getHeight()) ) {
-            eCam.disableMouseInput();
-        } else {
-            eCam.enableMouseInput();
-        }
-        */
         
-        auto posX = position->x;
-        auto posY = position->y;
-        if (prevPosX != posX || prevPosY != posY) {
-            //eCam.setPosition(posX, posY, eCam.getZ());
-        }
-        
-        // Time Bar -------------------------------------------------------------
+        // Seek Bar -------------------------------------------------------------
         int barWidth = myGuiSeekBar.getWidth();
         int barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
         int progressPosX;
@@ -1382,12 +1420,6 @@ void ofApp::draw(){
             fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 40);
         }
         
-        
-        
-        if (uiBtnPlayPause) {
-    //        fontSmall.drawString("now playing...", 100, 700);
-        }
-        
         ofDisableDepthTest();
         
         // viewerMode change ----------------------------------------------------------------------------
@@ -1434,7 +1466,7 @@ void ofApp::draw(){
             font.drawString(">", ofGetWidth()-87, ofGetHeight()/2+54);
         }
         
-        // GUI‚Äû√á√≠√ã¬∞¬Æ√Å¬ß‚à´
+        // GUI
         
         if (dispGui) {
             //guiMapEdit.draw();
@@ -1452,65 +1484,6 @@ void ofApp::draw(){
     
     if (uiBtnPlayPause) {
         playCount++;
-    }
-
-    if (frameCount>1) {
-        
-        if (!uiBtnLoopPlay) {       // Stop Pattern
-            
-            if (uiPlayMode == 1) {      // time-based
-                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
-                    uiBtnPlayPause = false;
-                    nowPlayTime = totalScanTimeRecordMaxTime-1;
-                    //playCount = totalMaxMeshNum;
-                }
-
-            } else if (uiPlayMode == 2) {      // datetime-based sync
-                
-                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
-                    uiBtnPlayPause = false;
-                    nowPlayTime = totalScanTimeRecordMaxTime-1;
-                    //playCount = totalMaxMeshNum;
-                }
-                
-            } else {                   // frame-based
-
-                if (viewerMode == 0) {
-                    if (playCount >= maxMeshNumList[selectMeshId] ) {
-                        uiBtnPlayPause = false;
-                        playCount = totalMaxMeshNum-1;
-                    }
-                    
-                } else if (viewerMode == 1) {
-                    if (playCount >= totalMaxMeshNum) {
-                        uiBtnPlayPause = false;
-                        playCount = totalMaxMeshNum-1;
-                    }
-                }
-            }
-
-        } else {                    // Loop Pattern
-            
-            if (uiPlayMode == 1) {      // time-based
-                nowPlayTime %= totalScanTimeRecordMaxTime;
-            } else if (uiPlayMode == 2) {
-                if (viewerMode == 1) {
-                    nowPlayTime %= totalScanTimeRecordMaxTime;
-                } else if (viewerMode == 2) {
-                    
-                } else if (viewerMode == 0) {
-                    
-                }
-            } else {            // frame-based
-                if (viewerMode == 1) {
-                    playCount %= (totalMaxMeshNum / skipLoadFrame);
-                } else if (viewerMode == 0) {
-                    playCount %= (maxMeshNumList[selectMeshId] / skipLoadFrame);
-                }
-            }
-            
-        }
-        
     }
 
 }
