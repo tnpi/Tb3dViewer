@@ -1641,22 +1641,14 @@ void ofApp::keyReleased(int key){
     if (key == ' ') {
         dispAllUiFlag ^= true;
     }
-    
-    /*
-    if (key == 51) {
-        uiBtnTimerControl ^= true;
-    }
-     */
-     
+        
     if (key == '0') {
         
-        eCam.reset();
-        eCam.setPosition(0, 0, 1000);
-        viewerMode = 1;
-        
-        selectMeshId = 0;
-        
-        cout << "key number 0 Check!: " << key << endl;
+        if (viewerMode == 0) {
+            resetCamDetailView();
+        } else {
+            resetCamListView();
+        }
         
     } else if (key == '1') {
         
