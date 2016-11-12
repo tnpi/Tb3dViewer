@@ -12,7 +12,7 @@ void ofApp::setup(){
     // initializing vars ----------------------------------------------
     initAppVars();
     
-    // app settings --------------------------------------------
+    // app local settings --------------------------------------------
     
     maxLoadMeshNum = 2000;      //  2000  100
     skipLoadFrame = 10;         // 1  10
@@ -22,16 +22,15 @@ void ofApp::setup(){
     loadPictureMode = false;
     loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
  
+    dataLoadOnAppBoot = true;
+
     mapDataColumns = 16;
     colorMode = 1;
     viewerMode = 1;
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
     //uiMeshDrawType = 1;
-    mapFileExists = false;
     
     dispPlayControl = true;
-    
-    dataLoadOnAppBoot = true;
     
     // get file load path --------------------------------------------------------------------------------
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
@@ -48,6 +47,12 @@ void ofApp::setup(){
     fontDebugPrint.loadFont("hira.otf", 12);
     fontMyGui.loadFont("hira.otf", 11);
     ofxGuiSetFont("hira.otf", 11, true, true);
+    
+    // FBO ------------------------------------------------------------------------
+    fboFront.allocate(640, 480, GL_RGBA);
+    fboSide.allocate(640, 480, GL_RGBA);
+    fboTop.allocate(640, 480, GL_RGBA);
+    fboCam.allocate(640, 480, GL_RGBA);
     
     // myGuiSetup ----------------------------------------------------------------------
     myGuiSetup();
@@ -75,6 +80,7 @@ void ofApp::setup(){
 // setup end ----------------------------------------------------------------------------------
 
 void ofApp::initAppVars() {
+    
     selectMeshId = 0;
     frameCount = 0;
     playCount = 0;
@@ -95,7 +101,8 @@ void ofApp::initAppVars() {
     loopPlay = true;
     onPlay = true;
     prevFramePlayState = true;
-    
+    mapFileExists = false;
+
     prevSelectModel = -1;
     
     scanGpsDataMinLat = 1000;
@@ -105,10 +112,6 @@ void ofApp::initAppVars() {
     scanUnixTimeAllItemMin = LONG_MAX;
     scanUnixTimeAllItemMax = LONG_MIN;
     
-    fboFront.allocate(640, 480, GL_RGBA);
-    fboSide.allocate(640, 480, GL_RGBA);
-    fboTop.allocate(640, 480, GL_RGBA);
-    fboCam.allocate(640, 480, GL_RGBA);
 }
 
 void ofApp::settingAppVarsOnBoot() {
@@ -118,6 +121,7 @@ void ofApp::settingAppVarsOnBoot() {
 
 #pragma mark - GUI Setup
 void ofApp::setupOfxGui() {
+    
     // Set GUI parts -------------------------------------------------------------------------------
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
     ofxGuiSetTextPadding(10);
@@ -285,7 +289,6 @@ void ofApp::myGuiSetup() {
     
     myGuiDispGuiToggle = getSubRect( myGuiMainMenu, ofRectangle(ofGetWidth()-50, ofGetHeight()-50, 50, 50) );
     
-    
     myGuiPlayButton = getSubRect( myGuiMainMenu, ofRectangle(0,0,50,50) );
 
 }
@@ -302,54 +305,62 @@ void ofApp::myGuiSetup() {
 
 void ofApp::update(){
     
-    int i = uiEditModelSelector;
-    
-    if (i != prevSelectModel) {
-        uiEditPosX = mapNum[i][0];
-        uiEditPosY = mapNum[i][1];
-        uiEditPosZ = mapNum[i][2];
-        uiEditRotX = mapNum[i][3];
-        uiEditRotY = mapNum[i][4];
-        uiEditRotZ = mapNum[i][5];
-        uiEditScale = mapNum[i][6];
-        uiEditReadStartFrame = mapNum[i][7];
-        uiEditReadEndFrame = mapNum[i][8];
-        uiEditDisplayFlag = mapNum[i][9];
-    }
-
-    
-    mapNum[i][0] = uiEditPosX;
-    mapNum[i][1] = uiEditPosY;
-    mapNum[i][2] = uiEditPosZ;
-    mapNum[i][3] = uiEditRotX;
-    mapNum[i][4] = uiEditRotY;
-    mapNum[i][5] = uiEditRotZ;
-    mapNum[i][6] = uiEditScale;
-    mapNum[i][7] = uiEditReadStartFrame;
-    mapNum[i][8] = uiEditReadEndFrame;
-    mapNum[i][9] = uiEditDisplayFlag;
-    
-    prevSelectModel = i;
-    
-    if (mouseY >= myGuiMain.getTop()) {
-        uiBtnTimerControl = true;
-    } else {
-        uiBtnTimerControl = false;
+    // Map Edit関係更新
+    {
+        int i = uiEditModelSelector;
+        
+        // load / Vars -> GUI
+        if (i != prevSelectModel) {
+            uiEditPosX = mapNum[i][0];
+            uiEditPosY = mapNum[i][1];
+            uiEditPosZ = mapNum[i][2];
+            uiEditRotX = mapNum[i][3];
+            uiEditRotY = mapNum[i][4];
+            uiEditRotZ = mapNum[i][5];
+            uiEditScale = mapNum[i][6];
+            uiEditReadStartFrame = mapNum[i][7];
+            uiEditReadEndFrame = mapNum[i][8];
+            uiEditDisplayFlag = mapNum[i][9];
+        }
+        
+        // save / GUI -> Vars
+        mapNum[i][0] = uiEditPosX;
+        mapNum[i][1] = uiEditPosY;
+        mapNum[i][2] = uiEditPosZ;
+        mapNum[i][3] = uiEditRotX;
+        mapNum[i][4] = uiEditRotY;
+        mapNum[i][5] = uiEditRotZ;
+        mapNum[i][6] = uiEditScale;
+        mapNum[i][7] = uiEditReadStartFrame;
+        mapNum[i][8] = uiEditReadEndFrame;
+        mapNum[i][9] = uiEditDisplayFlag;
+        
+        prevSelectModel = i;
     }
     
-    if (uiBtnTimerControl) {
-        eCam.disableMouseInput();
-    } else {
-        eCam.enableMouseInput();
+    // マウス座標で操作モード切替
+    {
+        if (mouseY >= myGuiMain.getTop()) {
+            uiBtnTimerControl = true;
+        } else {
+            uiBtnTimerControl = false;
+        }
+        
+        if (uiBtnTimerControl) {
+            eCam.disableMouseInput();
+        } else {
+            eCam.enableMouseInput();
+        }
     }
     
+    // 再生停止関係
     if (prevFramePlayState == false && uiBtnPlayPause) {
         playStartPrevPos = nowPlayTime;
         playStartDateTime = ofGetElapsedTimeMillis();
     }
     
-    
-    if (frameCount>1) {
+    // シークバー更新処理
+    if (frameCount > 1) {
         
         if (!uiBtnLoopPlay) {       // Stop Pattern
             
@@ -421,27 +432,27 @@ void ofApp::update(){
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 void ofApp::draw(){
-    
+
     ofSetFrameRate(uiFramerate);
     ofEnableSmoothing();
 
-    displayTotalVertices = 0;
-    
     if (frameCount == 1) {  // app start
         dataLoad();
     }
+    
+    // init vars --------------------------------------
+    displayTotalVertices = 0;
     
     // BG ---------------------------------------------
     ofBackground(240, 240, 240);
     ofSetColor(255,255,255,255);
 
-    // Loading -----------------------------------------
+    // display now Loading -----------------------------------------
     if (frameCount == 0) {
         font.drawString("Now Loading...", 500, 400);
     }
     
     // Light Settings ---------------------------------------
-    
     if (uiBtnLight) {
         ofEnableLighting();
         light.enable();
@@ -475,21 +486,15 @@ void ofApp::draw(){
         eCam.disableOrtho();
     }
     
-    // Axis Setting -------------------------------------------
+    // base Axis Setting -------------------------------------------
     ofScale(1,-1);      // y-axis reverse! (for fix drawString text flips promblem)
 
-    glPushMatrix();
-
-    // Draw Base Grid
-    if (uiBtnGrid) {
-        ofSetColor(255,255,255,255);
-        ofDrawGrid(uiThumbnailIconDistance);
-    }
     
-    //glTranslatef(0, 0, 0); //
-    
+    // -----------------------------------------------------------
     
 #pragma mark - Draw Mesh
+    glPushMatrix();
+    
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
@@ -573,673 +578,40 @@ void ofApp::draw(){
         }
         
         
-# pragma mark - Draw Detail view
+        
         if (viewerMode == 0) {
             
-            fboCam.begin();
-            {
-                ofPushMatrix();
+            drawDetailView(i, playFrameSelector);
             
-                //ofPushView();
+        } else if (viewerMode <= 1) {
             
-                ofCam.begin();
-                //ofCam.reset();
-                ofClear(255,255,255, 0);
-                ofSetColor(255,0,0,255);
-                font.drawString("test", 100,50);
-                //ofScale(0.25, 0.25, 0.25);
-                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                
-                ofCam.end();
-            
-                //ofPopView();
-                ofPopMatrix();
-            }
-            fboCam.end();
-
-            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-            
-            if (uiBtnGrid && i == selectMeshId) {
-                float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
-                drawScaleGrid(modelSize*1000, 100);
-            }
-            
-            displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
-            glPushMatrix();
-            
-            // Draw Model Name
-            {
-                glPushMatrix();  //
-                ofSetColor(255,255,255,255);
-                //glTranslatef(180, 400, 700); //
-                glTranslatef(-0,0,2);
-                
-                ofDisableLighting();        //
-                fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
-                ofEnableLighting();
-                
-                //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
-                glPopMatrix();
-            }
-            
-            
-            if (uiBtnTurnMesh) {
-                glRotatef(-90, 1, 0, 0);
-                
-            }             
-            glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-
-            
-            if (uiColorMode == 0) {
-                //ofTranslate(0,0,1500);      // goto center
-                //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-                //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            
-                ofScale(1000, 1000, 1000);
-            }
-            ofScale(1, 1, -1);      // fix model direction
-            if (uiColorMode == 1) {
-                asModelObj[i][playFrameSelector].setScaleNormalization(false);
-                ofScale(-1, -1, 1);      // fix model direction
-                //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-//                ofTranslate(1500,1100,-2500);      // goto center
-                
-                ofScale(1000, 1000, 1000);
-            }
-            ofRotateX(mapNum[i][3]);
-            ofRotateY(mapNum[i][4]);
-            ofRotateZ(mapNum[i][5]);
-            
-            double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            ofTranslate(centerX, centerY, -centerZ);
-            
-            if (mapNum[i][7] >= 1) {
-                glRotatef(180, 0, 1, 0);
-                ofTranslate(0,0,0);
-            }
-            if (mapNum[i][8] >= 1) {
-                glRotatef(180, 1, 0, 0);
-                //ofTranslate(0,0,-530);
-            }
-            if (mapNum[i][6] >= 1) {
-                glRotatef(180, 0, 0, 1);
-                //ofTranslate(0,0,-530);
-            }
-            
-            
-            if (mapNum[i][9] == 0) {
-                if (dualColorSystem == true && uiColorMode == 1) {
-                    
-                    if (uiMeshDrawType == 1) {
-                        ofSetLineWidth(1);
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                    } else if (uiMeshDrawType == 2) {
-                        
-                        glPointSize(4);
-                        //ofBlendMode(OF_BLENDMODE_ALPHA);
-
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                    } else {
-                        //asModelObj[i][counter].drawFaces();
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                    }
-                    
-                } else {
-                    if (uiMeshDrawType == 1) {
-                        ofSetLineWidth(1);
-                        modelList[i][playFrameSelector].drawWireframe();
-                    } else if (uiMeshDrawType == 2) {
-                        glPointSize(5);
-                        modelList[i][playFrameSelector].drawVertices();
-                    } else {
-                        modelList[i][playFrameSelector].draw();
-                    }
-                }
-            }
-            
-            glPopMatrix();
-            
-            glPushMatrix();
-            {
-                glRotatef(90, 1, 0, 0);
-                ofTranslate(0,0,1000);
-                ofScale(10,10,10);
-                modelImageList[i][playFrameSelector].draw(0,0);
-            }
-            glPopMatrix();
-
-            
-        }
-        
-        
-# pragma mark - Draw List view
-        else if (viewerMode <= 1) {
-            
-            if (uiBtnGrid && i == 0) {
-                drawScaleGrid(10000, 1000);
-            }
-            
-            if (uiGpsMapMode == 0) {
-                
-                displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
-                
-                glPushMatrix();
-                
-                
-                // リスト配置分
-                glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0); //√Å√Æ¬™√à√π¬¢‚Ä∞‚àè‚â†√Ç√∏√â‚Äû√Ö¬¥√Å√ü¬™√Ç√£√Ø
-                
-                //glRotatef(180, 0, 1, 0);        //
-
-                int gridSize = 1000;
-                int gridDiv = 10;
-                int gridRowSize = gridSize / gridDiv;
-                
-                // Draw Model Name
-                {
-                    glPushMatrix();  //
-                    ofSetColor(255,255,255,255);
-                    //glTranslatef(180, 400, 700); //
-                    glTranslatef(-0,0,2 );
-
-                    ofDisableLighting();        //
-                    ofSetColor(0,0,0);
-                    fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
-                    ofEnableLighting();
-
-                    //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
-                    glPopMatrix();
-                }
-                
-                
-                if (uiBtnTurnMesh) {
-                    glRotatef(-90, 1, 0, 0);
-                    
-                }
-                
-                if (mapNum[i][7] >= 1) {
-                    glRotatef(180, 0, 1, 0);
-                    ofTranslate(0,0,-530);
-                }
-                if (mapNum[i][8] >= 1) {
-                    glRotatef(180, 1, 0, 0);
-                    //ofTranslate(0,0,-530);
-                }
-                if (mapNum[i][6] >= 1) {
-                    glRotatef(180, 0, 0, 1);
-                    //ofTranslate(0,0,-530);
-                }
-                ofRotateX(mapNum[i][3]);
-                ofRotateY(mapNum[i][4]);
-                ofRotateZ(mapNum[i][5]);
-                
-                
-                if (uiColorMode == 0) {
-                    //ofTranslate(0,0,1500);      // goto center
-                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                    
-                    ofScale(1000, 1000, 1000);
-                }
-                ofScale(1, 1, -1);      // fix model direction
-                if (uiColorMode == 1) {
-                    asModelObj[i][playFrameSelector].setScaleNormalization(false);
-                    ofScale(-1, -1, 1);      // fix model direction
-                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                    //                ofTranslate(1500,1100,-2500);      // goto center
-                    
-                    ofScale(1000, 1000, 1000);
-                }
-                
-                
-                // ---------------------------------------------------
-                if (modelFlagList[i] == 0) {            // not effect vertex color object
-                    ofSetColor(255, 255, 255, 255);
-                } else if (modelFlagList[i] == 1) {
-                    ofSetColor(255, 255, 255, 32);
-                } else if (modelFlagList[i] == 2) {
-                    ofSetColor(0, 255, 0, 64);
-                }
-                
-                if (mapNum[i][9] == 0) {
-                    
-                    
-                    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-                    
-                    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-                    ofTranslate(centerX, centerY, -centerZ);
-                    
-                    if (dualColorSystem == true && uiColorMode == 1) {
-                        
-                        if (uiMeshDrawType == 1) {
-                            ofSetLineWidth(1);
-                            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                        } else if (uiMeshDrawType == 2) {
-                            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                        } else {
-                            //asModelObj[i][counter].drawFaces();
-                            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                        }
-                        
-                    } else {
-
-                        if (uiMeshDrawType == 1) {
-                            //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                            //            asModelObj[i][counter].drawWireframe();
-                            ofSetLineWidth(1);
-                            
-                            modelList[i][playFrameSelector].drawWireframe();
-                        } else if (uiMeshDrawType == 2) {
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            modelList[i][playFrameSelector].drawVertices();
-                        } else {
-                            
-                            modelList[i][playFrameSelector].draw();
-                            
-                            //asModelObj[i][counter].drawFaces();
-                            //asModelObj[i][counter].draw(OF_MESH_FILL);
-                        }
-                    }
-                }
-            } else if (uiGpsMapMode == 1) {
-                
-                //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-                
-                for(int z=0; z<maxMeshNumList[i]; z++) {
-                    displayTotalVertices += modelList[i][z].getNumVertices();
-
-                    glPushMatrix();
-                    
-                    playFrameSelector = z;
-                    
-                    double latScale = 10000*uiTestSlider/100;
-                    double longScale = 10000*uiTestSlider/100;
-                    
-                    double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-                    double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-                    
-                    //cout << "posX: " << posX << " posY: " << posY << endl;
-                    
-                    
-                    if (uiBtnTurnMesh) {
-                        glRotatef(-90, 1, 0, 0);
-                        
-                    }
-                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);
-                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                    
-                    ofScale(100, 100, 100);  // temp debug
-                    
-                    // 6/29
-                    ofScale(1, 1, -1);      // fix model direction
-                    
-                    ofTranslate(0,0,posY);
-                    ofTranslate(posX,0,0);
-                    
-                    if (modelFlagList[i] == 0) {            // not effect vertex color object
-                        ofSetColor(255, 255, 255, 255);
-                    } else if (modelFlagList[i] == 1) {
-                        ofSetColor(255, 255, 255, 32);
-                    } else if (modelFlagList[i] == 2) {
-                        ofSetColor(0, 255, 0, 64);
-                    }
-                    ofSetColor(255, 255, 255, 255);
-                    
-                    if (mapNum[i][9] == 0) {
-                        
-                        if (dualColorSystem == true && uiColorMode == 1) {
-                            
-                            if (uiMeshDrawType == 1) {
-                                ofSetLineWidth(1);
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                            } else if (uiMeshDrawType == 2) {
-                                glPointSize(5);
-
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                            } else {
-                                //asModelObj[i][counter].drawFaces();
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                            }
-                            
-                        } else {
-
-                            if (uiMeshDrawType == 1) {
-                                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                                //            asModelObj[i][counter].drawWireframe();
-                                ofSetLineWidth(1);
-                                
-                                modelList[i][playFrameSelector].drawWireframe();
-                            } else if (uiMeshDrawType == 2) {
-                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                                glPointSize(5);
-
-                                modelList[i][playFrameSelector].drawVertices();
-                            } else {
-                                
-                                modelList[i][playFrameSelector].draw();
-                                
-                                //asModelObj[i][counter].drawFaces();
-                                //asModelObj[i][counter].draw(OF_MESH_FILL);
-                            }
-                        }
-                    }
-                    glPopMatrix();
-                    
-                }
-
-            } else if (uiGpsMapMode == 3) {
-                
-                //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-                
-                for(int z=0; z<maxMeshNumList[i]; z++) {
-                    displayTotalVertices += modelList[i][z].getNumVertices();
-                    
-                    glPushMatrix();
-                    
-                    playFrameSelector = z;
-                    
-                    ofVec3f tr = modelMatrixList[z].getTranslation();
-                    double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-                    double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-                    
-                    cout << "posX: " << posX << " posY: " << posY << endl;
-                    
-                    
-                    if (uiBtnTurnMesh) {
-                        glRotatef(-90, 1, 0, 0);
-                        
-                    }
-                    //ofTranslate(0,-1*modelHeightList[i]*1000,0);
-                    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                    
-                    // 6/29
-                    ofScale(1, 1, -1);      // fix model direction
-                    if (uiColorMode == 1) {
-                        ofScale(-1, -1, 1);      // fix model direction
-                    }
-                    
-                    ofTranslate(0,0,posY);
-                    ofTranslate(posX,0,0);
-                    
-                    ofScale(1000, 1000, 1000);  // temp debug
-                    
-                    if (modelFlagList[i] == 0) {            // not effect vertex color object
-                        ofSetColor(255, 255, 255, 255);
-                    } else if (modelFlagList[i] == 1) {
-                        ofSetColor(255, 255, 255, 32);
-                    } else if (modelFlagList[i] == 2) {
-                        ofSetColor(0, 255, 0, 64);
-                    }
-                    ofSetColor(255, 255, 255, 255);
-                    
-                    if (mapNum[i][9] == 0) {
-                        
-                        if (dualColorSystem == true && uiColorMode == 1) {
-                            
-                            if (uiMeshDrawType == 1) {
-                                ofSetLineWidth(1);
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                            } else if (uiMeshDrawType == 2) {
-                                glPointSize(5);
-                                
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                            } else {
-                                //asModelObj[i][counter].drawFaces();
-                                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                            }
-                            
-                        } else {
-                            
-                            if (uiMeshDrawType == 1) {
-                                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                                //            asModelObj[i][counter].drawWireframe();
-                                ofSetLineWidth(1);
-                                
-                                modelList[i][playFrameSelector].drawWireframe();
-                            } else if (uiMeshDrawType == 2) {
-                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                                glPointSize(5);
-                                
-                                modelList[i][playFrameSelector].drawVertices();
-                            } else {
-                                
-                                modelList[i][playFrameSelector].draw();
-                                
-                                //asModelObj[i][counter].drawFaces();
-                                //asModelObj[i][counter].draw(OF_MESH_FILL);
-                            }
-                        }
-                    }
-                    glPopMatrix();
-                    
-                }
-                
-                ofSetLineWidth(5);
-                ofSetColor(0,64,255);
-                for(int z=0; z<maxMeshNumList[i]-1; z++) {
-                    ofMatrix4x4 matrixA = modelMatrixList[z];
-                    ofMatrix4x4 matrixB = modelMatrixList[z+1];
-                    
-                    ofVec3f posA = matrixA.getTranslation();
-                    ofVec3f posB = matrixB.getTranslation();
-                    
-                    ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
-                    
-                    //cout << "posX: " << posX << " posY: " << posY << endl;
-                }
-            
-                
-# pragma mark - Draw Other view
-            } else {        // GPS Walk thru mode
-                
-                glPushMatrix();
-
-                cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-                for(int z=0; z<maxMeshNumList[i]; z++) {
-                    
-                    glPushMatrix();
-                    
-                    playFrameSelector = z;
-                    
-                    // 緯度（上下？）経度に適当な係数を掛けると、ある程度正確な座標になる　ここまでは一応座標取れて、配置できている。
-                    double latScale = 100*uiTestSlider;
-                    double longScale = 100*uiTestSlider;
-                    
-                    // 北が緯度高く90、東ガ経度高く９０
-                    double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale*1000;
-                    double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale*1000;
-                    
-                    cout << "posX: " << posX << " posY: " << posY << endl;
-                    
-                    // 座標移動
-                    ofTranslate(0,-posY,0);
-                    ofTranslate(0,0,0);
-                    
-                    if (uiBtnTurnMesh) {
-                        glRotatef(-90, 1, 0, 0);
-                        
-                    }
-                    ofTranslate(0,-1*modelHeightList[i]*1000,0);
-                    ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-                    
-                    ofScale(1000, 1000, 1000);  // temp debug
-                    
-                    // 6/29
-                    ofScale(1, 1, -1);      // fix model direction
-                    
-                    long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
-                    long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;               // 秒単位に
-
-                    //cout << "nowPlayTimeTemp" << nowPlayTime << "nowPlayTimeTemp: " << nowPlayTimeTemp << endl;
-
-                    double camPosY = 0;
-                    double currentCamPos = INT_MAX;
-                    double currentSpeed = 0;
-                    for(int p=0; p<maxMeshNumList[i]-1; p++) {
-                        
-                        //cout << "nowPlayTimeTemp: " << nowPlayTimeTemp << " scanUnixTimeLongIntList[i][p+1]: " <<  scanUnixTimeLongIntList[i][p+1] << endl;
-                        
-                        double timeA = scanUnixTimeLongIntList[i][p];
-                        double timeB = scanUnixTimeLongIntList[i][p+1];
-                        
-                        if ((nowPlayTimeTemp >= timeA) && (nowPlayTimeTemp <= timeB)) {
-                            
-                            double b2pTime = timeB - timeA;     // between two points time
-                            double elapsedTime = nowPlayTimeTemp - timeA;
-                            double normalizationElapseTime = elapsedTime / b2pTime;
-                            
-                            double b2pLatDistance = (scanGpsDataList[i][p+1][0] - scanGpsDataList[i][p][0]);
-                            
-                            double elapedLatDistance = b2pLatDistance * normalizationElapseTime;
-                            camPosY = (elapedLatDistance + (scanGpsDataList[i][p][0] - scanGpsDataMinLat)) * latScale * 1000;
-                            
-                            //cout << "camPosY(setted!): " << camPosY << endl;
-                            break;
-                            
-                        }
-                    }
-                    
-                    //camPosY = 1*ofGetFrameNum();
-                    
-                    eCam.reset();
-                    
-                    eCam.setPosition(5000,camPosY,1200);
-                    eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY, 1200), ofVec3f(0,0,1));
-                
-                    if (modelFlagList[i] == 0) {            // not effect vertex color object
-                        ofSetColor(255, 255, 255, 255);
-                    } else if (modelFlagList[i] == 1) {
-                        ofSetColor(255, 255, 255, 32);
-                    } else if (modelFlagList[i] == 2) {
-                        ofSetColor(0, 255, 0, 64);
-                    }
-                    ofSetColor(255, 255, 255, 255);
-                    
-                    if (mapNum[i][9] == 0) {
-                        
-                        if (uiMeshDrawType == 1) {
-                            //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                            //            asModelObj[i][counter].drawWireframe();
-                            ofSetLineWidth(1);
-                            
-                            modelList[i][playFrameSelector].drawWireframe();
-                        } else if (uiMeshDrawType == 2) {
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                            modelList[i][playFrameSelector].drawVertices();
-                        } else {
-                            
-                            modelList[i][playFrameSelector].draw();
-                            
-                            //asModelObj[i][counter].drawFaces();
-                            //asModelObj[i][counter].draw(OF_MESH_FILL);
-                        }
-                    }
-                    glPopMatrix();
-
-                }
-                glPopMatrix();
-                    
-            }
-
-            ofSetColor(255, 255, 255, 255);
-            
-            glPopMatrix();
+            drawListView(i, playFrameSelector);
             
         } else  {           // mapView -----------------------------------------------------------
-            glPushMatrix();
             
-            
-            glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
-            
-            glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-            ofRotateX(mapNum[i][3]);
-            ofRotateY(mapNum[i][4]);
-            ofRotateZ(mapNum[i][5]);
-            
-            glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       //
-            
-            ofScale(mapNum[i][6]/100.0, mapNum[i][6]/100.0, mapNum[i][6]/100.0);
-            
-            if (uiBtnTurnMesh) {
-                glRotatef(-90, 1, 0, 0);
-                
-            }
-            
-            if (mapNum[i][9] == 0) {
-            
-                if (uiMeshDrawType == 1) {
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                } else if (uiMeshDrawType == 2) {
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                } else {
-                    asModelObj[i][playFrameSelector].drawFaces();
-                    //asModelObj[i][counter].draw(OF_MESH_FILL);
-                    
-                }
-            }
-            
-            glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
+            drawMapView(i, playFrameSelector);
 
         }
         
     }       // for loop
     
+    // OpenNi -------------------------------------------------
+    drawOpenNi();
     
+    glPopMatrix();      // end Mesh Draw
     
-    // openNI scanner --------------------------------------------------------------
+    eCam.end();         // end Mesh Draw Cam
+ 
     
-    
-    if (useOpenNi && frameCount >= 1) {  // app start
-        //ofShortPixels& depthPixels = oniDepth.getPixelsRef();
-        ofMesh oniMesh;
-        
-        for(int i=0; i<240; i++) {
-
-            for(int j=0; j<320; j++) {
-                
-                ofVec3f worldPos = oniDepth.getWorldCoordinateAt(j, i);
-                //worldPos.x *= 10.0;
-                //worldPos.y *= 10.0;
-                //worldPos.z *= 10.0;
-                oniMesh.addColor(ofFloatColor(0.0,1.0,0));
-                oniMesh.addVertex(worldPos);
-                
-            }
-        }
-        //ofEndShape();
-        ofTranslate(0,1000,0);
-        ofRotate(-90, 0, 0, 1);
-        ofRotate(90, 1, 0, 0);
-        ofRotate(90, 0, 1, 0);
-        //ofScale(100.0,100.0,100.0);
-        glPointSize(2);
-        oniMesh.drawVertices();
-        //tMesh.drawFaces();
-        //tMesh.drawWireframes();
-    }
-    // --------------------------------------------------------------
-    
-
-    
-    glPopMatrix();  //√ã¬Æ√≤√ä√ú‚àÇ‚Äû√Ö√≥‚Äû√Ö√º‚Ä∞Œ©√ß√ÅŒ©√Ü‚Äû√Ö¬¥√ä√†¬™‚Äû√Ö√¥
-    
-    eCam.end();
+#pragma mark - Other Viewpoint FBO
     
     if (viewerMode == 0) {
         
         glPushMatrix();
         //glRotatef(90, 1, 0, 0);
         /*
-        ofTranslate(0,0,0);
-        ofScale(10,10,10);
+         ofTranslate(0,0,0);
+         ofScale(10,10,10);
          */
         fboCam.draw(0,160);
         ofScale(0.5,0.5,0.5);
@@ -1248,18 +620,649 @@ void ofApp::draw(){
         
     }
     
+    drawUi();
+    
+    frameCount++;
+    
+    if (uiBtnPlayPause) {
+        playCount++;
+    }
+
+}
+// Main Draw Meshod end ----------------------------------------------------------------------------------
+
+
+# pragma mark - Draw Detail view
+void ofApp::drawDetailView(int i, int playFrameSelector) {
+
+    fboCam.begin();
+    {
+        ofPushMatrix();
+        
+        //ofPushView();
+        
+        ofCam.begin();
+        //ofCam.reset();
+        ofClear(255,255,255, 0);
+        ofSetColor(255,0,0,255);
+        font.drawString("test", 100,50);
+        //ofScale(0.25, 0.25, 0.25);
+        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+        
+        ofCam.end();
+        
+        //ofPopView();
+        ofPopMatrix();
+    }
+    fboCam.end();
+    
+    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+    
+    if (uiBtnGrid && i == selectMeshId) {
+        float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
+        drawScaleGrid(modelSize*1000, 100);
+    }
+    
+    displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+    glPushMatrix();
+    
+    // Draw Model Name
+    {
+        glPushMatrix();  //
+        ofSetColor(255,255,255,255);
+        //glTranslatef(180, 400, 700); //
+        glTranslatef(-0,0,2);
+        
+        ofDisableLighting();        //
+        fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+        ofEnableLighting();
+        
+        //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
+        glPopMatrix();
+    }
+    
+    
+    if (uiBtnTurnMesh) {
+        glRotatef(-90, 1, 0, 0);
+        
+    }
+    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+    
+    
+    if (uiColorMode == 0) {
+        //ofTranslate(0,0,1500);      // goto center
+        //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        
+        ofScale(1000, 1000, 1000);
+    }
+    ofScale(1, 1, -1);      // fix model direction
+    if (uiColorMode == 1) {
+        asModelObj[i][playFrameSelector].setScaleNormalization(false);
+        ofScale(-1, -1, 1);      // fix model direction
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        //                ofTranslate(1500,1100,-2500);      // goto center
+        
+        ofScale(1000, 1000, 1000);
+    }
+    ofRotateX(mapNum[i][3]);
+    ofRotateY(mapNum[i][4]);
+    ofRotateZ(mapNum[i][5]);
+    
+    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    ofTranslate(centerX, centerY, -centerZ);
+    
+    if (mapNum[i][7] >= 1) {
+        glRotatef(180, 0, 1, 0);
+        ofTranslate(0,0,0);
+    }
+    if (mapNum[i][8] >= 1) {
+        glRotatef(180, 1, 0, 0);
+        //ofTranslate(0,0,-530);
+    }
+    if (mapNum[i][6] >= 1) {
+        glRotatef(180, 0, 0, 1);
+        //ofTranslate(0,0,-530);
+    }
+    
+    
+    if (mapNum[i][9] == 0) {
+        if (dualColorSystem == true && uiColorMode == 1) {
+            
+            if (uiMeshDrawType == 1) {
+                ofSetLineWidth(1);
+                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            } else if (uiMeshDrawType == 2) {
+                
+                glPointSize(4);
+                //ofBlendMode(OF_BLENDMODE_ALPHA);
+                
+                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+            } else {
+                //asModelObj[i][counter].drawFaces();
+                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+            }
+            
+        } else {
+            if (uiMeshDrawType == 1) {
+                ofSetLineWidth(1);
+                modelList[i][playFrameSelector].drawWireframe();
+            } else if (uiMeshDrawType == 2) {
+                glPointSize(5);
+                modelList[i][playFrameSelector].drawVertices();
+            } else {
+                modelList[i][playFrameSelector].draw();
+            }
+        }
+    }
+    
+    glPopMatrix();
+    
+    // Draw Model Picture --------------------------
+    glPushMatrix();
+    {
+        glRotatef(90, 1, 0, 0);
+        ofTranslate(0,0,1000);
+        ofScale(10,10,10);
+        modelImageList[i][playFrameSelector].draw(0,0);
+    }
+    glPopMatrix();
+
+}
+
+
+# pragma mark - Draw List view
+void ofApp::drawListView(int i, int playFrameSelector) {
+    
+    if (uiBtnGrid && i == 0) {
+        drawScaleGrid(10000, 1000);
+    }
+    
+    if (uiGpsMapMode == 0) {
+        
+        displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+        
+        glPushMatrix();
+        
+        // リスト配置分
+        glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0);
+        
+        //glRotatef(180, 0, 1, 0);        //
+        
+        int gridSize = 1000;
+        int gridDiv = 10;
+        int gridRowSize = gridSize / gridDiv;
+        
+        // Draw Model Name
+        {
+            glPushMatrix();  //
+            ofSetColor(255,255,255,255);
+            //glTranslatef(180, 400, 700); //
+            glTranslatef(-0,0,2 );
+            
+            ofDisableLighting();        //
+            ofSetColor(0,0,0);
+            fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+            ofEnableLighting();
+            
+            //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
+            glPopMatrix();
+        }
+        
+        
+        if (uiBtnTurnMesh) {
+            glRotatef(-90, 1, 0, 0);
+            
+        }
+        
+        if (mapNum[i][7] >= 1) {
+            glRotatef(180, 0, 1, 0);
+            ofTranslate(0,0,-530);
+        }
+        if (mapNum[i][8] >= 1) {
+            glRotatef(180, 1, 0, 0);
+            //ofTranslate(0,0,-530);
+        }
+        if (mapNum[i][6] >= 1) {
+            glRotatef(180, 0, 0, 1);
+            //ofTranslate(0,0,-530);
+        }
+        ofRotateX(mapNum[i][3]);
+        ofRotateY(mapNum[i][4]);
+        ofRotateZ(mapNum[i][5]);
+        
+        
+        if (uiColorMode == 0) {
+            //ofTranslate(0,0,1500);      // goto center
+            //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            
+            ofScale(1000, 1000, 1000);
+        }
+        ofScale(1, 1, -1);      // fix model direction
+        if (uiColorMode == 1) {
+            asModelObj[i][playFrameSelector].setScaleNormalization(false);
+            ofScale(-1, -1, 1);      // fix model direction
+            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            //                ofTranslate(1500,1100,-2500);      // goto center
+            
+            ofScale(1000, 1000, 1000);
+        }
+        
+        
+        // ---------------------------------------------------
+        if (modelFlagList[i] == 0) {            // not effect vertex color object
+            ofSetColor(255, 255, 255, 255);
+        } else if (modelFlagList[i] == 1) {
+            ofSetColor(255, 255, 255, 32);
+        } else if (modelFlagList[i] == 2) {
+            ofSetColor(0, 255, 0, 64);
+        }
+        
+        if (mapNum[i][9] == 0) {
+            
+            
+            glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+            
+            double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+            ofTranslate(centerX, centerY, -centerZ);
+            
+            if (dualColorSystem == true && uiColorMode == 1) {
+                
+                if (uiMeshDrawType == 1) {
+                    ofSetLineWidth(1);
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                } else if (uiMeshDrawType == 2) {
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                } else {
+                    //asModelObj[i][counter].drawFaces();
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                }
+                
+            } else {
+                
+                if (uiMeshDrawType == 1) {
+                    //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                    //            asModelObj[i][counter].drawWireframe();
+                    ofSetLineWidth(1);
+                    
+                    modelList[i][playFrameSelector].drawWireframe();
+                } else if (uiMeshDrawType == 2) {
+                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    modelList[i][playFrameSelector].drawVertices();
+                } else {
+                    
+                    modelList[i][playFrameSelector].draw();
+                    
+                    //asModelObj[i][counter].drawFaces();
+                    //asModelObj[i][counter].draw(OF_MESH_FILL);
+                }
+            }
+        }
+    } else if (uiGpsMapMode == 1) {
+        
+        //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+        
+        for(int z=0; z<maxMeshNumList[i]; z++) {
+            displayTotalVertices += modelList[i][z].getNumVertices();
+            
+            glPushMatrix();
+            
+            playFrameSelector = z;
+            
+            double latScale = 10000*uiTestSlider/100;
+            double longScale = 10000*uiTestSlider/100;
+            
+            double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+            double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+            
+            //cout << "posX: " << posX << " posY: " << posY << endl;
+            
+            
+            if (uiBtnTurnMesh) {
+                glRotatef(-90, 1, 0, 0);
+                
+            }
+            //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            
+            ofScale(100, 100, 100);  // temp debug
+            
+            // 6/29
+            ofScale(1, 1, -1);      // fix model direction
+            
+            ofTranslate(0,0,posY);
+            ofTranslate(posX,0,0);
+            
+            if (modelFlagList[i] == 0) {            // not effect vertex color object
+                ofSetColor(255, 255, 255, 255);
+            } else if (modelFlagList[i] == 1) {
+                ofSetColor(255, 255, 255, 32);
+            } else if (modelFlagList[i] == 2) {
+                ofSetColor(0, 255, 0, 64);
+            }
+            ofSetColor(255, 255, 255, 255);
+            
+            if (mapNum[i][9] == 0) {
+                
+                if (dualColorSystem == true && uiColorMode == 1) {
+                    
+                    if (uiMeshDrawType == 1) {
+                        ofSetLineWidth(1);
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                    } else if (uiMeshDrawType == 2) {
+                        glPointSize(5);
+                        
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                    } else {
+                        //asModelObj[i][counter].drawFaces();
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                    }
+                    
+                } else {
+                    
+                    if (uiMeshDrawType == 1) {
+                        //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                        //            asModelObj[i][counter].drawWireframe();
+                        ofSetLineWidth(1);
+                        
+                        modelList[i][playFrameSelector].drawWireframe();
+                    } else if (uiMeshDrawType == 2) {
+                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                        glPointSize(5);
+                        
+                        modelList[i][playFrameSelector].drawVertices();
+                    } else {
+                        
+                        modelList[i][playFrameSelector].draw();
+                        
+                        //asModelObj[i][counter].drawFaces();
+                        //asModelObj[i][counter].draw(OF_MESH_FILL);
+                    }
+                }
+            }
+            glPopMatrix();
+            
+        }
+        
+    } else if (uiGpsMapMode == 3) {
+        
+        //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+        
+        for(int z=0; z<maxMeshNumList[i]; z++) {
+            displayTotalVertices += modelList[i][z].getNumVertices();
+            
+            glPushMatrix();
+            
+            playFrameSelector = z;
+            
+            ofVec3f tr = modelMatrixList[z].getTranslation();
+            double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+            double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+            
+            cout << "posX: " << posX << " posY: " << posY << endl;
+            
+            
+            if (uiBtnTurnMesh) {
+                glRotatef(-90, 1, 0, 0);
+                
+            }
+            //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            
+            // 6/29
+            ofScale(1, 1, -1);      // fix model direction
+            if (uiColorMode == 1) {
+                ofScale(-1, -1, 1);      // fix model direction
+            }
+            
+            ofTranslate(0,0,posY);
+            ofTranslate(posX,0,0);
+            
+            ofScale(1000, 1000, 1000);  // temp debug
+            
+            if (modelFlagList[i] == 0) {            // not effect vertex color object
+                ofSetColor(255, 255, 255, 255);
+            } else if (modelFlagList[i] == 1) {
+                ofSetColor(255, 255, 255, 32);
+            } else if (modelFlagList[i] == 2) {
+                ofSetColor(0, 255, 0, 64);
+            }
+            ofSetColor(255, 255, 255, 255);
+            
+            if (mapNum[i][9] == 0) {
+                
+                if (dualColorSystem == true && uiColorMode == 1) {
+                    
+                    if (uiMeshDrawType == 1) {
+                        ofSetLineWidth(1);
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                    } else if (uiMeshDrawType == 2) {
+                        glPointSize(5);
+                        
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                    } else {
+                        //asModelObj[i][counter].drawFaces();
+                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                    }
+                    
+                } else {
+                    
+                    if (uiMeshDrawType == 1) {
+                        //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                        //            asModelObj[i][counter].drawWireframe();
+                        ofSetLineWidth(1);
+                        
+                        modelList[i][playFrameSelector].drawWireframe();
+                    } else if (uiMeshDrawType == 2) {
+                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                        glPointSize(5);
+                        
+                        modelList[i][playFrameSelector].drawVertices();
+                    } else {
+                        
+                        modelList[i][playFrameSelector].draw();
+                        
+                        //asModelObj[i][counter].drawFaces();
+                        //asModelObj[i][counter].draw(OF_MESH_FILL);
+                    }
+                }
+            }
+            glPopMatrix();
+            
+        }
+        
+        ofSetLineWidth(5);
+        ofSetColor(0,64,255);
+        for(int z=0; z<maxMeshNumList[i]-1; z++) {
+            ofMatrix4x4 matrixA = modelMatrixList[z];
+            ofMatrix4x4 matrixB = modelMatrixList[z+1];
+            
+            ofVec3f posA = matrixA.getTranslation();
+            ofVec3f posB = matrixB.getTranslation();
+            
+            ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+            
+            //cout << "posX: " << posX << " posY: " << posY << endl;
+        }
+        
+        
+    } else {        // GPS Walk thru mode
+        
+        glPushMatrix();
+        
+        cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+        for(int z=0; z<maxMeshNumList[i]; z++) {
+            
+            glPushMatrix();
+            
+            playFrameSelector = z;
+            
+            // 緯度（上下？）経度に適当な係数を掛けると、ある程度正確な座標になる　ここまでは一応座標取れて、配置できている。
+            double latScale = 100*uiTestSlider;
+            double longScale = 100*uiTestSlider;
+            
+            // 北が緯度高く90、東ガ経度高く９０
+            double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale*1000;
+            double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale*1000;
+            
+            cout << "posX: " << posX << " posY: " << posY << endl;
+            
+            // 座標移動
+            ofTranslate(0,-posY,0);
+            ofTranslate(0,0,0);
+            
+            if (uiBtnTurnMesh) {
+                glRotatef(-90, 1, 0, 0);
+                
+            }
+            ofTranslate(0,-1*modelHeightList[i]*1000,0);
+            ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+            
+            ofScale(1000, 1000, 1000);  // temp debug
+            
+            // 6/29
+            ofScale(1, 1, -1);      // fix model direction
+            
+            long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+            long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;               // 秒単位に
+            
+            //cout << "nowPlayTimeTemp" << nowPlayTime << "nowPlayTimeTemp: " << nowPlayTimeTemp << endl;
+            
+            double camPosY = 0;
+            double currentCamPos = INT_MAX;
+            double currentSpeed = 0;
+            for(int p=0; p<maxMeshNumList[i]-1; p++) {
+                
+                //cout << "nowPlayTimeTemp: " << nowPlayTimeTemp << " scanUnixTimeLongIntList[i][p+1]: " <<  scanUnixTimeLongIntList[i][p+1] << endl;
+                
+                double timeA = scanUnixTimeLongIntList[i][p];
+                double timeB = scanUnixTimeLongIntList[i][p+1];
+                
+                if ((nowPlayTimeTemp >= timeA) && (nowPlayTimeTemp <= timeB)) {
+                    
+                    double b2pTime = timeB - timeA;     // between two points time
+                    double elapsedTime = nowPlayTimeTemp - timeA;
+                    double normalizationElapseTime = elapsedTime / b2pTime;
+                    
+                    double b2pLatDistance = (scanGpsDataList[i][p+1][0] - scanGpsDataList[i][p][0]);
+                    
+                    double elapedLatDistance = b2pLatDistance * normalizationElapseTime;
+                    camPosY = (elapedLatDistance + (scanGpsDataList[i][p][0] - scanGpsDataMinLat)) * latScale * 1000;
+                    
+                    //cout << "camPosY(setted!): " << camPosY << endl;
+                    break;
+                    
+                }
+            }
+            
+            //camPosY = 1*ofGetFrameNum();
+            
+            eCam.reset();
+            
+            eCam.setPosition(5000,camPosY,1200);
+            eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY, 1200), ofVec3f(0,0,1));
+            
+            if (modelFlagList[i] == 0) {            // not effect vertex color object
+                ofSetColor(255, 255, 255, 255);
+            } else if (modelFlagList[i] == 1) {
+                ofSetColor(255, 255, 255, 32);
+            } else if (modelFlagList[i] == 2) {
+                ofSetColor(0, 255, 0, 64);
+            }
+            ofSetColor(255, 255, 255, 255);
+            
+            if (mapNum[i][9] == 0) {
+                
+                if (uiMeshDrawType == 1) {
+                    //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                    //            asModelObj[i][counter].drawWireframe();
+                    ofSetLineWidth(1);
+                    
+                    modelList[i][playFrameSelector].drawWireframe();
+                } else if (uiMeshDrawType == 2) {
+                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    modelList[i][playFrameSelector].drawVertices();
+                } else {
+                    
+                    modelList[i][playFrameSelector].draw();
+                    
+                    //asModelObj[i][counter].drawFaces();
+                    //asModelObj[i][counter].draw(OF_MESH_FILL);
+                }
+            }
+            glPopMatrix();
+            
+        }
+        glPopMatrix();
+        
+    }
+    
+    ofSetColor(255, 255, 255, 255);
+    
+    glPopMatrix();
+
+}
+
+
+# pragma mark - Draw Other view
+void ofApp::drawMapView(int i, int playFrameSelector) {
+    
+    glPushMatrix();
+    
+    glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
+    
+    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+    ofRotateX(mapNum[i][3]);
+    ofRotateY(mapNum[i][4]);
+    ofRotateZ(mapNum[i][5]);
+    
+    glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       //
+    
+    ofScale(mapNum[i][6]/100.0, mapNum[i][6]/100.0, mapNum[i][6]/100.0);
+    
+    if (uiBtnTurnMesh) {
+        glRotatef(-90, 1, 0, 0);
+        
+    }
+    
+    if (mapNum[i][9] == 0) {
+        
+        if (uiMeshDrawType == 1) {
+            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+        } else if (uiMeshDrawType == 2) {
+            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+        } else {
+            asModelObj[i][playFrameSelector].drawFaces();
+            //asModelObj[i][counter].draw(OF_MESH_FILL);
+            
+        }
+    }
+    
+    glPopMatrix();
+
+}
+
+#pragma mark - Draw UI
+void ofApp::drawUi() {
+    
     if (uiBtnLight) {
         
-        ofDisableLighting();        // ‚Äû√Ö√¨‚Äû√á√•‚Äû√á√≠‚Äû√Ö√≥‚Äû√Ö‚Ñ¢‚Äû√Ö√ë‚Äû√Ö¬ÆUI‚Äû√Ö‚Ñ¢‚Äû√Ö¬©‚Äû√Ö√Ü√ã√¢‚â§‚Äû√Ö√•‚Äû√Ö√§‚Äû√Ö√£‚Äû√Ö√≥‚Äû√Ö√®‚Äû√Ö‚Ñ¢‚Äû√á√£
+        ofDisableLighting();
         light.disable();
         ofDisableDepthTest();
     }
-
-    
-#pragma mark - Draw UI
     
     // UI ---------------------------------------------------
-
+    
     stringstream tSs;
     
     int pX = 40;
@@ -1274,7 +1277,7 @@ void ofApp::draw(){
             ofSetColor(0, 0, 0, 32);
             ofDrawRectangle(myGuiMain);
         }
-    
+        
         // display Debug Info -------------------------
         if (uiBtnDebugInfo) {
             ofSetColor(255,255,255,255);
@@ -1290,7 +1293,7 @@ void ofApp::draw(){
             tSs.str("");
             tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
+            
             tSs.str("");
             tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
@@ -1302,11 +1305,11 @@ void ofApp::draw(){
             tSs.str("");
             tSs << "files: " << modeldataFiles;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
+            
             tSs.str("");
             tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
+            
             tSs.str("");
             tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
@@ -1318,13 +1321,13 @@ void ofApp::draw(){
             tSs.str("");
             tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
+            
             if (viewerMode == 0) {
                 tSs.str("");
                 tSs << "meshName: " << meshNameList[selectMeshId];
                 fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
             }
-
+            
             tSs.str("");
             tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
@@ -1333,7 +1336,7 @@ void ofApp::draw(){
             ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
             tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
+            
             tSs.str("");
             tSs << "viewerMode: " << viewerMode << endl;
             
@@ -1366,7 +1369,7 @@ void ofApp::draw(){
         ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 16);
         ofSetColor(255,255,255);
         ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 14);
-
+        
         // Play Time Display ----------------------------------------------------------
         ofSetColor(64,64,64,255);
         if (uiPlayMode == 0) {
@@ -1382,15 +1385,15 @@ void ofApp::draw(){
                 tSs << "frame: " << playCount << " / " << maxMeshNumList[selectMeshId];
                 fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
             }
-
+            
             if (viewerMode == 1) {
                 tSs.str("");
                 tSs << fixed << setprecision(3);
                 tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime/1000.0 << " sec";
                 fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
-
+                
             }
-
+            
         }
         
         
@@ -1428,11 +1431,11 @@ void ofApp::draw(){
         
         ofSetColor(255,255,255,255);
         fontSmall.drawString("Detail", 40, myGuiMainMenu.getTop()+35);
-
+        
         if (viewerMode == 1) {
             ofSetColor(255, 1, 0, 192);
         } else {
-        //ofRect(0, 700, 200, 50);
+            //ofRect(0, 700, 200, 50);
             ofSetColor(128, 128, 128, 192);
         }
         ofRectRounded(ofRectangle(210, myGuiMainMenu.getTop()+5, 180, 40), 10);
@@ -1472,18 +1475,46 @@ void ofApp::draw(){
             guiPlayControlBar.draw();
             guiPlayControlMenu.draw();
         }
-
+        
     }
     
-    frameCount++;
-    
-    if (uiBtnPlayPause) {
-        playCount++;
-    }
-
 }
-// Main Draw Meshod end ----------------------------------------------------------------------------------
 
+void ofApp::drawOpenNi() {
+    
+    // openNI scanner --------------------------------------------------------------
+    
+    if (useOpenNi && frameCount >= 1) {  // app start
+        //ofShortPixels& depthPixels = oniDepth.getPixelsRef();
+        ofMesh oniMesh;
+        
+        for(int i=0; i<240; i++) {
+            
+            for(int j=0; j<320; j++) {
+                
+                ofVec3f worldPos = oniDepth.getWorldCoordinateAt(j, i);
+                //worldPos.x *= 10.0;
+                //worldPos.y *= 10.0;
+                //worldPos.z *= 10.0;
+                oniMesh.addColor(ofFloatColor(0.0,1.0,0));
+                oniMesh.addVertex(worldPos);
+                
+            }
+        }
+        //ofEndShape();
+        ofTranslate(0,1000,0);
+        ofRotate(-90, 0, 0, 1);
+        ofRotate(90, 1, 0, 0);
+        ofRotate(90, 0, 1, 0);
+        //ofScale(100.0,100.0,100.0);
+        glPointSize(2);
+        oniMesh.drawVertices();
+        //tMesh.drawFaces();
+        //tMesh.drawWireframes();
+    }
+    // --------------------------------------------------------------
+    
+}
 
 void ofApp::resetCam( ) {
     

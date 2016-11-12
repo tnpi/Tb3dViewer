@@ -64,6 +64,11 @@ public:
     void settingAppVarsOnBoot();
     void setupOfxGui();
     void setupOpenNi();
+    void drawUi();
+    void drawOpenNi();
+    void drawDetailView(int i, int playFrameSelector);
+    void drawListView(int i, int playFrameSelector);
+    void drawMapView(int i, int playFrameSelector);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
