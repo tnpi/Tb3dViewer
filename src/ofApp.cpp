@@ -20,7 +20,7 @@ void ofApp::setup(){
     useOpenNi = false;
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     loadPictureMode = false;
-    loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
+    loadVertexColorObj = true;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
  
     dataLoadOnAppBoot = true;
 
@@ -607,12 +607,7 @@ void ofApp::draw(){
     if (viewerMode == 0) {
         
         glPushMatrix();
-        //glRotatef(90, 1, 0, 0);
-        /*
-         ofTranslate(0,0,0);
-         ofScale(10,10,10);
-         */
-        fboCam.draw(0,160);
+        //fboCam.draw(0,160);
         ofScale(0.5,0.5,0.5);
         modelImageList[selectMeshId][playFrameSelector].draw(0,0);
         glPopMatrix();
@@ -633,7 +628,7 @@ void ofApp::draw(){
 
 # pragma mark - Draw Detail view
 void ofApp::drawDetailView(int i, int playFrameSelector) {
-
+    /*
     fboCam.begin();
     {
         ofPushMatrix();
@@ -654,6 +649,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         ofPopMatrix();
     }
     fboCam.end();
+    */
     
     asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     
@@ -692,22 +688,15 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
     
     
-    if (uiColorMode == 0) {
-        //ofTranslate(0,0,1500);      // goto center
-        //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-        
-        ofScale(1000, 1000, 1000);
-    }
     ofScale(1, 1, -1);      // fix model direction
-    if (uiColorMode == 1) {
-        asModelObj[i][playFrameSelector].setScaleNormalization(false);
-        ofScale(-1, -1, 1);      // fix model direction
-        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-        //                ofTranslate(1500,1100,-2500);      // goto center
-        
-        ofScale(1000, 1000, 1000);
-    }
+
+    asModelObj[i][playFrameSelector].setScaleNormalization(false);
+    ofScale(-1, -1, 1);      // fix model direction
+    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+    //                ofTranslate(1500,1100,-2500);      // goto center
+    
+    ofScale(1000, 1000, 1000);
+    
     ofRotateX(mapNum[i][3]);
     ofRotateY(mapNum[i][4]);
     ofRotateZ(mapNum[i][5]);
@@ -732,7 +721,14 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     
     if (mapNum[i][9] == 0) {
-        if (dualColorSystem == true && uiColorMode == 1) {
+
+        if (uiColorMode) {
+            asModelObj[i][playFrameSelector].enableTextures();
+        } else {
+            asModelObj[i][playFrameSelector].disableTextures();
+        }
+        
+        if (dualColorSystem == true ) {
             
             if (uiMeshDrawType == 1) {
                 ofSetLineWidth(1);
@@ -748,16 +744,6 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
                 asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             }
             
-        } else {
-            if (uiMeshDrawType == 1) {
-                ofSetLineWidth(1);
-                modelList[i][playFrameSelector].drawWireframe();
-            } else if (uiMeshDrawType == 2) {
-                glPointSize(5);
-                modelList[i][playFrameSelector].drawVertices();
-            } else {
-                modelList[i][playFrameSelector].draw();
-            }
         }
     }
     
@@ -1317,7 +1303,6 @@ void ofApp::drawUi() {
             tSs <<  "DirectoryName: " << loadModelDirName;
             fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
             
-            
         }
         
         
@@ -1360,6 +1345,10 @@ void ofApp::drawUi() {
             
             tSs.str("");
             tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+
+            tSs.str("");
+            tSs << "skipLoadFrame: " << skipLoadFrame;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
             
             tSs.str("");
@@ -2345,27 +2334,6 @@ void ofApp::dataLoad() {
                     
                     cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
                     cout << "modelSceneMax[" << dirNameLoopCount << "]: " << modelSceneMax[dirNameLoopCount] << endl;
-                    
-                    /*
-
-                     Assimp ver.
-                     
-                     //asModelObj[dirNameLoopCount][i].loadModel(ss.str(), true );   true:ÊúÄÈÅ©Âåñ„Åô„Çã„Å®ÂÆüË°åÊôÇ„Å´ËêΩ„Å°„Çã! oF0.9.3 OSX10.11.5 LLVM0.7.1
-
-                    auto& model = asModelObj[dirNameLoopCount][i];
-                     
-                    model.loadModel(ss.str());
-                    
-                    //auto& material = model.getMaterialForMesh(0);
-                    //material.begin();
-                    //model.enableMaterials();
-                    //model.enableTextures();
-
-                    //model.draw(OF_MESH_FILL);
-                    //material.end();
-                    model.disableMaterials();
-                    model.disableTextures();
-                     */
                     
                     cout << "file load: " << ss.str() << endl;
                 }
