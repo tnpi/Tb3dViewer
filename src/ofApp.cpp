@@ -93,6 +93,8 @@ void ofApp::initAppVars() {
     totalLoadedModelNum = 0;
     maxLoadedMeshNumInAllMesh = 0;
     
+    loadModelDirName = "";
+    
     uiBtnDispWindow = true;
     dispDebugInfoFlag = true;
     dispAllUiFlag = true;
@@ -1300,22 +1302,29 @@ void ofApp::drawUi() {
             ofSetColor(0, 0, 0, 32);
             ofDrawRectangle(myGuiMain);
             
-            pY = myGuiMain.getTop()-30;
+            pY = myGuiMain.getTop()-50;
+            
             ofSetColor(64,64,64,255);
             tSs.str("");
             tSs << fixed << setprecision(1) << ofGetFrameRate() << " fps ";
             fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
-            
+
             tSs.str("");
             tSs <<  "ModelName: " << meshNameList[selectMeshId];
             fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs <<  "DirectoryName: " << loadModelDirName;
+            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+            
+            
         }
         
         
         pY = 80;
         // display Debug Info -------------------------
         if (uiBtnDebugInfo) {
-            ofSetColor(255,255,255,255);
+            ofSetColor(64,64,64,255);
             
             tSs.str("");
             tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
@@ -1356,12 +1365,6 @@ void ofApp::drawUi() {
             tSs.str("");
             tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
             fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            if (viewerMode == 0) {
-                tSs.str("");
-                tSs << "meshName: " << meshNameList[selectMeshId];
-                fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            }
             
             tSs.str("");
             tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
@@ -1476,7 +1479,7 @@ void ofApp::drawUi() {
         ofRectRounded(ofRectangle(210, myGuiMainMenu.getTop()+5, 180, 40), 10);
         
         ofSetColor(255,255,255,255);
-        fontSmall.drawString("File List", 240, myGuiMainMenu.getTop()+35);
+        fontSmall.drawString("List", 240, myGuiMainMenu.getTop()+35);
         
         // L-R arrow -----------------------------------------------------------------
         if (viewerMode == 0) {
@@ -1998,6 +2001,8 @@ void ofApp::loadMapFile(string meshDataDirPath) {
         
         mapFileExists = true;
         ofBuffer buffer(mapFile);
+        
+        loadModelDirName = mapFile.getEnclosingDirectory();
         
         // Read file line by line ------------------------------------------------------------------------------
         int bufCounter = 0;

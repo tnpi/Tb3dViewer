@@ -17,7 +17,7 @@
 
 #define STRINGIFY(A) #A
 
-#define MAX_MODEL_ARRAY 200
+#define MAX_MODEL_ARRAY 100
 
 
 class MyGuiItem {
@@ -303,5 +303,7 @@ public:
     
     bool useOpenNi;
     bool dataLoadOnAppBoot;
+    
+    string loadModelDirName;
 };
 
