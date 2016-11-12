@@ -274,14 +274,16 @@ void ofApp::myGuiSetup() {
     
     myGuiMainMenu = myGuiMain;
     myGuiMainMenu.y += 50;
+    myGuiMainMenu.height = 50;
     
     myGuiMainTimebar = myGuiMain;
     myGuiMainTimebar.setHeight(50);
     
-    myGuiDetailLeftButton = getSubRect( mainView, ofRectangle(0, 100, 100, ofGetHeight()-100-myGuiMain.getHeight() ) );
-    
-    myGuiDetailRightButton = getSubRect( mainView, ofRectangle(ofGetWidth()-100, 100, 100, ofGetHeight()-100-myGuiMain.getHeight() ) );
-    
+    {
+        int ty = (ofGetHeight()-myGuiMain.getHeight()) / 2;
+        myGuiDetailLeftButton = getSubRect( mainView, ofRectangle(20, ty-40, 80,  80) );
+        myGuiDetailRightButton = getSubRect( mainView, ofRectangle(ofGetWidth()-100, ty-40, 80, 80 ) );
+    }
     myGuiDispGuiToggle = getSubRect( myGuiMainMenu, ofRectangle(ofGetWidth()-50, ofGetHeight()-50, 50, 50) );
     
     myGuiPlayButton = getSubRect( myGuiMainMenu, ofRectangle(0,0,50,50) );
@@ -1466,23 +1468,23 @@ void ofApp::drawUi() {
         
         // L-R arrow -----------------------------------------------------------------
         if (viewerMode == 0) {
-            if (mouseX < 150 && mouseY < 500 && mouseY >= 150) {
+            if (myGuiDetailLeftButton.inside(mouseX, mouseY)) {
                 ofSetColor(255, 128, 128, 192);
             } else {
                 ofSetColor(128, 128, 128, 192);
             }
-            ofRectRounded(ofRectangle(35, ofGetHeight()/2+0, 80, 80), 40);
+            ofRectRounded(myGuiDetailLeftButton, 40);
             
-            if (mouseX >= (ofGetWidth()-150)&& mouseY < 500 && mouseY >= 150) {
+            if (myGuiDetailRightButton.inside(mouseX, mouseY)) {
                 ofSetColor(255, 128, 128, 192);
             } else {
                 ofSetColor(128, 128, 128, 192);
             }
+            ofRectRounded(myGuiDetailRightButton, 40);
             
-            ofRectRounded(ofRectangle(ofGetWidth()-115, ofGetHeight()/2+0, 80, 80), 40);
             ofSetColor(255, 255, 255, 255);
-            font.drawString("<", 60, ofGetHeight()/2+54);
-            font.drawString(">", ofGetWidth()-87, ofGetHeight()/2+54);
+            font.drawString("<", myGuiDetailLeftButton.getCenter().x-14, myGuiDetailLeftButton.getCenter().y+14);
+            font.drawString(">", myGuiDetailRightButton.getCenter().x-16, myGuiDetailRightButton.getCenter().y+14);
         }
         
         
@@ -1539,7 +1541,6 @@ void ofApp::drawOpenNi() {
 }
 
 void ofApp::resetCam( ) {
-    
     eCam.reset();
     
     if (viewerMode == 0) {
@@ -1763,7 +1764,6 @@ void ofApp::mouseDragged(int x, int y, int button){
     
     
     if (uiBtnTimerControl) {
-    //if (y >= 500 && y < 700) {
         
         if (myGuiSeekBar.inside(x, y)) {
         
@@ -1792,51 +1792,26 @@ void ofApp::mousePressed(int x, int y, int button){
     
     ofPoint mousePos = ofPoint(x, y);
     
-    if (myGuiDetailLeftButton.inside(mousePos)) {
-        
-        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+    if (!uiBtnTimerControl) {
+        if (myGuiDetailLeftButton.inside(mousePos)) {
             
-            detailViewNextModel(-1);
+            if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+                
+                detailViewNextModel(-1);
+                
+            }
             
+        } else if (myGuiDetailRightButton.inside(mousePos)) {
+            
+            if (viewerMode == 0 ) {    // 左右のモデルセレクタ
+                
+                detailViewNextModel(1);
+                
+            }
         }
-        
-    } else if (myGuiDetailRightButton.inside(mousePos)) {
-        
-        if (viewerMode == 0 ) {    // 左右のモデルセレクタ
-            
-            detailViewNextModel(1);
-            
-        }
+
     }
 
-    //cout << "mousePressed. mouseX: " << mouseX << " mouseY: " << mouseY << endl;
-
-    /*
-    if (uiBtnTimerControl) {
-    //if (y >= 500 && y < 700) {
-        
-        if (uiPlayMode == 2) {
-            
-            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
-            
-            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
-            
-            //uiBtnPlayPause = false;
-            
-        } else if (uiPlayMode == 1) {
-            
-            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-            //uiBtnPlayPause = false;
-            
-        } else {
-            
-            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-            //uiBtnPlayPause = false;
-            
-        }
-        
-    }
-     */
 }
 
 //--------------------------------------------------------------
@@ -1844,34 +1819,24 @@ void ofApp::mouseReleased(int x, int y, int button){
     
     ofPoint mousePos = ofPoint(x, y);
     
-    if (uiBtnTimerControl){
-        return;
-    }
-    
-    if (x<100 && y<100) {
-        if (!uiBtnDispWindow) {
-            uiBtnDispWindow = true;
-        } else {
-            uiBtnDispWindow = false;
-        }
-        
-    } else if (myGuiMainMenu.inside(mousePos)) {
-        
-        if (myGuiMainMenu.inside(mousePos)) {    // メニュー選択
-        
+    if (uiBtnTimerControl) {
+        if (myGuiMainMenu.inside(mousePos)) {
+
+            // view change
             if (x >= 0 && x < 200) {
+                viewerMode = 0;
                 selectMeshId = 0;
                 resetCamDetailView();
             }
 
             if (x >= 200 && x < 400) {
-                
+                viewerMode = 1;
                 selectMeshId = 0;
                 resetCamListView();
             }
             
+            
         }
-        
     }
 }
 
