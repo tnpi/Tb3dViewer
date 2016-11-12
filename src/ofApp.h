@@ -73,6 +73,7 @@ public:
     void drawListViewGpsMapWalkThru(int i, int playFrameSelector);
     void drawListViewTrackingMap(int i, int playFrameSelector);
     void drawMapView(int i, int playFrameSelector);
+    void updateSeekBar(int x, int y);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     

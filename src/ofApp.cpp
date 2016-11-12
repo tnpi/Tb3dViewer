@@ -421,7 +421,38 @@ void ofApp::update(){
 }
 
 
+void ofApp::updateSeekBar(int x, int y) {
+    
+    if (uiBtnTimerControl) {
+        
+        // シークバー
+        if (myGuiSeekBar.inside(x, y)) {
+            
+            double barWidth = myGuiSeekBar.getWidth();
+            double barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
+            
+            double progressPosX = mouseX - barX;
+            
+            if (uiPlayMode == 2) {
+                
+                long seekbarCalcTime = (int)((progressPosX / barWidth) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
+                
+                seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+                
+            } else if (uiPlayMode == 1) {
+                
+                seekbarAddTime = (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime);
+                
+            } else {
+                
+                playCount = (int)((progressPosX / barWidth ) * totalMaxMeshNum );
+                
+            }
+        }
+        
+    }
 
+}
 
 
 #pragma mark -  Draw Functions
@@ -1765,30 +1796,7 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
-    
-    
-    if (uiBtnTimerControl) {
-        
-        if (myGuiSeekBar.inside(x, y)) {
-        
-            if (uiPlayMode == 2) {
-                
-                long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
-                
-                seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
-
-            } else if (uiPlayMode == 1) {
-                
-                seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-                
-            } else {
-                
-                playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-                
-            }
-        }
-        
-    }
+    updateSeekBar(x, y);
 }
 
 //--------------------------------------------------------------
@@ -1815,6 +1823,8 @@ void ofApp::mousePressed(int x, int y, int button){
         }
 
     }
+    
+    updateSeekBar(x, y);
 
 }
 
