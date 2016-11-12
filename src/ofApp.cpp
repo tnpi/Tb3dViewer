@@ -527,6 +527,7 @@ void ofApp::draw(){
             
         }
         
+# pragma mark - Detail view
         if (viewerMode == 0) {
             
             fboCam.begin();
@@ -671,6 +672,7 @@ void ofApp::draw(){
 
             
         }
+# pragma mark - List view
         else if (viewerMode <= 1) {
             
             if (i == 0) {
@@ -991,6 +993,7 @@ void ofApp::draw(){
                     //cout << "posX: " << posX << " posY: " << posY << endl;
                 }
             
+# pragma mark - Other view
             } else {        // GPS Walk thru mode
                 
                 glPushMatrix();
