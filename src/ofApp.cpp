@@ -1,5 +1,7 @@
 #include "ofApp.h"
 
+
+
 #pragma mark -  Setup Functions
 
 //--------------------------------------------------------------
@@ -17,6 +19,7 @@ void ofApp::setup(){
 
     useOpenNi = false;
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    
     loadPictureMode = false;
     loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
     colorMode = 1;
@@ -32,11 +35,8 @@ void ofApp::setup(){
     
     dispPlayControl = true;
     
-    
-    //maxLoadMeshNum = 6;
-    //skipLoadFrame = 15;
-    maxLoadMeshNum = 2000;
-    skipLoadFrame = 10;
+    maxLoadMeshNum = 2000;      //  2000  100
+    skipLoadFrame = 10;         // 1  10
     
     playMode = 0;   // 1:timebased 0: frame
 
@@ -113,6 +113,7 @@ void ofApp::setup(){
     ofVec2f minPos = ofVec2f(-ofGetWidth() * 3, -ofGetHeight() * 4);
     ofVec2f maxPos = ofVec2f(ofGetWidth() * 2, ofGetHeight() * 3);
    
+    
 #pragma mark - GUI Setup
     // Set GUI parts -------------------------------------------------------------------------------
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
@@ -262,7 +263,6 @@ void ofApp::setup(){
     ::time(&unixTimeOnOfStarted);
 
 }
-
 // setup end ----------------------------------------------------------------------------------
 
 void ofApp::myGuiSetup() {
@@ -294,6 +294,9 @@ void ofApp::myGuiSetup() {
     myGuiPlayButton = getSubRect( myGuiMainMenu, ofRectangle(0,0,50,50) );
 
 }
+
+
+
 
 
 #pragma mark -  Update Functions
@@ -413,6 +416,9 @@ void ofApp::update(){
 }
 
 
+
+
+
 #pragma mark -  Draw Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -422,6 +428,7 @@ void ofApp::update(){
 void ofApp::draw(){
     
     ofSetFrameRate(uiFramerate);
+    ofEnableSmoothing();
 
     displayTotalVertices = 0;
     
@@ -430,21 +437,15 @@ void ofApp::draw(){
     }
     
     // BG ---------------------------------------------
-    ofBackground(240, 240, 240);        // gray bg
-    
-    
-    ofEnableSmoothing();
-    
-    if(frameCount==1){
-        eCam.begin();
-        eCam.reset();
-        eCam.setPosition(0,0,5000);
-        eCam.end();
-        
+    ofBackground(240, 240, 240);
+    ofSetColor(255,255,255,255);
+
+    // Loading -----------------------------------------
+    if (frameCount == 0) {
+        font.drawString("Now Loading...", 500, 400);
     }
     
-    //  ---------------------------------------
-    ofSetColor(255,255,255,255);
+    // Light Settings ---------------------------------------
     
     if (uiBtnLight) {
         ofEnableLighting();
@@ -466,14 +467,11 @@ void ofApp::draw(){
         ofEnableDepthTest();
     }
     
+    // Camera Settings ----------------------------------------
     eCam.setFarClip( 100000.0f );
-    
-    ofSetColor(255,255,255,255);
-    
-    if (frameCount == 0) {
-        font.drawString("Now Loading...", 500, 400);
+    if(frameCount==1){
+        resetCamListView();
     }
-    
     
     eCam.begin();
     if (uiBtnOrtho) {
@@ -482,10 +480,12 @@ void ofApp::draw(){
         eCam.disableOrtho();
     }
     
+    // Axis Setting -------------------------------------------
     ofScale(1,-1);      // y-axis reverse! (for fix drawString text flips promblem)
 
     glPushMatrix();
 
+    // Draw Base Grid
     if (uiBtnGrid) {
         ofSetColor(255,255,255,255);
         ofDrawGrid(uiThumbnailIconDistance);
@@ -493,6 +493,8 @@ void ofApp::draw(){
     
     //glTranslatef(0, 0, 0); //
     
+    
+#pragma mark - Draw Mesh
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
@@ -575,7 +577,8 @@ void ofApp::draw(){
             
         }
         
-# pragma mark - Detail view
+        
+# pragma mark - Draw Detail view
         if (viewerMode == 0) {
             
             fboCam.begin();
@@ -601,19 +604,13 @@ void ofApp::draw(){
 
             asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             
-            /*
-            float modelSizeX = modelPosXList[selectMeshId]*1000;
-            float modelSizeY = modelHeightList[selectMeshId]*1000;
-            float modelSizeZ = modelPosZList[selectMeshId]*1000;
-            */
-            
-            if (i == selectMeshId) {
+            if (uiBtnGrid && i == selectMeshId) {
                 float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
                 drawScaleGrid(modelSize*1000, 100);
             }
             
             displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
-            glPushMatrix();  //
+            glPushMatrix();
             
             // Draw Model Name
             {
@@ -720,10 +717,12 @@ void ofApp::draw(){
 
             
         }
-# pragma mark - List view
+        
+        
+# pragma mark - Draw List view
         else if (viewerMode <= 1) {
             
-            if (i == 0) {
+            if (uiBtnGrid && i == 0) {
                 drawScaleGrid(10000, 1000);
             }
             
@@ -1041,7 +1040,8 @@ void ofApp::draw(){
                     //cout << "posX: " << posX << " posY: " << posY << endl;
                 }
             
-# pragma mark - Other view
+                
+# pragma mark - Draw Other view
             } else {        // GPS Walk thru mode
                 
                 glPushMatrix();
@@ -1261,7 +1261,7 @@ void ofApp::draw(){
     }
 
     
-#pragma mark - UI
+#pragma mark - Draw UI
     
     // UI ---------------------------------------------------
 
@@ -1599,6 +1599,9 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
 }
 
 
+
+
+
 #pragma mark -  User Interface Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1853,6 +1856,8 @@ void ofApp::windowResized () {
 
 
 
+
+
 #pragma mark -  Utility Functions
 
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1886,6 +1891,7 @@ ofRectangle ofApp::getSubRect( ofRectangle parentRect, ofRectangle subRect ) {
     
     return newRect;
 }
+
 
 
 
