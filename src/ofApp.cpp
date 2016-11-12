@@ -28,7 +28,6 @@ void ofApp::setup(){
     colorMode = 1;
     viewerMode = 1;
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
-    //uiMeshDrawType = 1;
     
     dispPlayControl = true;
     
@@ -68,7 +67,7 @@ void ofApp::setup(){
     ofSetVerticalSync(false);
     ofSetFrameRate(0);
     
-    uiPlayMode = playMode;
+    //uiPlayMode = playMode;
     
     // time set on finish app init ------------------------------------------------
     appInitEndTime = ofGetElapsedTimeMillis();
@@ -148,10 +147,11 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.setShowHeader(false);
     
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
+    guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
     guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
     guiPlayControlMenu.add(new ofxGuiSpacer(20));
-    guiPlayControlMenu.add(uiBtnGrid.setup("Grid", false, 80, 20));
+    guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
     guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
@@ -172,19 +172,12 @@ void ofApp::setupOfxGui() {
     
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
-    //gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
     //gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
-    //gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 25));
-    //gui.add(uiBtnGrid.setup("Grid", false, 40, 24));
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 25));
-    //gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 25));
-    //gui.add(uiBtnOrtho.setup("Ortho", false, 40, 25));
     gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 25));
-    //gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
-    //gui.add(uiBtnReset.setup("Reset", 40, 25));
     gui.add(uiBtnSelectReset.setup("quit", 40, 25));
     gui.setWidthElements(300);
     
@@ -782,77 +775,187 @@ void ofApp::drawListView(int i, int playFrameSelector) {
     
     if (uiGpsMapMode == 0) {
         
-        displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+        drawListViewNormal(i, playFrameSelector);
+        
+    } else if (uiGpsMapMode == 1) {
+        
+        drawListViewGpsMap(i, playFrameSelector);
+        
+    } else if (uiGpsMapMode == 2) {
+    
+        drawListViewGpsMapWalkThru(i, playFrameSelector);
+        
+    } else if (uiGpsMapMode == 3) {
+        
+        drawListViewTrackingMap(i, playFrameSelector);
+        
+    }
+    
+    glPopMatrix();
+
+}
+
+void ofApp::drawListViewNormal(int i, int playFrameSelector) {
+    
+    displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+    
+    glPushMatrix();
+    
+    // リスト配置分
+    glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0);
+    
+    //glRotatef(180, 0, 1, 0);        //
+    
+    int gridSize = 1000;
+    int gridDiv = 10;
+    int gridRowSize = gridSize / gridDiv;
+    
+    // Draw Model Name
+    {
+        glPushMatrix();  //
+        ofSetColor(255,255,255,255);
+        //glTranslatef(180, 400, 700); //
+        glTranslatef(-0,0,2 );
+        
+        ofDisableLighting();        //
+        ofSetColor(0,0,0);
+        fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+        ofEnableLighting();
+        
+        //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
+        glPopMatrix();
+    }
+    
+    
+    if (uiBtnTurnMesh) {
+        glRotatef(-90, 1, 0, 0);
+        
+    }
+    
+    if (mapNum[i][7] >= 1) {
+        glRotatef(180, 0, 1, 0);
+        ofTranslate(0,0,-530);
+    }
+    if (mapNum[i][8] >= 1) {
+        glRotatef(180, 1, 0, 0);
+        //ofTranslate(0,0,-530);
+    }
+    if (mapNum[i][6] >= 1) {
+        glRotatef(180, 0, 0, 1);
+        //ofTranslate(0,0,-530);
+    }
+    ofRotateX(mapNum[i][3]);
+    ofRotateY(mapNum[i][4]);
+    ofRotateZ(mapNum[i][5]);
+    
+    
+    if (uiColorMode == 0) {
+        //ofTranslate(0,0,1500);      // goto center
+        //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        
+        ofScale(1000, 1000, 1000);
+    }
+    ofScale(1, 1, -1);      // fix model direction
+    if (uiColorMode == 1) {
+        asModelObj[i][playFrameSelector].setScaleNormalization(false);
+        ofScale(-1, -1, 1);      // fix model direction
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        //                ofTranslate(1500,1100,-2500);      // goto center
+        
+        ofScale(1000, 1000, 1000);
+    }
+    
+    
+    // ---------------------------------------------------
+    if (modelFlagList[i] == 0) {            // not effect vertex color object
+        ofSetColor(255, 255, 255, 255);
+    } else if (modelFlagList[i] == 1) {
+        ofSetColor(255, 255, 255, 32);
+    } else if (modelFlagList[i] == 2) {
+        ofSetColor(0, 255, 0, 64);
+    }
+    
+    if (mapNum[i][9] == 0) {
+        
+        
+        glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+        
+        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        ofTranslate(centerX, centerY, -centerZ);
+        
+        if (dualColorSystem == true && uiColorMode == 1) {
+            
+            if (uiMeshDrawType == 1) {
+                ofSetLineWidth(1);
+                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            } else if (uiMeshDrawType == 2) {
+                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+            } else {
+                //asModelObj[i][counter].drawFaces();
+                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+            }
+            
+        } else {
+            
+            if (uiMeshDrawType == 1) {
+                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                //            asModelObj[i][counter].drawWireframe();
+                ofSetLineWidth(1);
+                
+                modelList[i][playFrameSelector].drawWireframe();
+            } else if (uiMeshDrawType == 2) {
+                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                modelList[i][playFrameSelector].drawVertices();
+            } else {
+                
+                modelList[i][playFrameSelector].draw();
+                
+                //asModelObj[i][counter].drawFaces();
+                //asModelObj[i][counter].draw(OF_MESH_FILL);
+            }
+        }
+    }
+}
+
+void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
+    
+    //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+    
+    for(int z=0; z<maxMeshNumList[i]; z++) {
+        displayTotalVertices += modelList[i][z].getNumVertices();
         
         glPushMatrix();
         
-        // リスト配置分
-        glTranslatef(((i%uiIconNumX))*uiThumbnailIconDistance, (i/uiIconNumX)*uiThumbnailIconDistance, 0);
+        playFrameSelector = z;
         
-        //glRotatef(180, 0, 1, 0);        //
+        double latScale = 10000*uiTestSlider/100;
+        double longScale = 10000*uiTestSlider/100;
         
-        int gridSize = 1000;
-        int gridDiv = 10;
-        int gridRowSize = gridSize / gridDiv;
+        double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+        double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
         
-        // Draw Model Name
-        {
-            glPushMatrix();  //
-            ofSetColor(255,255,255,255);
-            //glTranslatef(180, 400, 700); //
-            glTranslatef(-0,0,2 );
-            
-            ofDisableLighting();        //
-            ofSetColor(0,0,0);
-            fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
-            ofEnableLighting();
-            
-            //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
-            glPopMatrix();
-        }
+        //cout << "posX: " << posX << " posY: " << posY << endl;
         
         
         if (uiBtnTurnMesh) {
             glRotatef(-90, 1, 0, 0);
             
         }
+        //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
         
-        if (mapNum[i][7] >= 1) {
-            glRotatef(180, 0, 1, 0);
-            ofTranslate(0,0,-530);
-        }
-        if (mapNum[i][8] >= 1) {
-            glRotatef(180, 1, 0, 0);
-            //ofTranslate(0,0,-530);
-        }
-        if (mapNum[i][6] >= 1) {
-            glRotatef(180, 0, 0, 1);
-            //ofTranslate(0,0,-530);
-        }
-        ofRotateX(mapNum[i][3]);
-        ofRotateY(mapNum[i][4]);
-        ofRotateZ(mapNum[i][5]);
+        ofScale(100, 100, 100);  // temp debug
         
-        
-        if (uiColorMode == 0) {
-            //ofTranslate(0,0,1500);      // goto center
-            //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            
-            ofScale(1000, 1000, 1000);
-        }
+        // 6/29
         ofScale(1, 1, -1);      // fix model direction
-        if (uiColorMode == 1) {
-            asModelObj[i][playFrameSelector].setScaleNormalization(false);
-            ofScale(-1, -1, 1);      // fix model direction
-            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            //                ofTranslate(1500,1100,-2500);      // goto center
-            
-            ofScale(1000, 1000, 1000);
-        }
         
+        ofTranslate(0,0,posY);
+        ofTranslate(posX,0,0);
         
-        // ---------------------------------------------------
         if (modelFlagList[i] == 0) {            // not effect vertex color object
             ofSetColor(255, 255, 255, 255);
         } else if (modelFlagList[i] == 1) {
@@ -860,16 +963,9 @@ void ofApp::drawListView(int i, int playFrameSelector) {
         } else if (modelFlagList[i] == 2) {
             ofSetColor(0, 255, 0, 64);
         }
+        ofSetColor(255, 255, 255, 255);
         
         if (mapNum[i][9] == 0) {
-            
-            
-            glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-            
-            double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-            ofTranslate(centerX, centerY, -centerZ);
             
             if (dualColorSystem == true && uiColorMode == 1) {
                 
@@ -877,6 +973,8 @@ void ofApp::drawListView(int i, int playFrameSelector) {
                     ofSetLineWidth(1);
                     asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
                 } else if (uiMeshDrawType == 2) {
+                    glPointSize(5);
+                    
                     asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
                 } else {
                     //asModelObj[i][counter].drawFaces();
@@ -894,6 +992,8 @@ void ofApp::drawListView(int i, int playFrameSelector) {
                 } else if (uiMeshDrawType == 2) {
                     //asModelObj[i][counter].draw(OF_MESH_POINTS);
                     //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    glPointSize(5);
+                    
                     modelList[i][playFrameSelector].drawVertices();
                 } else {
                     
@@ -904,282 +1004,187 @@ void ofApp::drawListView(int i, int playFrameSelector) {
                 }
             }
         }
-    } else if (uiGpsMapMode == 1) {
+        glPopMatrix();
         
-        //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-        
-        for(int z=0; z<maxMeshNumList[i]; z++) {
-            displayTotalVertices += modelList[i][z].getNumVertices();
-            
-            glPushMatrix();
-            
-            playFrameSelector = z;
-            
-            double latScale = 10000*uiTestSlider/100;
-            double longScale = 10000*uiTestSlider/100;
-            
-            double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-            double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-            
-            //cout << "posX: " << posX << " posY: " << posY << endl;
-            
-            
-            if (uiBtnTurnMesh) {
-                glRotatef(-90, 1, 0, 0);
-                
-            }
-            //ofTranslate(0,-1*modelHeightList[i]*1000,0);
-            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            
-            ofScale(100, 100, 100);  // temp debug
-            
-            // 6/29
-            ofScale(1, 1, -1);      // fix model direction
-            
-            ofTranslate(0,0,posY);
-            ofTranslate(posX,0,0);
-            
-            if (modelFlagList[i] == 0) {            // not effect vertex color object
-                ofSetColor(255, 255, 255, 255);
-            } else if (modelFlagList[i] == 1) {
-                ofSetColor(255, 255, 255, 32);
-            } else if (modelFlagList[i] == 2) {
-                ofSetColor(0, 255, 0, 64);
-            }
-            ofSetColor(255, 255, 255, 255);
-            
-            if (mapNum[i][9] == 0) {
-                
-                if (dualColorSystem == true && uiColorMode == 1) {
-                    
-                    if (uiMeshDrawType == 1) {
-                        ofSetLineWidth(1);
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                    } else if (uiMeshDrawType == 2) {
-                        glPointSize(5);
-                        
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                    } else {
-                        //asModelObj[i][counter].drawFaces();
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                    }
-                    
-                } else {
-                    
-                    if (uiMeshDrawType == 1) {
-                        //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                        //            asModelObj[i][counter].drawWireframe();
-                        ofSetLineWidth(1);
-                        
-                        modelList[i][playFrameSelector].drawWireframe();
-                    } else if (uiMeshDrawType == 2) {
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        glPointSize(5);
-                        
-                        modelList[i][playFrameSelector].drawVertices();
-                    } else {
-                        
-                        modelList[i][playFrameSelector].draw();
-                        
-                        //asModelObj[i][counter].drawFaces();
-                        //asModelObj[i][counter].draw(OF_MESH_FILL);
-                    }
-                }
-            }
-            glPopMatrix();
-            
-        }
-        
-    } else if (uiGpsMapMode == 3) {
-        
-        //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-        
-        for(int z=0; z<maxMeshNumList[i]; z++) {
-            displayTotalVertices += modelList[i][z].getNumVertices();
-            
-            glPushMatrix();
-            
-            playFrameSelector = z;
-            
-            ofVec3f tr = modelMatrixList[z].getTranslation();
-            double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-            double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-            
-            cout << "posX: " << posX << " posY: " << posY << endl;
-            
-            
-            if (uiBtnTurnMesh) {
-                glRotatef(-90, 1, 0, 0);
-                
-            }
-            //ofTranslate(0,-1*modelHeightList[i]*1000,0);
-            //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            
-            // 6/29
-            ofScale(1, 1, -1);      // fix model direction
-            if (uiColorMode == 1) {
-                ofScale(-1, -1, 1);      // fix model direction
-            }
-            
-            ofTranslate(0,0,posY);
-            ofTranslate(posX,0,0);
-            
-            ofScale(1000, 1000, 1000);  // temp debug
-            
-            if (modelFlagList[i] == 0) {            // not effect vertex color object
-                ofSetColor(255, 255, 255, 255);
-            } else if (modelFlagList[i] == 1) {
-                ofSetColor(255, 255, 255, 32);
-            } else if (modelFlagList[i] == 2) {
-                ofSetColor(0, 255, 0, 64);
-            }
-            ofSetColor(255, 255, 255, 255);
-            
-            if (mapNum[i][9] == 0) {
-                
-                if (dualColorSystem == true && uiColorMode == 1) {
-                    
-                    if (uiMeshDrawType == 1) {
-                        ofSetLineWidth(1);
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                    } else if (uiMeshDrawType == 2) {
-                        glPointSize(5);
-                        
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                    } else {
-                        //asModelObj[i][counter].drawFaces();
-                        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                    }
-                    
-                } else {
-                    
-                    if (uiMeshDrawType == 1) {
-                        //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                        //            asModelObj[i][counter].drawWireframe();
-                        ofSetLineWidth(1);
-                        
-                        modelList[i][playFrameSelector].drawWireframe();
-                    } else if (uiMeshDrawType == 2) {
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                        glPointSize(5);
-                        
-                        modelList[i][playFrameSelector].drawVertices();
-                    } else {
-                        
-                        modelList[i][playFrameSelector].draw();
-                        
-                        //asModelObj[i][counter].drawFaces();
-                        //asModelObj[i][counter].draw(OF_MESH_FILL);
-                    }
-                }
-            }
-            glPopMatrix();
-            
-        }
-        
-        ofSetLineWidth(5);
-        ofSetColor(0,64,255);
-        for(int z=0; z<maxMeshNumList[i]-1; z++) {
-            ofMatrix4x4 matrixA = modelMatrixList[z];
-            ofMatrix4x4 matrixB = modelMatrixList[z+1];
-            
-            ofVec3f posA = matrixA.getTranslation();
-            ofVec3f posB = matrixB.getTranslation();
-            
-            ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
-            
-            //cout << "posX: " << posX << " posY: " << posY << endl;
-        }
-        
-        
-    } else {        // GPS Walk thru mode
+    }
+
+}
+
+void ofApp::drawListViewGpsMapWalkThru(int i, int playFrameSelector) {
+    
+    glPushMatrix();
+    
+    cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+    for(int z=0; z<maxMeshNumList[i]; z++) {
         
         glPushMatrix();
         
-        cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-        for(int z=0; z<maxMeshNumList[i]; z++) {
+        playFrameSelector = z;
+        
+        // 緯度（上下？）経度に適当な係数を掛けると、ある程度正確な座標になる　ここまでは一応座標取れて、配置できている。
+        double latScale = 100*uiTestSlider;
+        double longScale = 100*uiTestSlider;
+        
+        // 北が緯度高く90、東ガ経度高く９０
+        double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale*1000;
+        double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale*1000;
+        
+        cout << "posX: " << posX << " posY: " << posY << endl;
+        
+        // 座標移動
+        ofTranslate(0,-posY,0);
+        ofTranslate(0,0,0);
+        
+        if (uiBtnTurnMesh) {
+            glRotatef(-90, 1, 0, 0);
             
-            glPushMatrix();
+        }
+        ofTranslate(0,-1*modelHeightList[i]*1000,0);
+        ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        
+        ofScale(1000, 1000, 1000);  // temp debug
+        
+        // 6/29
+        ofScale(1, 1, -1);      // fix model direction
+        
+        long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+        long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;               // 秒単位に
+        
+        //cout << "nowPlayTimeTemp" << nowPlayTime << "nowPlayTimeTemp: " << nowPlayTimeTemp << endl;
+        
+        double camPosY = 0;
+        double currentCamPos = INT_MAX;
+        double currentSpeed = 0;
+        for(int p=0; p<maxMeshNumList[i]-1; p++) {
             
-            playFrameSelector = z;
+            //cout << "nowPlayTimeTemp: " << nowPlayTimeTemp << " scanUnixTimeLongIntList[i][p+1]: " <<  scanUnixTimeLongIntList[i][p+1] << endl;
             
-            // 緯度（上下？）経度に適当な係数を掛けると、ある程度正確な座標になる　ここまでは一応座標取れて、配置できている。
-            double latScale = 100*uiTestSlider;
-            double longScale = 100*uiTestSlider;
+            double timeA = scanUnixTimeLongIntList[i][p];
+            double timeB = scanUnixTimeLongIntList[i][p+1];
             
-            // 北が緯度高く90、東ガ経度高く９０
-            double posX = (scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale*1000;
-            double posY = (scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale*1000;
-            
-            cout << "posX: " << posX << " posY: " << posY << endl;
-            
-            // 座標移動
-            ofTranslate(0,-posY,0);
-            ofTranslate(0,0,0);
-            
-            if (uiBtnTurnMesh) {
-                glRotatef(-90, 1, 0, 0);
+            if ((nowPlayTimeTemp >= timeA) && (nowPlayTimeTemp <= timeB)) {
+                
+                double b2pTime = timeB - timeA;     // between two points time
+                double elapsedTime = nowPlayTimeTemp - timeA;
+                double normalizationElapseTime = elapsedTime / b2pTime;
+                
+                double b2pLatDistance = (scanGpsDataList[i][p+1][0] - scanGpsDataList[i][p][0]);
+                
+                double elapedLatDistance = b2pLatDistance * normalizationElapseTime;
+                camPosY = (elapedLatDistance + (scanGpsDataList[i][p][0] - scanGpsDataMinLat)) * latScale * 1000;
+                
+                //cout << "camPosY(setted!): " << camPosY << endl;
+                break;
                 
             }
-            ofTranslate(0,-1*modelHeightList[i]*1000,0);
-            ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-            
-            ofScale(1000, 1000, 1000);  // temp debug
-            
-            // 6/29
-            ofScale(1, 1, -1);      // fix model direction
-            
-            long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
-            long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;               // 秒単位に
-            
-            //cout << "nowPlayTimeTemp" << nowPlayTime << "nowPlayTimeTemp: " << nowPlayTimeTemp << endl;
-            
-            double camPosY = 0;
-            double currentCamPos = INT_MAX;
-            double currentSpeed = 0;
-            for(int p=0; p<maxMeshNumList[i]-1; p++) {
-                
-                //cout << "nowPlayTimeTemp: " << nowPlayTimeTemp << " scanUnixTimeLongIntList[i][p+1]: " <<  scanUnixTimeLongIntList[i][p+1] << endl;
-                
-                double timeA = scanUnixTimeLongIntList[i][p];
-                double timeB = scanUnixTimeLongIntList[i][p+1];
-                
-                if ((nowPlayTimeTemp >= timeA) && (nowPlayTimeTemp <= timeB)) {
-                    
-                    double b2pTime = timeB - timeA;     // between two points time
-                    double elapsedTime = nowPlayTimeTemp - timeA;
-                    double normalizationElapseTime = elapsedTime / b2pTime;
-                    
-                    double b2pLatDistance = (scanGpsDataList[i][p+1][0] - scanGpsDataList[i][p][0]);
-                    
-                    double elapedLatDistance = b2pLatDistance * normalizationElapseTime;
-                    camPosY = (elapedLatDistance + (scanGpsDataList[i][p][0] - scanGpsDataMinLat)) * latScale * 1000;
-                    
-                    //cout << "camPosY(setted!): " << camPosY << endl;
-                    break;
-                    
-                }
-            }
-            
-            //camPosY = 1*ofGetFrameNum();
-            
-            eCam.reset();
-            
-            eCam.setPosition(5000,camPosY,1200);
-            eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY, 1200), ofVec3f(0,0,1));
-            
-            if (modelFlagList[i] == 0) {            // not effect vertex color object
-                ofSetColor(255, 255, 255, 255);
-            } else if (modelFlagList[i] == 1) {
-                ofSetColor(255, 255, 255, 32);
-            } else if (modelFlagList[i] == 2) {
-                ofSetColor(0, 255, 0, 64);
-            }
+        }
+        
+        //camPosY = 1*ofGetFrameNum();
+        
+        eCam.reset();
+        
+        eCam.setPosition(5000,camPosY,1200);
+        eCam.lookAt(ofVec3f(5000, -1000+10000+camPosY, 1200), ofVec3f(0,0,1));
+        
+        if (modelFlagList[i] == 0) {            // not effect vertex color object
             ofSetColor(255, 255, 255, 255);
+        } else if (modelFlagList[i] == 1) {
+            ofSetColor(255, 255, 255, 32);
+        } else if (modelFlagList[i] == 2) {
+            ofSetColor(0, 255, 0, 64);
+        }
+        ofSetColor(255, 255, 255, 255);
+        
+        if (mapNum[i][9] == 0) {
             
-            if (mapNum[i][9] == 0) {
+            if (uiMeshDrawType == 1) {
+                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
+                //            asModelObj[i][counter].drawWireframe();
+                ofSetLineWidth(1);
+                
+                modelList[i][playFrameSelector].drawWireframe();
+            } else if (uiMeshDrawType == 2) {
+                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                modelList[i][playFrameSelector].drawVertices();
+            } else {
+                
+                modelList[i][playFrameSelector].draw();
+                
+                //asModelObj[i][counter].drawFaces();
+                //asModelObj[i][counter].draw(OF_MESH_FILL);
+            }
+        }
+        glPopMatrix();
+        
+    }
+    glPopMatrix();
+
+}
+
+
+void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
+    
+    //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
+    
+    for(int z=0; z<maxMeshNumList[i]; z++) {
+        displayTotalVertices += modelList[i][z].getNumVertices();
+        
+        glPushMatrix();
+        
+        playFrameSelector = z;
+        
+        ofVec3f tr = modelMatrixList[z].getTranslation();
+        double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+        double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+        
+        cout << "posX: " << posX << " posY: " << posY << endl;
+        
+        
+        if (uiBtnTurnMesh) {
+            glRotatef(-90, 1, 0, 0);
+            
+        }
+        //ofTranslate(0,-1*modelHeightList[i]*1000,0);
+        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+        
+        // 6/29
+        ofScale(1, 1, -1);      // fix model direction
+        if (uiColorMode == 1) {
+            ofScale(-1, -1, 1);      // fix model direction
+        }
+        
+        ofTranslate(0,0,posY);
+        ofTranslate(posX,0,0);
+        
+        ofScale(1000, 1000, 1000);  // temp debug
+        
+        if (modelFlagList[i] == 0) {            // not effect vertex color object
+            ofSetColor(255, 255, 255, 255);
+        } else if (modelFlagList[i] == 1) {
+            ofSetColor(255, 255, 255, 32);
+        } else if (modelFlagList[i] == 2) {
+            ofSetColor(0, 255, 0, 64);
+        }
+        ofSetColor(255, 255, 255, 255);
+        
+        if (mapNum[i][9] == 0) {
+            
+            if (dualColorSystem == true && uiColorMode == 1) {
+                
+                if (uiMeshDrawType == 1) {
+                    ofSetLineWidth(1);
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+                } else if (uiMeshDrawType == 2) {
+                    glPointSize(5);
+                    
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+                } else {
+                    //asModelObj[i][counter].drawFaces();
+                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+                }
+                
+            } else {
                 
                 if (uiMeshDrawType == 1) {
                     //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
@@ -1190,6 +1195,8 @@ void ofApp::drawListView(int i, int playFrameSelector) {
                 } else if (uiMeshDrawType == 2) {
                     //asModelObj[i][counter].draw(OF_MESH_POINTS);
                     //asModelObj[i][counter].draw(OF_MESH_POINTS);
+                    glPointSize(5);
+                    
                     modelList[i][playFrameSelector].drawVertices();
                 } else {
                     
@@ -1199,17 +1206,25 @@ void ofApp::drawListView(int i, int playFrameSelector) {
                     //asModelObj[i][counter].draw(OF_MESH_FILL);
                 }
             }
-            glPopMatrix();
-            
         }
         glPopMatrix();
         
     }
     
-    ofSetColor(255, 255, 255, 255);
+    ofSetLineWidth(5);
+    ofSetColor(0,64,255);
+    for(int z=0; z<maxMeshNumList[i]-1; z++) {
+        ofMatrix4x4 matrixA = modelMatrixList[z];
+        ofMatrix4x4 matrixB = modelMatrixList[z+1];
+        
+        ofVec3f posA = matrixA.getTranslation();
+        ofVec3f posB = matrixB.getTranslation();
+        
+        ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+        
+        //cout << "posX: " << posX << " posY: " << posY << endl;
+    }
     
-    glPopMatrix();
-
 }
 
 
@@ -1546,6 +1561,7 @@ void ofApp::resetCamListView( ) {
 }
 
 void ofApp::detailViewNextModel(int mod) {
+    
     selectMeshId = ((selectMeshId - mod) + modelDataNum) % modelDataNum;
     resetCamDetailView();
     

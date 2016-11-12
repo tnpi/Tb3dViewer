@@ -68,6 +68,10 @@ public:
     void drawOpenNi();
     void drawDetailView(int i, int playFrameSelector);
     void drawListView(int i, int playFrameSelector);
+    void drawListViewNormal(int i, int playFrameSelector);
+    void drawListViewGpsMap(int i, int playFrameSelector);
+    void drawListViewGpsMapWalkThru(int i, int playFrameSelector);
+    void drawListViewTrackingMap(int i, int playFrameSelector);
     void drawMapView(int i, int playFrameSelector);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
