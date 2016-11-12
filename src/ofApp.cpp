@@ -7,15 +7,10 @@
 //--------------------------------------------------------------
 void ofApp::setup(){
     
-    // 全力再生
-    ofSetVerticalSync(false);
-    ofSetFrameRate(0);
-    
     appInitStartTime = ofGetElapsedTimeMillis();
+    initAppVars();
     
-    defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
-
-    // setting vars --------------------------------------------
+    // app settings --------------------------------------------
 
     useOpenNi = false;
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
@@ -24,6 +19,8 @@ void ofApp::setup(){
     loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
     colorMode = 1;
 
+    defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
+    
     viewerMode = 1;
     //uiMeshDrawType = 1;
     selectMeshId = 0;
@@ -39,50 +36,13 @@ void ofApp::setup(){
     skipLoadFrame = 10;         // 1  10
     
     playMode = 0;   // 1:timebased 0: frame
+    dataLoadOnAppBoot = true;
 
     // initializing vars ---------------------------------------
     
-    frameCount = 0;
-    playCount = 0;
-    totalMaxMeshNum = 0;
-    startPlayMeshAnimNum = 0;
-    
-    nowPlayTime = 0;
-    
-    dispGui = true;
-    dispDebugInfoFlag = true;
-    dispAllUiFlag = true;
-    dispPlayControlUiFlag = true;
-    
-    loopPlay = true;
-    
-    prevSelectModel = -1;
 
-    playSeekTime = 0;
-    onPlay = true;
-    
-    playStartPrevPos = 0;
-    prevFramePlayState = true;
-    
-    seekbarAddTime = 0;
-
-    scanUnixTimeAllItemMin = LONG_MAX;
-    scanUnixTimeAllItemMax = LONG_MIN;
-    scanGpsDataMinLat = 1000;
-    scanGpsDataMinLong = 1000;
-    scanGpsDataMaxLat = 0;
-    scanGpsDataMaxLong = 0;
-    
-    fboFront.allocate(640, 480, GL_RGBA);
-    fboSide.allocate(640, 480, GL_RGBA);
-    fboTop.allocate(640, 480, GL_RGBA);
-    fboCam.allocate(640, 480, GL_RGBA);
     
     // get file load path --------------------------------------------------------------------------------
-    
-    //meshDataDirPath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d";
-    //meshDataDirPath = "/Users/doc100/Desktop/tempData/artdkt_structure3d";
-    
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
     meshDataDirPath = fileDialogResult.getPath();
@@ -253,6 +213,12 @@ void ofApp::setup(){
 
     }
     
+    
+    // ---------------------------------------------
+    // 全力再生
+    ofSetVerticalSync(false);
+    ofSetFrameRate(0);
+    
     // ------------------------------------------------
     
     appInitEndTime = ofGetElapsedTimeMillis();
@@ -264,6 +230,43 @@ void ofApp::setup(){
 
 }
 // setup end ----------------------------------------------------------------------------------
+
+void ofApp::initAppVars() {
+    frameCount = 0;
+    playCount = 0;
+    playSeekTime = 0;
+    nowPlayTime = 0;
+    seekbarAddTime = 0;
+    totalMaxMeshNum = 0;
+    startPlayMeshAnimNum = 0;
+    playStartPrevPos = 0;
+    
+    dispGui = true;
+    dispDebugInfoFlag = true;
+    dispAllUiFlag = true;
+    dispPlayControlUiFlag = true;
+    loopPlay = true;
+    onPlay = true;
+    prevFramePlayState = true;
+    
+    prevSelectModel = -1;
+    
+    scanGpsDataMinLat = 1000;
+    scanGpsDataMinLong = 1000;
+    scanGpsDataMaxLat = 0;
+    scanGpsDataMaxLong = 0;
+    scanUnixTimeAllItemMin = LONG_MAX;
+    scanUnixTimeAllItemMax = LONG_MIN;
+    
+    fboFront.allocate(640, 480, GL_RGBA);
+    fboSide.allocate(640, 480, GL_RGBA);
+    fboTop.allocate(640, 480, GL_RGBA);
+    fboCam.allocate(640, 480, GL_RGBA);
+}
+
+void ofApp::settingAppVarsOnBoot() {
+    
+}
 
 void ofApp::myGuiSetup() {
 

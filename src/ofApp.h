@@ -10,10 +10,10 @@
 #include "ofxGui.h"
 #include "ofxGuiExtended.h"
 
-#include "ofxObjLoader.h"
+//#include "ofxObjLoader.h"
 
 #include "ofxNi2.h"
-#include "ofxNiTE2.h"
+//#include "ofxNiTE2.h"
 
 #define STRINGIFY(A) #A
 
@@ -60,6 +60,9 @@ public:
     void saveMapFile();
     void loadMapFile(string meshDataDirPath);
     void drawScaleGrid(float areaSize, int gridSpan);
+    void initAppVars();
+    void settingAppVarsOnBoot();
+    
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
     void detailViewNextModel(int mod);
@@ -71,22 +74,22 @@ public:
     ofxTrueTypeFontUC fontDebugPrint;
     ofxTrueTypeFontUC fontMyGui;
     
-    ofxAssimpModelLoader asModelObj[200][1000];
-    ofMesh modelList[200][1000];
-    int modelFlagList[200];
-    ofImage modelImageList[200][300];
-    int scanTimeRecordList[200][1000][4];
-    time_t scanTimeRecordTimeStructureList[200][1000];
-    long scanUnixTimeLongIntList[200][1000];
-    long scanUnixTimeModelMinList[200];
-    long scanUnixTimeModelMaxList[200];
+    ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][1000];
+    ofMesh modelList[MAX_MODEL_ARRAY][1000];
+    int modelFlagList[MAX_MODEL_ARRAY];
+    ofImage modelImageList[MAX_MODEL_ARRAY][300];
+    int scanTimeRecordList[MAX_MODEL_ARRAY][1000][4];
+    time_t scanTimeRecordTimeStructureList[MAX_MODEL_ARRAY][1000];
+    long scanUnixTimeLongIntList[MAX_MODEL_ARRAY][1000];
+    long scanUnixTimeModelMinList[MAX_MODEL_ARRAY];
+    long scanUnixTimeModelMaxList[MAX_MODEL_ARRAY];
     long scanUnixTimeSelectedModelsMin;
     long scanUnixTimeSelectedModelsMax;
     long scanUnixTimeAllItemMin;
     long scanUnixTimeAllItemMax;
-    int selectedItemIdOnScene[200];
-    int scanTimeRecordMaxTime[200];
-    double scanGpsDataList[200][1000][8];
+    int selectedItemIdOnScene[MAX_MODEL_ARRAY];
+    int scanTimeRecordMaxTime[MAX_MODEL_ARRAY];
+    double scanGpsDataList[MAX_MODEL_ARRAY][1000][8];
     double scanGpsDataMinLat;
     double scanGpsDataMaxLat;
     double scanGpsDataMinLong;
@@ -96,9 +99,9 @@ public:
     string mapId[1024];
     int mapNum[1024][16];
     float modelHeightList[1024];
-    ofPoint modelSceneMin[200];
-    ofPoint modelSceneMax[200];
-    ofPoint modelSceneCenter[200];
+    ofPoint modelSceneMin[MAX_MODEL_ARRAY];
+    ofPoint modelSceneMax[MAX_MODEL_ARRAY];
+    ofPoint modelSceneCenter[MAX_MODEL_ARRAY];
     float modelPosXList[1024];
     float modelPosZList[1024];
     vector<string> dataDirNameList;
@@ -277,7 +280,7 @@ public:
     ofRectangle myGuiPlayButton;
     
     
-    ofMatrix4x4 modelMatrixList[200];
+    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
     
     MyGuiItem myGuiItemList[100];
     MyGuiItem myGuiItemDetailLeftButton;
@@ -285,5 +288,6 @@ public:
     
     
     bool useOpenNi;
+    bool dataLoadOnAppBoot;
 };
 
