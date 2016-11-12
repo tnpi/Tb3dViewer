@@ -69,6 +69,7 @@ public:
     ofxTrueTypeFontUC fontSmall;
     ofxTrueTypeFontUC fontLarge;
     ofxTrueTypeFontUC fontDebugPrint;
+    ofxTrueTypeFontUC fontMyGui;
     
     ofxAssimpModelLoader asModelObj[200][1000];
     ofMesh modelList[200][1000];

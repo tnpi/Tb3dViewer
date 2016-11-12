@@ -96,6 +96,7 @@ void ofApp::setup(){
     fontSmall.loadFont("hira.otf", 20);
     fontLarge.loadFont("hira.otf", 100);
     fontDebugPrint.loadFont("hira.otf", 12);
+    fontMyGui.loadFont("hira.otf", 11);
     ofxGuiSetFont("hira.otf", 11, true, true);
     
     // myGuiSetup ----------------------------------------------------------------------
@@ -112,52 +113,49 @@ void ofApp::setup(){
     ofVec2f minPos = ofVec2f(-ofGetWidth() * 3, -ofGetHeight() * 4);
     ofVec2f maxPos = ofVec2f(ofGetWidth() * 2, ofGetHeight() * 3);
    
-    
+#pragma mark - GUI Setup
     // Set GUI parts -------------------------------------------------------------------------------
-    ofxGuiSetTextPadding(10);
-    //ofxGuiSetFillColor(ofColor(255,0,0));
-    //ofxGuiSetBackgroundColor(ofColor(0,255,0));
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
+    ofxGuiSetTextPadding(10);
+    ofxGuiSetFillColor(ofColor(255,0,0));
+    ofxGuiSetBackgroundColor(ofColor(0,255,0));
     
     guiPlayControlBar.setup("PlayControlBar");
     guiPlayControlBar.setPosition(0, ofGetHeight()-100);
     guiPlayControlBar.setSize(ofGetWidth(), 50);
     guiPlayControlBar.setDefaultWidth(70);
     guiPlayControlBar.setAlignHorizontal();        // ボタンを横並びにする
-    guiPlayControlBar.setWidthElements(70);
-    ///guiPlayControl.setDefaultHeight(25);
+    guiPlayControlBar.setWidthElements(100);
     guiPlayControlBar.setShowHeader(false);
-    //guiPlayControl.add(uiBtnPlayPause.setup("Play", true, 40, 25));
-
-    //uiBtnPlayPause = panel1.add(new ofxMinimalToggle(ofParameter<bool>("show header", true), 0, 30));
     
     guiPlayControlBar.add(uiBtnPlayPauseParts.setup(uiBtnPlayPause.set("Play", true), 70, 50) );
-    
+    guiPlayControlBar.add(uiBtnLoopPlay.setup("Loop", true, 40, 25));
+
+    guiPlayControlMenu.setWidthElements(80);
+    guiPlayControlMenu.setDefaultWidth(80);
     guiPlayControlMenu.setup("PlayControlMenu");
     guiPlayControlMenu.setPosition(400, ofGetHeight()-50);
     guiPlayControlMenu.setSize(ofGetWidth(), 50);
-    guiPlayControlMenu.setDefaultWidth(70);
     guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
-    guiPlayControlMenu.setWidthElements(70);
-    ///guiPlayControl.setDefaultHeight(25);
     guiPlayControlMenu.setShowHeader(false);
 
-    //guiPlayControlMenu.add(new ofxGuiSpacer(300) );
-    guiPlayControlMenu.add(new ofxMinimalButton("button", 0, 50));
-    
-    //uiBtnPlayPauseParts.setDefaultWidth(70);
-    //uiBtnPlayPauseParts.setPosition(100, 50);
+    guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
+    guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
+    guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
+    guiPlayControlMenu.add(new ofxGuiSpacer(20));
+    guiPlayControlMenu.add(uiBtnGrid.setup("Grid", false, 80, 20));
+    guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
+    guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
+    guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
 
-    //uiBtnPlayPause = *(new ofxMinimalToggle(ofParameter<bool>("Play", true), 70, 50)) ;
-    //uiBtnPlayPause.setup(ofParameter<bool>("Play", true), 70, 50) ;
-    //guiPlayControl.add(uiBtnPlayPause.setup(ofParameter<bool>("Play", true), 70, 50) );
-    
     //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
     
+    gui.setDefaultWidth(300);
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
     
     //gui.setDefaultBackgroundColor(ofColor(255,0,0,224));
+    gui.setWidthElements(300);
     
     gui.setPosition(0, 0);
     gui.setDefaultHeight(25);
@@ -166,31 +164,27 @@ void ofApp::setup(){
 
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
-    gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
-    gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
-    gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
+    //gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
+    //gui.add(uiColorMode.setup("colorMode", 1, 0, 1));
+    //gui.add(uiPlayMode.setup("playMode", 2, 0, 2));
     gui.add(uiFramerate.setup("framerate", 60, 5, 60));
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 25));
-    gui.add(uiBtnGrid.setup("Grid", false, 40, 24));
-    gui.add(uiBtnDebugInfo.setup("DebugInfo", false, 40, 25));
+    //gui.add(uiBtnGrid.setup("Grid", false, 40, 24));
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 25));
-    gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 25));
-    gui.add(uiBtnOrtho.setup("Ortho", false, 40, 25));
+    //gui.add(uiBtnLoopPlay.setup("LoopPlay", true, 40, 25));
+    //gui.add(uiBtnOrtho.setup("Ortho", false, 40, 25));
     gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 25));
-    gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
+    //gui.add(uiGpsMapMode.setup("mapMode", 0, 0, 3));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
-    gui.add(uiBtnReset.setup("Reset", 40, 25));
+    //gui.add(uiBtnReset.setup("Reset", 40, 25));
     gui.add(uiBtnSelectReset.setup("quit", 40, 25));
-    
+    gui.setWidthElements(300);
     
     guiMapEdit.setDefaultWidth(300);
     //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
-    gui.setDefaultHeight(24);
-    /*
-    gui.setDefaultBorderColor(ofColor(255,0,0));
-    gui.setTextColor(ofColor(255,0,0));
-    */
+    guiMapEdit.setDefaultHeight(25);
+
     guiMapEdit.setPosition(0, 0);
     guiMapEdit.setWidthElements(300);
     guiMapEdit.setShowHeader(false);
@@ -213,29 +207,22 @@ void ofApp::setup(){
     
     uiBtnReset.addListener(this, &ofApp::resetCam);
     
-    guiPlayItem.setup("playItem");
-    
-    guiPlayItem.add(uiBtnPlaySelectA.setup("A", 50, 25));
-    guiPlayItem.add(uiBtnPlaySelectB.setup("B", 50, 25));
-    guiPlayItem.add(uiBtnPlaySelectC.setup("C", 50, 25));
-    guiPlayItem.add(uiBtnPlaySelectBack.setup("Reset", 50, 25));
-    
-    
-    guiPage.setup("single page");
+    guiPage.setup("page1");
     guiPage.setSize(300, 300);
     guiPage.add(&gui);
     
-    guiPage2.setup("page 1");
+    guiPage2.setup("page2");
     guiPage2.add(&guiMapEdit);
     //guiPage2.add(&rotary);
     
     guiTabbedPages.setup("tabbed pages", "", 100);
     guiTabbedPages.setSize(300, 550);
-    //guiTabbedPages.setBackgroundColor(ofColor(0,0,0,32));
     guiTabbedPages.setTabWidth(70);
     guiTabbedPages.setTabHeight(30);
     guiTabbedPages.add(&guiPage);
     guiTabbedPages.add(&guiPage2);
+    
+    // GUI settings end --------------------------------
     
     // OpenNI ----------------------------------------------
     
@@ -289,7 +276,7 @@ void ofApp::myGuiSetup() {
     myGuiMainMenuDiff = ofRectangle(0, 50, ofGetWidth(), 50);
     myGuiMainTimebarDiff = ofRectangle(0, 0, ofGetWidth(), 50);
     
-    myGuiSeekBar = ofRectangle(100, ofGetHeight()-100, ofGetWidth()-150, 50);
+    myGuiSeekBar = ofRectangle(200, ofGetHeight()-100, ofGetWidth()-400, 50);
     
     myGuiMainMenu = myGuiMain;
     myGuiMainMenu.y += 50;
@@ -345,6 +332,12 @@ void ofApp::update(){
     mapNum[i][9] = uiEditDisplayFlag;
     
     prevSelectModel = i;
+    
+    if (mouseY >= myGuiMain.getTop()) {
+        uiBtnTimerControl = true;
+    } else {
+        uiBtnTimerControl = false;
+    }
     
     if (uiBtnTimerControl) {
         eCam.disableMouseInput();
@@ -1223,73 +1216,74 @@ void ofApp::draw(){
     int lineHeight = fSize*2;
     if (dispAllUiFlag) {
     
-        tSs.str("");
-        tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "Vertices: " << displayTotalVertices << "pts";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
-        tSs.str("");
-        tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "modelNum: " << modelDataNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "files: " << modeldataFiles;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
-        tSs.str("");
-        tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
-        tSs.str("");
-        tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-
-        if (viewerMode == 0) {
-            tSs.str("");
-            tSs << "meshName: " << meshNameList[selectMeshId];
-            fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        }
-
-        ofSetColor(255,255,255,255);
-        
         if (uiBtnDebugInfo) {
+            ofSetColor(255,255,255,255);
+            
+            tSs.str("");
+            tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "Vertices: " << displayTotalVertices << "pts";
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+
+            tSs.str("");
+            tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "modelNum: " << modelDataNum;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "files: " << modeldataFiles;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+
+            tSs.str("");
+            tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+
+            tSs.str("");
+            tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            
+            tSs.str("");
+            tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+
+            if (viewerMode == 0) {
+                tSs.str("");
+                tSs << "meshName: " << meshNameList[selectMeshId];
+                fontSmall.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            }
+
+        
             stringstream tSs;
             tSs.str("");
             tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
             
-            fontDebugPrint.drawString(tSs.str(), 50, 700);
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
             
             ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
             stringstream tSs2;
             tSs2.str("");
             tSs2 << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
-            fontDebugPrint.drawString(tSs2.str(), 50, 750);
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
 
             stringstream tSs3;
             
             tSs3 << "viewerMode: " << viewerMode << endl;
             
-            fontSmall.drawString(tSs3.str(), 50, 800);
+            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
         }
 
         /*
@@ -1332,22 +1326,34 @@ void ofApp::draw(){
         ofSetColor(64,64,64, 64);
         ofSetLineWidth(3);
         ofDrawLine(barX, myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, barX+barWidth,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2);
-        ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 24);
+        ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 16);
         ofSetColor(255,255,255);
-        ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 20);
+        ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 14);
 
         // Play Time Display ----------------------------------------------------------
-        tSs.str("");
-        tSs << "nowPlayTime: " << nowPlayTime << "    /  endTime: " << totalScanTimeRecordMaxTime;
-        fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 230);
-
-        tSs.str("");
-        if (viewerMode == 1) {
-            tSs << "playCount: " << playCount << "   /  endMeshNum: " << totalMaxMeshNum;
-        } else if (viewerMode == 0) {
-            tSs << "playCount: " << playCount << "   /  endMeshNum: " << maxMeshNumList[selectMeshId];
+        ofSetColor(64,64,64,255);
+        if (uiPlayMode == 0) {
+            tSs.str("");
+            tSs << "frame: " << playCount << " /  " << maxMeshNumList[selectMeshId];
+            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+            // tSs << "frame: " << playCount << " /  " << totalMaxMeshNum;
         }
-        fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 190);
+        
+        if (uiPlayMode == 1) {
+            if (viewerMode == 0) {
+                tSs.str("");
+                tSs << "frame: " << playCount << " /  " << maxMeshNumList[selectMeshId];
+                fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+            }
+
+            if (viewerMode == 1) {
+                tSs.str("");
+                tSs << "time:  " << nowPlayTime << "  /  " << totalScanTimeRecordMaxTime;
+                fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+
+            }
+
+        }
         
         
         if (uiPlayMode == 2) {
@@ -1360,10 +1366,15 @@ void ofApp::draw(){
             struct tm tempTimeStruct;
             memset(&tempTimeStruct,0x00,sizeof(struct tm));               // Initialize important!
             tempTimeStruct = *localtime(&nowPlayTimeForSeek);
-            ::strftime(charDateTime, sizeof(charDateTime), "%Y-%m-%d %H:%M:%S", &tempTimeStruct);
+            ::strftime(charDateTime, sizeof(charDateTime), "%Y-%m-%d", &tempTimeStruct);
             string strCharDateTime = charDateTime;
-            tSs <<  "VirtualTime: " << strCharDateTime << "." << nowPlayTimeTemp%1000;
-            fontSmall.drawString(tSs.str(), pX, ofGetHeight() - 150);
+            tSs <<  "" << strCharDateTime;
+            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+            tSs.str("");
+            ::strftime(charDateTime, sizeof(charDateTime), "%H:%M:%S", &tempTimeStruct);
+            strCharDateTime = charDateTime;
+            tSs <<  "" << strCharDateTime << "." << nowPlayTimeTemp%1000;
+            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 40);
         }
         
         
@@ -1733,20 +1744,23 @@ void ofApp::mouseDragged(int x, int y, int button){
     if (uiBtnTimerControl) {
     //if (y >= 500 && y < 700) {
         
-        if (uiPlayMode == 2) {
-            
-            long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
-            
-            seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+        if (myGuiSeekBar.inside(x, y)) {
+        
+            if (uiPlayMode == 2) {
+                
+                long seekbarCalcTime = (int)(((double)mouseX / (double)ofGetWidth()) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
+                
+                seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
 
-        } else if (uiPlayMode == 1) {
-            
-            seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
-            
-        } else {
-            
-            playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
-            
+            } else if (uiPlayMode == 1) {
+                
+                seekbarAddTime = (int)(((double)mouseX / (double)ofGetWidth()) * totalScanTimeRecordMaxTime);
+                
+            } else {
+                
+                playCount = (int)(((double)mouseX / (double)ofGetWidth() ) * totalMaxMeshNum );
+                
+            }
         }
         
     }
