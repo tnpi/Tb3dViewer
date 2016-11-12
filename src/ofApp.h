@@ -10,7 +10,7 @@
 #include "ofxGui.h"
 #include "ofxGuiExtended.h"
 
-//#include "ofxObjLoader.h"
+#include "ofxObjLoader.h"
 
 #include "ofxNi2.h"
 //#include "ofxNiTE2.h"
@@ -62,6 +62,8 @@ public:
     void drawScaleGrid(float areaSize, int gridSpan);
     void initAppVars();
     void settingAppVarsOnBoot();
+    void setupOfxGui();
+    void setupOpenNi();
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     

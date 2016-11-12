@@ -8,39 +8,30 @@
 void ofApp::setup(){
     
     appInitStartTime = ofGetElapsedTimeMillis();
+    
+    // initializing vars ----------------------------------------------
     initAppVars();
     
     // app settings --------------------------------------------
-
-    useOpenNi = false;
-    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
-    
-    loadPictureMode = false;
-    loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
-    colorMode = 1;
-
-    defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
-    
-    viewerMode = 1;
-    //uiMeshDrawType = 1;
-    selectMeshId = 0;
-    mapFileExists = false;
-    mapDataColumns = 16;
-    
-    totalLoadedModelNum = 0;
-    maxLoadedMeshNumInAllMesh = 0;
-    
-    dispPlayControl = true;
     
     maxLoadMeshNum = 2000;      //  2000  100
     skipLoadFrame = 10;         // 1  10
     
-    playMode = 0;   // 1:timebased 0: frame
-    dataLoadOnAppBoot = true;
-
-    // initializing vars ---------------------------------------
+    useOpenNi = false;
+    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
+    loadPictureMode = false;
+    loadVertexColorObj = false;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
+ 
+    mapDataColumns = 16;
+    colorMode = 1;
+    viewerMode = 1;
+    defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
+    //uiMeshDrawType = 1;
+    mapFileExists = false;
     
-
+    dispPlayControl = true;
+    
+    dataLoadOnAppBoot = true;
     
     // get file load path --------------------------------------------------------------------------------
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
@@ -50,8 +41,7 @@ void ofApp::setup(){
     // Read Map File ----------------------------------------------------------------
     loadMapFile(meshDataDirPath);
     
-    // load fonts --------------------------------------------------------------
-    
+    // fonts load --------------------------------------------------------------
     font.loadFont("hira.otf", 38);
     fontSmall.loadFont("hira.otf", 20);
     fontLarge.loadFont("hira.otf", 100);
@@ -60,21 +50,74 @@ void ofApp::setup(){
     ofxGuiSetFont("hira.otf", 11, true, true);
     
     // myGuiSetup ----------------------------------------------------------------------
-    
     myGuiSetup();
     
     // OfxGUI setup -----------------------------------------------------------------
+    setupOfxGui();
     
-    ofColor initColor = ofColor(0, 127, 255, 255);
-    ofColor minColor = ofColor(0,0,0,0);
-    ofColor maxColor = ofColor(255,255,255,255);
- 
-    ofVec2f initPos = ofVec2f(ofGetWidth(), ofGetHeight());
-    ofVec2f minPos = ofVec2f(-ofGetWidth() * 3, -ofGetHeight() * 4);
-    ofVec2f maxPos = ofVec2f(ofGetWidth() * 2, ofGetHeight() * 3);
-   
+    // OpenNI setup ----------------------------------------------
+    setupOpenNi();
     
+    // ---------------------------------------------
+    // 全力再生設定
+    ofSetVerticalSync(false);
+    ofSetFrameRate(0);
+    
+    uiPlayMode = playMode;
+    
+    // time set on finish app init ------------------------------------------------
+    appInitEndTime = ofGetElapsedTimeMillis();
+    playStartDateTime = ofGetElapsedTimeMillis();
+
+    ::time(&unixTimeOnOfStarted);
+
+}
+// setup end ----------------------------------------------------------------------------------
+
+void ofApp::initAppVars() {
+    selectMeshId = 0;
+    frameCount = 0;
+    playCount = 0;
+    playMode = 0;   // 1:timebased 0: frame
+    playSeekTime = 0;
+    nowPlayTime = 0;
+    seekbarAddTime = 0;
+    totalMaxMeshNum = 0;
+    startPlayMeshAnimNum = 0;
+    playStartPrevPos = 0;
+    totalLoadedModelNum = 0;
+    maxLoadedMeshNumInAllMesh = 0;
+    
+    dispGui = true;
+    dispDebugInfoFlag = true;
+    dispAllUiFlag = true;
+    dispPlayControlUiFlag = true;
+    loopPlay = true;
+    onPlay = true;
+    prevFramePlayState = true;
+    
+    prevSelectModel = -1;
+    
+    scanGpsDataMinLat = 1000;
+    scanGpsDataMinLong = 1000;
+    scanGpsDataMaxLat = 0;
+    scanGpsDataMaxLong = 0;
+    scanUnixTimeAllItemMin = LONG_MAX;
+    scanUnixTimeAllItemMax = LONG_MIN;
+    
+    fboFront.allocate(640, 480, GL_RGBA);
+    fboSide.allocate(640, 480, GL_RGBA);
+    fboTop.allocate(640, 480, GL_RGBA);
+    fboCam.allocate(640, 480, GL_RGBA);
+}
+
+void ofApp::settingAppVarsOnBoot() {
+    
+}
+
+
 #pragma mark - GUI Setup
+void ofApp::setupOfxGui() {
     // Set GUI parts -------------------------------------------------------------------------------
     ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
     ofxGuiSetTextPadding(10);
@@ -91,7 +134,7 @@ void ofApp::setup(){
     
     guiPlayControlBar.add(uiBtnPlayPauseParts.setup(uiBtnPlayPause.set("Play", true), 70, 50) );
     guiPlayControlBar.add(uiBtnLoopPlay.setup("Loop", true, 80, 20));
-
+    
     guiPlayControlMenu.setWidthElements(80);
     guiPlayControlMenu.setDefaultWidth(80);
     guiPlayControlMenu.setup("PlayControlMenu");
@@ -99,7 +142,7 @@ void ofApp::setup(){
     guiPlayControlMenu.setSize(ofGetWidth(), 50);
     guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlMenu.setShowHeader(false);
-
+    
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
     guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
@@ -108,7 +151,7 @@ void ofApp::setup(){
     guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
-
+    
     //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
     
     gui.setDefaultWidth(300);
@@ -122,7 +165,7 @@ void ofApp::setup(){
     gui.setDefaultHeight(25);
     //gui.setBackgroundColor(ofColor(0,0,0,32));
     gui.setShowHeader(false);
-
+    
     gui.add(uiThumbnailIconDistance.setup("thumbnailIconDistance", 0, 0, 5000));
     gui.add(uiIconNumX.setup("iconNumX", 4, 1, 8));
     //gui.add(uiMeshDrawType.setup("meshDrawType", 0, 0, 2));
@@ -145,7 +188,7 @@ void ofApp::setup(){
     //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setDefaultHeight(25);
-
+    
     guiMapEdit.setPosition(0, 0);
     guiMapEdit.setWidthElements(300);
     guiMapEdit.setShowHeader(false);
@@ -184,8 +227,10 @@ void ofApp::setup(){
     guiTabbedPages.add(&guiPage2);
     
     // GUI settings end --------------------------------
-    
-    // OpenNI ----------------------------------------------
+
+}
+
+void ofApp::setupOpenNi() {
     
     if (useOpenNi) {
         oniDevice = new ofxNI2::Device;
@@ -210,62 +255,9 @@ void ofApp::setup(){
         //		color.setFps(60);
         //		color.start();
         //	}
-
+        
     }
-    
-    
-    // ---------------------------------------------
-    // 全力再生
-    ofSetVerticalSync(false);
-    ofSetFrameRate(0);
-    
-    // ------------------------------------------------
-    
-    appInitEndTime = ofGetElapsedTimeMillis();
-    playStartDateTime = ofGetElapsedTimeMillis();
 
-    uiPlayMode = playMode;
- 
-    ::time(&unixTimeOnOfStarted);
-
-}
-// setup end ----------------------------------------------------------------------------------
-
-void ofApp::initAppVars() {
-    frameCount = 0;
-    playCount = 0;
-    playSeekTime = 0;
-    nowPlayTime = 0;
-    seekbarAddTime = 0;
-    totalMaxMeshNum = 0;
-    startPlayMeshAnimNum = 0;
-    playStartPrevPos = 0;
-    
-    dispGui = true;
-    dispDebugInfoFlag = true;
-    dispAllUiFlag = true;
-    dispPlayControlUiFlag = true;
-    loopPlay = true;
-    onPlay = true;
-    prevFramePlayState = true;
-    
-    prevSelectModel = -1;
-    
-    scanGpsDataMinLat = 1000;
-    scanGpsDataMinLong = 1000;
-    scanGpsDataMaxLat = 0;
-    scanGpsDataMaxLong = 0;
-    scanUnixTimeAllItemMin = LONG_MAX;
-    scanUnixTimeAllItemMax = LONG_MIN;
-    
-    fboFront.allocate(640, 480, GL_RGBA);
-    fboSide.allocate(640, 480, GL_RGBA);
-    fboTop.allocate(640, 480, GL_RGBA);
-    fboCam.allocate(640, 480, GL_RGBA);
-}
-
-void ofApp::settingAppVarsOnBoot() {
-    
 }
 
 void ofApp::myGuiSetup() {
