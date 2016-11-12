@@ -129,7 +129,7 @@ void ofApp::setup(){
     guiPlayControlBar.setShowHeader(false);
     
     guiPlayControlBar.add(uiBtnPlayPauseParts.setup(uiBtnPlayPause.set("Play", true), 70, 50) );
-    guiPlayControlBar.add(uiBtnLoopPlay.setup("Loop", true, 40, 25));
+    guiPlayControlBar.add(uiBtnLoopPlay.setup("Loop", true, 80, 20));
 
     guiPlayControlMenu.setWidthElements(80);
     guiPlayControlMenu.setDefaultWidth(80);
@@ -1334,7 +1334,7 @@ void ofApp::draw(){
         ofSetColor(64,64,64,255);
         if (uiPlayMode == 0) {
             tSs.str("");
-            tSs << "frame: " << playCount << " /  " << maxMeshNumList[selectMeshId];
+            tSs << "" << playCount << " / " << maxMeshNumList[selectMeshId] << " frame";
             fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
             // tSs << "frame: " << playCount << " /  " << totalMaxMeshNum;
         }
@@ -1342,13 +1342,14 @@ void ofApp::draw(){
         if (uiPlayMode == 1) {
             if (viewerMode == 0) {
                 tSs.str("");
-                tSs << "frame: " << playCount << " /  " << maxMeshNumList[selectMeshId];
+                tSs << "frame: " << playCount << " / " << maxMeshNumList[selectMeshId];
                 fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
             }
 
             if (viewerMode == 1) {
                 tSs.str("");
-                tSs << "time:  " << nowPlayTime << "  /  " << totalScanTimeRecordMaxTime;
+                tSs << fixed << setprecision(3);
+                tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime/1000.0 << " sec";
                 fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
 
             }
@@ -1638,22 +1639,41 @@ void ofApp::keyPressed(int key){
 void ofApp::keyReleased(int key){
     
     if (key == ' ') {
-        if (dispAllUiFlag == false) {
-            dispAllUiFlag = true;
-        } else {
-            dispAllUiFlag = false;
-        }
-    }
-    if (key == 57) {
-        if (uiBtnPlayPause == false) {
-            uiBtnPlayPause = true;
-        } else {
-            uiBtnPlayPause = false;
-        }
-        
+        dispAllUiFlag ^= true;
     }
     
-    if (key == 52) {     //
+    /*
+    if (key == 51) {
+        uiBtnTimerControl ^= true;
+    }
+     */
+     
+    if (key == '0') {
+        
+        eCam.reset();
+        eCam.setPosition(0, 0, 1000);
+        viewerMode = 1;
+        
+        selectMeshId = 0;
+        
+        cout << "key number 0 Check!: " << key << endl;
+        
+    } else if (key == '1') {
+        
+        viewerMode = 0;
+        selectMeshId = 0;
+        
+        resetCamDetailView();
+        
+    } else if (key == '2') {
+        
+        viewerMode = 1;
+        selectMeshId = 0;
+        
+        resetCamListView();
+        
+    } else if (key == '4') {     //
+        
         if (mapNum[0][9] == 0) {
             mapNum[0][9] = 1;
             if (selectMeshId == 0){
@@ -1667,9 +1687,8 @@ void ofApp::keyReleased(int key){
             
         }
         
-    }
-    
-    if (key == 53) {     //
+    } else if (key == '5') {     //
+        
         if (mapNum[1][9] == 0) {
             mapNum[1][9] = 1;
             if (selectMeshId == 1){
@@ -1681,49 +1700,23 @@ void ofApp::keyReleased(int key){
                 uiEditDisplayFlag = 0;
             }
         }
-    }
-    
-    if (key == 51) {
-        if (uiBtnTimerControl) {
-            uiBtnTimerControl = false;
-        } else {
-            uiBtnTimerControl = true;
-        }
         
-    }
-    
-    if (key == 48) {
+    } else if (key == '9') {
+
+        uiBtnPlayPause ^= true;
         
-        eCam.reset();
-        eCam.setPosition(0, 0, 1000);
-        viewerMode = 1;
+    } else if (key == OF_KEY_LEFT) {
         
-        selectMeshId = 0;
-        
-        cout << "key number 0 Check!: " << key << endl;
-    }
-    
-    if (int(key) == 49) {
-        viewerMode = 0;
-        selectMeshId = 0;
-        eCam.reset();
-        
-        float modelSizeX = modelPosXList[selectMeshId]*1000 / 2;
-        float modelSizeY = modelHeightList[selectMeshId]*1000 / 2;
-        float modelSizeZ = modelPosZList[selectMeshId]*1000 / 2;
-        
-        eCam.setPosition(modelSizeX, -modelSizeZ-modelSizeZ*2, modelSizeZ*2);
-        eCam.setTarget(ofVec3f(modelSizeX, -modelSizeZ, 0));
-        
-    }
-    
-    if (viewerMode == 0) {
-        if (key == OF_KEY_LEFT) {
+        if (viewerMode == 0) {
             detailViewNextModel(-1);
         }
-        if (key == OF_KEY_RIGHT) {
+        
+    } else if (key == OF_KEY_RIGHT) {
+        
+        if (viewerMode == 0) {
             detailViewNextModel(1);
         }
+        
     }
     
     if (key == OF_KEY_TAB) {
