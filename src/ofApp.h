@@ -213,7 +213,7 @@ public:
     ofFile mapFile;
     ofBuffer mapBuffer;
     
-    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
+    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     
     ofRectangle mainView;
     ofRectangle myGuiMain;

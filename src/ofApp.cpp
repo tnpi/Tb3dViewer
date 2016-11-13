@@ -768,7 +768,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         ofSetLineWidth(1);
         asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
     } else if (uiMeshDrawType == 2) {
-        glPointSize(1);
+        glPointSize(1 );
         //ofBlendMode(OF_BLENDMODE_ALPHA);
         asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
     } else {
@@ -1098,7 +1098,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofScale(1000, 1000, 1000);
         asModelObj[i][playFrameSelector].setScaleNormalization(false);
         
-        ofVec3f tr = modelMatrixList[z].getTranslation();
+        ofVec3f tr = modelMatrixList[i][z].getTranslation();
         double posX = tr.x * (1000 + uiTestSlider);
         double posY = tr.z * (1000 + uiTestSlider);
         double posZ = tr.y * (1000 + uiTestSlider);
@@ -1136,8 +1136,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofSetLineWidth(5);
         ofSetColor(0,64,255);
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
-            ofMatrix4x4 matrixA = modelMatrixList[z];
-            ofMatrix4x4 matrixB = modelMatrixList[z+1];
+            ofMatrix4x4 matrixA = modelMatrixList[i][z];
+            ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
             
             ofVec3f posA = matrixA.getTranslation();
             ofVec3f posB = matrixB.getTranslation();
@@ -2097,15 +2097,19 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
                     
                 }
                 
+                
+                // トラッキング情報のmatrixの読み込み
                 if (itemList.size() >= 20) {
                     cout << "load floatMatrix:";
                     float floatMatrix[16];
                     for(int z2=0; z2 < 16; z2++) {
-                        //floatMatrix[z2] = stof(itemList[12+z2]);
-                        floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
+                        
+                        //floatMatrix[z2] = stof( itemList[12 + ((z2 % 4) * 4) + (int)(z2 / 4)] );
+                        floatMatrix[z2] = stof( itemList[12 + z2] );
+                        
                         cout << floatMatrix[z2] << ", ";
                     }
-                    modelMatrixList[modelIndex] = ofMatrix4x4(floatMatrix);
+                    modelMatrixList[modelIndex][idx] = ofMatrix4x4(floatMatrix);
                     cout << endl;
                 }
                 
@@ -2227,9 +2231,6 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
 // --------------------------------------------------------------------------------------------
 void ofApp::loadMapFile(string meshDataDirPath) {
     
-    ///Users/doc100/Desktop/tempData/artdkt_structure3d
-    //mapFilePath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d/mapFile.csv";
-    
     stringstream mapSs;
     mapSs << meshDataDirPath << "/mapFile.csv";
     mapFilePath = mapSs.str();
@@ -2240,7 +2241,7 @@ void ofApp::loadMapFile(string meshDataDirPath) {
     
     if(!mapFile.exists()){
         
-        ofLogError("The file " + mapFilePath + " is missing. I make it.");
+        ofLogError("The file " + mapFilePath + " is missing. make it.");
         
         for(int i=0; i<256; i++) {
             mapId[i] = "";
