@@ -1973,18 +1973,25 @@ void ofApp::dataLoad() {
     for (auto dirName : dataDirNameList)
     {
         meshNameList[dirNameLoopCount] = dirName;
+        cout << "dirName: " << dirName << endl;
         
         stringstream ss;
-        cout << "dirName: " << dirName << endl;
         
         stringstream dirPath;
         dirPath << meshDataDirPath << "/" << dirName << "/";
         
-        int meshNum = countMeshFileNumTargetDir(dirPath.str());
-        maxMeshNumList[dirNameLoopCount] = meshNum;
+        // 各モデルディレクトリ以下のメッシュファイル数をカウント
+        bool staticModelFlag = false;
+        int countMeshFileNum = countMeshFileNumTargetDir(dirPath.str());
+        if (countMeshFileNum >= 0) {
+            maxMeshNumList[dirNameLoopCount] = countMeshFileNum;
+        } else {    // 静的モデルの場合
+            maxMeshNumList[dirNameLoopCount] = -countMeshFileNum;
+            staticModelFlag = true;
+        }
         
         // 今回のモデルが動的モデルだった場合の読み込み -----------------------------------------------------------
-        if (meshNum > 1) {
+        if (!staticModelFlag) {
 
             struct tm tempTmStruct;
             memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
@@ -2222,8 +2229,9 @@ void ofApp::dataLoad() {
 
 }
 
-// 各モデルディレクトリ以下のメッシュファイル数をカウント -----------------
+// 各モデルディレクトリ以下のメッシュファイル数をカウント 静的モデルの場合は-1を返す -----------------
 int ofApp::countMeshFileNumTargetDir(string dirPath){
+    
     // 各モデルディレクトリ以下を開く
     int meshFileNum = 0;
     
@@ -2245,7 +2253,7 @@ int ofApp::countMeshFileNumTargetDir(string dirPath){
             
             // 静的モデル (Model.obj)
             if (itr->getFileName().substr(0,9) == "Model.obj") {
-                meshFileNum = 1;
+                meshFileNum = -1;
                 break;
             }
             
