@@ -1095,16 +1095,19 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         glRotatef(-90, 1, 0, 0);    // turn model
         ofScale(1, 1, -1);      // fix model direction
         ofScale(-1, -1, 1);      // fix model direction
-        ofScale(1000, 1000, 1000);
-        asModelObj[i][playFrameSelector].setScaleNormalization(false);
         
         ofVec3f tr = modelMatrixList[i][z].getTranslation();
         double posX = tr.x * (1000 + uiTestSlider);
         double posY = tr.z * (1000 + uiTestSlider);
         double posZ = tr.y * (1000 + uiTestSlider);
-        ofTranslate(posX,posZ,posY);
-        cout << "posX: " << posX << " posY: " << posY << endl;
-    
+        ofTranslate(-posX, posZ, -posY);
+        cout << "posX: " << posX << " Y: " << posY << " Z:" << posZ << endl;
+        
+
+        
+        ofScale(1000, 1000, 1000);
+        asModelObj[i][playFrameSelector].setScaleNormalization(false);
+        
     
         if (uiColorMode) {
             asModelObj[i][playFrameSelector].enableTextures();
@@ -1116,7 +1119,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofSetLineWidth(1);
             asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
-            glPointSize(5);
+            glPointSize(2);
             
             asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
         } else {
@@ -1134,7 +1137,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         glPushMatrix();
         
         ofSetLineWidth(5);
-        ofSetColor(0,64,255);
+        ofSetColor(0,96,255);
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
             ofMatrix4x4 matrixA = modelMatrixList[i][z];
             ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
@@ -1142,7 +1145,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofVec3f posA = matrixA.getTranslation();
             ofVec3f posB = matrixB.getTranslation();
             
-            ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+            ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
             
             //cout << "posX: " << posX << " posY: " << posY << endl;
         }
