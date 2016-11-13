@@ -18,6 +18,7 @@
 #define STRINGIFY(A) #A
 
 #define MAX_MODEL_ARRAY 100
+#define MAX_MESH_ARRAY 1000
 
 
 class MyGuiItem {
@@ -91,13 +92,13 @@ public:
     ofxTrueTypeFontUC fontDebugPrint;
     ofxTrueTypeFontUC fontMyGui;
     
-    ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][1000];
-    ofMesh modelList[MAX_MODEL_ARRAY][1000];
+    ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    ofMesh modelList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     int modelFlagList[MAX_MODEL_ARRAY];
-    ofImage modelImageList[MAX_MODEL_ARRAY][300];
-    int scanTimeRecordList[MAX_MODEL_ARRAY][1000][4];
-    time_t scanTimeRecordTimeStructureList[MAX_MODEL_ARRAY][1000];
-    long scanUnixTimeLongIntList[MAX_MODEL_ARRAY][1000];
+    ofImage modelImageList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    int scanTimeRecordList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY][4];
+    time_t scanTimeRecordTimeStructureList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    long scanUnixTimeLongIntList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     long scanUnixTimeModelMinList[MAX_MODEL_ARRAY];
     long scanUnixTimeModelMaxList[MAX_MODEL_ARRAY];
     long scanUnixTimeSelectedModelsMin;
@@ -106,22 +107,22 @@ public:
     long scanUnixTimeAllItemMax;
     int selectedItemIdOnScene[MAX_MODEL_ARRAY];
     int scanTimeRecordMaxTime[MAX_MODEL_ARRAY];
-    double scanGpsDataList[MAX_MODEL_ARRAY][1000][8];
+    double scanGpsDataList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY][8];
     double scanGpsDataMinLat;
     double scanGpsDataMaxLat;
     double scanGpsDataMinLong;
     double scanGpsDataMaxLong;
-    string meshNameList[1024];
-    int maxMeshNumList[1024];
-    unsigned int meshVertexNumList[MAX_MODEL_ARRAY][1000];
-    string mapId[1024];
-    int mapNum[1024][16];
-    float modelHeightList[1024];
+    string meshNameList[MAX_MESH_ARRAY];
+    int maxMeshNumList[MAX_MESH_ARRAY];
+    unsigned int meshVertexNumList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    string mapId[MAX_MESH_ARRAY];
+    int mapNum[MAX_MESH_ARRAY][40];
+    float modelHeightList[MAX_MESH_ARRAY];
     ofPoint modelSceneMin[MAX_MODEL_ARRAY];
     ofPoint modelSceneMax[MAX_MODEL_ARRAY];
     ofPoint modelSceneCenter[MAX_MODEL_ARRAY];
-    float modelPosXList[1024];
-    float modelPosZList[1024];
+    float modelPosXList[MAX_MESH_ARRAY];
+    float modelPosZList[MAX_MESH_ARRAY];
     vector<string> dataDirNameList;
     vector< vector<uint64_t> > modelFileSizeList;
     vector <uint64_t> oneModelFileSizeList;
