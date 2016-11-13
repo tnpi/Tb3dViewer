@@ -152,7 +152,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
     guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
-    guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
+    guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 1));
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
     guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
