@@ -144,7 +144,6 @@ public:
     int modeldataLoadingStartTime;
     int modeldataLoadingEndTime;
     int modeldataFiles;
-    int modeldataDatasetNum;
     int playSeekTime;
     int nowTime;
     int viewerMode;         // Detail / List / Mapping /  MapEdit

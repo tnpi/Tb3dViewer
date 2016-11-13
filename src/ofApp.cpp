@@ -1099,12 +1099,11 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         asModelObj[i][playFrameSelector].setScaleNormalization(false);
         
         ofVec3f tr = modelMatrixList[z].getTranslation();
-        double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-        double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-        
+        double posX = tr.x * (1000 + uiTestSlider);
+        double posY = tr.z * (1000 + uiTestSlider);
+        double posZ = tr.y * (1000 + uiTestSlider);
+        ofTranslate(posX,posZ,posY);
         cout << "posX: " << posX << " posY: " << posY << endl;
-        ofTranslate(0,0,posY);
-        ofTranslate(posX,0,0);
     
     
         if (uiColorMode) {
@@ -1964,10 +1963,9 @@ void ofApp::loadMapFile(string meshDataDirPath) {
 void ofApp::dataLoad() {
     
     modeldataLoadingStartTime = ofGetElapsedTimeMillis();
-    
-    modeldataDatasetNum = 0;
     modeldataFiles = 0;
     
+    // 指定したディレクトリ以下のフォルダの名前をdataDirNameListに追加 ---------------------------
     ofDirectory ofDir;
     ofDir.listDir(meshDataDirPath);
     
@@ -1981,14 +1979,15 @@ void ofApp::dataLoad() {
             cout << s << endl;
             dataDirNameList.push_back(s);
             
-            if (!mapFileExists) {
-                mapId[tCount] = s;
+            if (!mapFileExists) {       // マップファイルが存在する場合
+                mapId[tCount] = s;      // 各ディレクトリ名を保存
             }
             tCount++;
         }
         ++itr;
     }
     
+    // 各モデルサイズを記録するための下準備 ----------------------------------
     for(int i=0; i<MAX_MODEL_ARRAY; i++) {
         modelSceneMin[i].x = INT_MAX;
         modelSceneMin[i].y = INT_MAX;
@@ -1998,299 +1997,263 @@ void ofApp::dataLoad() {
         modelSceneMax[i].z = 0;
     }
     
-
     
     //  --------------------------------------------------------------------
     
-    // Assimp model loader
+    // 各モデルディレクトリ名ごとのループ
     int dirNameLoopCount = 0;
     for (auto dirName : dataDirNameList)
     {
-        stringstream ss;
-        ofSetWindowTitle(ss.str());
+        meshNameList[dirNameLoopCount] = dirName;
         
+        stringstream ss;
+        cout << "dirName: " << dirName << endl;
+        
+        // 各モデルディレクトリ以下のメッシュファイル数をカウント（静的モデルかどうかの判別含む） -----------------
+        // 各モデルディレクトリ以下を開く
+        int meshFileNum = 0;
+        bool staticModelFlag = false;
+        stringstream dirPath;
+        ofDirectory ofDir;
+        dirPath << meshDataDirPath << "/" << dirName << "/";
+        ofDir.listDir(dirPath.str());
+        vector<ofFile> files = ofDir.getFiles();
+        vector<ofFile>::iterator itr = files.begin();  //
+        while( itr != files.end() )  //
         {
-            cout << "dirName: " << dirName << endl;
-            
-            stringstream dirPath;
-            dirPath.str("");
-            int meshFileNum;
-            meshFileNum = 0;
-            
-            ofDirectory ofDir;
-            //dirPath << "./" << dirName << "/";
-            dirPath << meshDataDirPath << "/" << dirName << "/";
-            ofDir.listDir(dirPath.str());
-            //ofDir.listDir(meshDataDirPath);
-            
-            
-            meshNameList[dirNameLoopCount] = dirName;
-            
-            bool staticModelFlag = false;
-            
-            vector<ofFile> files = ofDir.getFiles();
-            vector<ofFile>::iterator itr = files.begin();  //
-            while( itr != files.end() )  //
-            {
-                //cout << "*" << itr->getFileName() << endl;  //
-                if (!itr->isDirectory()) {
-                    string fName = itr->getFileName();
-                    if (fName.substr(0,4) == "mesh" && fName.substr(fName.size()-3,3) == "obj") {
-                        meshFileNum++;
-                        
-                        //cout << "***" << itr->getFileName() << endl;  //
-                    }
-                    
-                    if (itr->getFileName().substr(0,9) == "Model.obj") {
-                        meshFileNum++;
-                        staticModelFlag = true;
-                    }
-                    
-                    //dataDirNameList.push_back(itr->getFileName());
+
+            if (!itr->isDirectory()) {
+                
+                string fName = itr->getFileName();
+                
+                // 動的モデルのメッシュファイル(mesh_XXX.obj)をカウント
+                if (fName.substr(0,4) == "mesh" && fName.substr(fName.size()-3,3) == "obj") {
+                    meshFileNum++;
                 }
-                ++itr;                 //
+                
+                // 静的モデル (Model.obj)
+                if (itr->getFileName().substr(0,9) == "Model.obj") {
+                    meshFileNum++;
+                    staticModelFlag = true;
+                }
+                
             }
             
-            maxMeshNumList[dirNameLoopCount] = meshFileNum;
-            
-            cout << "mesh file num: " << meshFileNum << endl;  // *√ä¬∫√Æ√Å√Ü√≥√Ç‚â†√™‚Äû√Ö√ü√à√±√¨√ä√©‚Ä¢√Ç√®√á√Å√ñ√ü
-            
-            if (staticModelFlag == false) {
+            ++itr;                 //
+        }
+        maxMeshNumList[dirNameLoopCount] = meshFileNum;     // 数え終わったメッシュファイル数を代入
+        cout << "mesh file num: " << meshFileNum << endl;
+        // end -----------------------------------------------------------------------------------
 
-                struct tm tempTmStruct;
-                memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
+        
+        // 今回のモデルが動的モデルだった場合の読み込み -----------------------------------------------------------
+        if (staticModelFlag == false) {
 
-                // getTimestamp
-                ss.str("");
-                ss << dirPath.str() << "scanTimeRecord.csv";
+            struct tm tempTmStruct;
+            memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
 
-                ofFileObj.open(ss.str());
-                int idx = 0;
-                if (ofFileObj.exists()) {
-                    ofBuffer buffer(ofFileObj);
+            // scanTimeRecordの読み込み ---------------------------------------
+            // scanTimeRecordへのファイルパス取得
+            ss.str("");
+            ss << dirPath.str() << "scanTimeRecord.csv";
+
+            int idx = 0;
+            ofFileObj.open(ss.str());
+            if (ofFileObj.exists()) {
+                
+                ofBuffer buffer(ofFileObj);
+                
+                int targetFrame = (idx*skipLoadFrame);
+                int maxFrameOverTest = targetFrame;
+                cout << "maxMeshNumList[dirNameLoopCount]:" << maxMeshNumList[dirNameLoopCount] << endl;
+                
+                while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
                     
-                    int targetFrame = (idx*skipLoadFrame);
-                    int maxFrameOverTest = targetFrame;
-                    cout << "maxMeshNumList[dirNameLoopCount]:" << maxMeshNumList[dirNameLoopCount] << endl;
-                    while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
+                    string line = buffer.getNextLine();
+                    
+                    if (line != "") {
+                        auto itemList = ofSplitString(line, ",");
+                        //cout << itemList[1] << endl;
+                        scanTimeRecordList[dirNameLoopCount][idx][0] = stoi(itemList[0]);
+                        scanTimeRecordList[dirNameLoopCount][idx][1] = stoi(itemList[1]);
+                        cout << "scanTimeRecordList[dirNameLoopCount][idx][1]: " << scanTimeRecordList[dirNameLoopCount][idx][1] << endl;
                         
-                        string line;
-                        line = buffer.getNextLine();
+                        //itemlist[2] ... "2016/10/09 17:26:56.432"
+                        string strDateTime = itemList[2].substr(0, 19);           // 2016/10/09 17:26:56
+                        string strMilliSec = itemList[2].substr(20, 3);           // .432
                         
-                        //cout << ""line;
-                        if (line != "") {
-                            auto itemList = ofSplitString(line, ",");
-                            //cout << itemList[1] << endl;
-                            scanTimeRecordList[dirNameLoopCount][idx][0] = stoi(itemList[0]);
-                            scanTimeRecordList[dirNameLoopCount][idx][1] = stoi(itemList[1]);
-                            cout << "scanTimeRecordList[dirNameLoopCount][idx][1]: " << scanTimeRecordList[dirNameLoopCount][idx][1] << endl;
-                            
-                            //itemlist[2] ... "2016/10/09 17:26:56.432"
-                            string strDateTime = itemList[2].substr(0, 19);           // 2016/10/09 17:26:56
-                            string strMilliSec = itemList[2].substr(20, 3);           // .432
-                            
-                            const char *cStrDateTime = strDateTime.c_str();
-                            
-                            ::strptime(cStrDateTime, "%Y/%m/%d %H:%M:%S", &tempTmStruct);
-                            
-                            scanTimeRecordTimeStructureList[dirNameLoopCount][idx] = mktime(&tempTmStruct);
-                            scanUnixTimeLongIntList[dirNameLoopCount][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
-                            
-                            // min/max keep -----------------
-                            if (scanUnixTimeModelMinList[dirNameLoopCount] >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                                scanUnixTimeModelMinList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                            }
-                            
-                            if (scanUnixTimeModelMaxList[dirNameLoopCount] <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                                scanUnixTimeModelMaxList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                            }
-                            
-                            if (scanUnixTimeAllItemMin >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                                scanUnixTimeAllItemMin = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                            }
-                            
-                            if (scanUnixTimeAllItemMax <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                                scanUnixTimeAllItemMax = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                            }
-                            // --------------------------
-                            
-                            if (itemList.size() >= 10) {
-                                for(int x=0; x<7; x++) {
-                                    scanGpsDataList[dirNameLoopCount][idx][x] = stod(itemList[3+x]); // latitude
-                                }
-                            
-
-                                if (scanGpsDataMaxLat < stod(itemList[3])) {
-                                    scanGpsDataMaxLat = stod(itemList[3]);
-                                }
-                                if (scanGpsDataMinLat > stod(itemList[3])) {
-                                    scanGpsDataMinLat = stod(itemList[3]);
-                                }
-                                if (scanGpsDataMaxLong < stod(itemList[4])) {
-                                    scanGpsDataMaxLong = stod(itemList[4]);
-                                }
-                                if (scanGpsDataMinLong > stod(itemList[4])) {
-                                    scanGpsDataMinLong = stod(itemList[4]);
-                                }
-                                
-                            }
-                            
-                            if (itemList.size() >= 20) {
-                                cout << "load floatMatrix:";
-                                float floatMatrix[16];
-                                for(int z2=0; z2 < 16; z2++) {
-                                    //floatMatrix[z2] = stof(itemList[12+z2]);
-                                    floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
-                                    cout << floatMatrix[z2] << ", ";
-                                }
-                                modelMatrixList[dirNameLoopCount] = ofMatrix4x4(floatMatrix);
-                                cout << endl;
-                            }
-                            
-                            idx++;
-                            
-                            //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[dirNameLoopCount][idx] << endl;
+                        const char *cStrDateTime = strDateTime.c_str();
+                        
+                        ::strptime(cStrDateTime, "%Y/%m/%d %H:%M:%S", &tempTmStruct);
+                        
+                        scanTimeRecordTimeStructureList[dirNameLoopCount][idx] = mktime(&tempTmStruct);
+                        scanUnixTimeLongIntList[dirNameLoopCount][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
+                        
+                        // min/max keep -----------------
+                        if (scanUnixTimeModelMinList[dirNameLoopCount] >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
+                            scanUnixTimeModelMinList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
                         }
                         
-                        for(int p=0; p<(skipLoadFrame-1); p++) {
-                            line = buffer.getNextLine();
+                        if (scanUnixTimeModelMaxList[dirNameLoopCount] <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
+                            scanUnixTimeModelMaxList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
                         }
+                        
+                        if (scanUnixTimeAllItemMin >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
+                            scanUnixTimeAllItemMin = scanUnixTimeLongIntList[dirNameLoopCount][idx];
+                        }
+                        
+                        if (scanUnixTimeAllItemMax <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
+                            scanUnixTimeAllItemMax = scanUnixTimeLongIntList[dirNameLoopCount][idx];
+                        }
+                        // --------------------------
+                        
+                        if (itemList.size() >= 10) {
+                            for(int x=0; x<7; x++) {
+                                scanGpsDataList[dirNameLoopCount][idx][x] = stod(itemList[3+x]); // latitude
+                            }
+                        
 
+                            if (scanGpsDataMaxLat < stod(itemList[3])) {
+                                scanGpsDataMaxLat = stod(itemList[3]);
+                            }
+                            if (scanGpsDataMinLat > stod(itemList[3])) {
+                                scanGpsDataMinLat = stod(itemList[3]);
+                            }
+                            if (scanGpsDataMaxLong < stod(itemList[4])) {
+                                scanGpsDataMaxLong = stod(itemList[4]);
+                            }
+                            if (scanGpsDataMinLong > stod(itemList[4])) {
+                                scanGpsDataMinLong = stod(itemList[4]);
+                            }
+                            
+                        }
+                        
+                        if (itemList.size() >= 20) {
+                            cout << "load floatMatrix:";
+                            float floatMatrix[16];
+                            for(int z2=0; z2 < 16; z2++) {
+                                //floatMatrix[z2] = stof(itemList[12+z2]);
+                                floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
+                                cout << floatMatrix[z2] << ", ";
+                            }
+                            modelMatrixList[dirNameLoopCount] = ofMatrix4x4(floatMatrix);
+                            cout << endl;
+                        }
+                        
+                        idx++;
+                        
+                        //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[dirNameLoopCount][idx] << endl;
                     }
                     
-                    scanTimeRecordMaxTime[dirNameLoopCount] = scanTimeRecordList[dirNameLoopCount][idx-1][1];
-                    cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[dirNameLoopCount] << endl;
+                    for(int p=0; p<(skipLoadFrame-1); p++) {
+                        line = buffer.getNextLine();
+                    }
+
+                }
+                
+                scanTimeRecordMaxTime[dirNameLoopCount] = scanTimeRecordList[dirNameLoopCount][idx-1][1];
+                cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[dirNameLoopCount] << endl;
+                
+                ofFileObj.close();
+                
+            } // scanTimeRecordの読み込み終了
+            if (idx > maxLoadedMeshNumInAllMesh) {  // 数え終わったメッシュ数を保存
+                maxLoadedMeshNumInAllMesh = idx;
+            }
+            oneModelFileSizeList.clear();
+            // -----------------------------------------------------------------------
+            
+            
+            // メッシュファイルの読み込み ------------------------------------------------------
+            for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
+                
+                // メッシュファイルパスの取得 -----
+                ss.str("");
+                ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
+                //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
+                string objFilePath = ss.str();
+                
+                //cout << ss.str() << endl;
+
+                // メッシュファイルのオープン ----
+                ofFileObj.open(objFilePath);
+                if (!ofFileObj.exists()) {          // メッシュファイルが存在しない場合
+                    
+                    cout << objFilePath << " file not found." << endl;
+                    
+                } else {         // メッシュファイルが存在する場合
+                    
+                    oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
                     
                     ofFileObj.close();
                     
-                }
-                
-                //maxMeshNumList[dirNameLoopCount] = idx - 2;
-                if (idx > maxLoadedMeshNumInAllMesh) {
-                    maxLoadedMeshNumInAllMesh = idx;
-                }
-                
-                oneModelFileSizeList.clear();
-                
-                for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
-                    
-                    // getTimestamp
+                    // add
                     ss.str("");
-                    ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
-                    //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
-                    string objFilePath = ss.str();
+                    //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
+                    ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
+                    string objImageFilePath = ss.str();
+                    if (loadPictureMode) {
+                        modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
+                    }
+
+                    //Assimp ver.
                     
-                    //cout << ss.str() << endl;
+                    asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
 
-                    ofFileObj.open(objFilePath);
-                    if (!ofFileObj.exists()) {
-                        
-                        cout << objFilePath << " file not found." << endl;
-                        
-                    } else {
-                        
-                        oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
-                        
-                        ofFileObj.close();
-                        
-                        // add
-                        ss.str("");
-                        //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
-                        ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
-                        string objImageFilePath = ss.str();
-                        if (loadPictureMode) {
-                            modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
-                        }
-
-                        /*
-                        auto vertices = modelList[dirNameLoopCount][i].getVertices();
-                        
-                        float maxPosY = 0;
-                        for(auto vertice : vertices) {
-                            if (maxPosY <= vertice.y) {
-                                maxPosY = vertice.y;
-                            }
-                        }
-                        modelHeightList[dirNameLoopCount] = maxPosY;
-                        
-                        float maxPosX = 0;
-                        for(auto vertice : vertices) {
-                            if (maxPosX <= vertice.x) {
-                                maxPosX = vertice.x;
-                            }
-                        }
-                        modelPosXList[dirNameLoopCount] = maxPosX;
-
-                        float maxPosZ = 0;
-                        for(auto vertice : vertices) {
-                            if (maxPosZ <= vertice.z) {
-                                maxPosZ = vertice.z;
-                            }
-                        }
-                        modelPosZList[dirNameLoopCount] = maxPosX;
-                         cout << "vertice.y: " << maxPosY<< endl;
-                        */
-
-                        
-                        //Assimp ver.
-                        
-                        asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
-
-                        if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
-                            ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
-                            meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
-                        }
-                        
-                        ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
-                        ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
-                        cout << "tMin: " << tMin << " tMax: " << tMax << endl;
-                        
-                        if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
-                            cout << "======---------- Hit! ----------------==============================================" << endl;
-                        } else  {
-                        
-                            if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
-                                modelSceneMin[dirNameLoopCount].x = tMin.x;
-                            }
-                            if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
-                                modelSceneMin[dirNameLoopCount].y = tMin.y;
-                            }
-                            if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
-                                modelSceneMin[dirNameLoopCount].z = tMin.z;
-                            }
-                            if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
-                                modelSceneMax[dirNameLoopCount].x = tMax.x;
-                            }
-                            if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
-                                modelSceneMax[dirNameLoopCount].y = tMax.y;
-                            }
-                            if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
-                                modelSceneMax[dirNameLoopCount].z = tMax.z;
-                            }
-                        }
-                        
+                    // 各メッシュの頂点数の保存 ---------------
+                    if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
+                        ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
+                        meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
                     }
                     
-                    cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
-                    cout << "modelSceneMax[" << dirNameLoopCount << "]: " << modelSceneMax[dirNameLoopCount] << endl;
+                    // モデルの物理サイズの計算と保存 -----------
+                    ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
+                    ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
+                    cout << "tMin: " << tMin << " tMax: " << tMax << endl;
                     
-                    cout << "file load: " << ss.str() << endl;
+                    if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
+                        cout << "======---------- Hit! ----------------==============================================" << endl;
+                    } else  {
+                    
+                        if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
+                            modelSceneMin[dirNameLoopCount].x = tMin.x;
+                        }
+                        if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
+                            modelSceneMin[dirNameLoopCount].y = tMin.y;
+                        }
+                        if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
+                            modelSceneMin[dirNameLoopCount].z = tMin.z;
+                        }
+                        if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
+                            modelSceneMax[dirNameLoopCount].x = tMax.x;
+                        }
+                        if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
+                            modelSceneMax[dirNameLoopCount].y = tMax.y;
+                        }
+                        if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
+                            modelSceneMax[dirNameLoopCount].z = tMax.z;
+                        }
+                    }
+                    
                 }
-                modelFileSizeList.push_back(oneModelFileSizeList);
                 
+                cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
+                cout << "modelSceneMax[" << dirNameLoopCount << "]: " << modelSceneMax[dirNameLoopCount] << endl;
+                
+                cout << "file load: " << ss.str() << endl;
             }
+            modelFileSizeList.push_back(oneModelFileSizeList);
             
-            //gui->addWidgetRight(new ofxUIDropDownList("PARTICLE_IMAGE", items,150));
         }
         
+            
         modeldataFiles += maxMeshNumList[dirNameLoopCount];
 
         dirNameLoopCount++;
     }
-    
-    modelDataNum = dirNameLoopCount;
-    //modeldataDatasetNum = dirNameLoopCount;
-    
+    modelDataNum = dirNameLoopCount;        // 読み込み対象のモデルデータ数合計
+
+    // 読み込んだファイルの総データ容量 -------------------------
     loadFileSizeAll = 0;
     for(auto oneModelList : modelFileSizeList) {
         for(auto fileSize : oneModelFileSizeList) {
@@ -2298,6 +2261,7 @@ void ofApp::dataLoad() {
         }
     }
     
+    // 読み込んだメッシュファイルの中で一番大きかったメッシュ数 -------------------------
     totalMaxMeshNum = 0;
     for (auto meshNum : maxMeshNumList) {
         if (meshNum > totalMaxMeshNum) {
@@ -2305,12 +2269,14 @@ void ofApp::dataLoad() {
         }
     }
 
+    // 全モデルに記録された中で一番大きい（最後の）時間 -------------------------
     totalScanTimeRecordMaxTime = 0;
     for (auto time : scanTimeRecordMaxTime) {
         if (time > totalScanTimeRecordMaxTime) {
             totalScanTimeRecordMaxTime = time;
         }
     }
+    
     
     cout<<"modelDataNum:"<<modelDataNum<<endl;
     
