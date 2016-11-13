@@ -1953,26 +1953,7 @@ void ofApp::dataLoad() {
     modeldataFiles = 0;
     
     // 指定したディレクトリ以下のフォルダの名前をdataDirNameListに追加 ---------------------------
-    ofDirectory ofDir;
-    ofDir.listDir(meshDataDirPath);
-    
-    vector<ofFile> files = ofDir.getFiles();
-    vector<ofFile>::iterator itr = files.begin();
-    int tCount = 0;
-    while( itr != files.end() )
-    {
-        if (itr->isDirectory()) {
-            string s = itr->getFileName();
-            cout << s << endl;
-            dataDirNameList.push_back(s);
-            
-            if (!mapFileExists) {       // マップファイルが存在する場合
-                mapId[tCount] = s;      // 各ディレクトリ名を保存
-            }
-            tCount++;
-        }
-        ++itr;
-    }
+    makeDataDirNameListTargetDir(meshDataDirPath);
     
     // 各モデルサイズを記録するための下準備 ----------------------------------
     for(int i=0; i<MAX_MODEL_ARRAY; i++) {
@@ -1996,45 +1977,14 @@ void ofApp::dataLoad() {
         stringstream ss;
         cout << "dirName: " << dirName << endl;
         
-        // 各モデルディレクトリ以下のメッシュファイル数をカウント（静的モデルかどうかの判別含む） -----------------
-        // 各モデルディレクトリ以下を開く
-        int meshFileNum = 0;
-        bool staticModelFlag = false;
         stringstream dirPath;
-        ofDirectory ofDir;
         dirPath << meshDataDirPath << "/" << dirName << "/";
-        ofDir.listDir(dirPath.str());
-        vector<ofFile> files = ofDir.getFiles();
-        vector<ofFile>::iterator itr = files.begin();  //
-        while( itr != files.end() )  //
-        {
-
-            if (!itr->isDirectory()) {
-                
-                string fName = itr->getFileName();
-                
-                // 動的モデルのメッシュファイル(mesh_XXX.obj)をカウント
-                if (fName.substr(0,4) == "mesh" && fName.substr(fName.size()-3,3) == "obj") {
-                    meshFileNum++;
-                }
-                
-                // 静的モデル (Model.obj)
-                if (itr->getFileName().substr(0,9) == "Model.obj") {
-                    meshFileNum++;
-                    staticModelFlag = true;
-                }
-                
-            }
-            
-            ++itr;                 //
-        }
-        maxMeshNumList[dirNameLoopCount] = meshFileNum;     // 数え終わったメッシュファイル数を代入
-        cout << "mesh file num: " << meshFileNum << endl;
-        // end -----------------------------------------------------------------------------------
-
+        
+        int meshNum = countMeshFileNumTargetDir(dirPath.str());
+        maxMeshNumList[dirNameLoopCount] = meshNum;
         
         // 今回のモデルが動的モデルだった場合の読み込み -----------------------------------------------------------
-        if (staticModelFlag == false) {
+        if (meshNum > 1) {
 
             struct tm tempTmStruct;
             memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
@@ -2240,6 +2190,7 @@ void ofApp::dataLoad() {
     }
     modelDataNum = dirNameLoopCount;        // 読み込み対象のモデルデータ数合計
 
+    
     // 読み込んだファイルの総データ容量 -------------------------
     loadFileSizeAll = 0;
     for(auto oneModelList : modelFileSizeList) {
@@ -2268,6 +2219,73 @@ void ofApp::dataLoad() {
     cout<<"modelDataNum:"<<modelDataNum<<endl;
     
     modeldataLoadingEndTime = ofGetElapsedTimeMillis();
+
+}
+
+// 各モデルディレクトリ以下のメッシュファイル数をカウント -----------------
+int ofApp::countMeshFileNumTargetDir(string dirPath){
+    // 各モデルディレクトリ以下を開く
+    int meshFileNum = 0;
+    
+    ofDirectory ofDir;
+    ofDir.listDir(dirPath);
+    vector<ofFile> files = ofDir.getFiles();
+    vector<ofFile>::iterator itr = files.begin();  //
+    while( itr != files.end() )  //
+    {
+        
+        if (!itr->isDirectory()) {
+            
+            string fName = itr->getFileName();
+            
+            // 動的モデルのメッシュファイル(mesh_XXX.obj)をカウント
+            if (fName.substr(0,4) == "mesh" && fName.substr(fName.size()-3,3) == "obj") {
+                meshFileNum++;
+            }
+            
+            // 静的モデル (Model.obj)
+            if (itr->getFileName().substr(0,9) == "Model.obj") {
+                meshFileNum = 1;
+                break;
+            }
+            
+        }
+        
+        ++itr;                 //
+    }
+    
+    cout << "mesh file num: " << meshFileNum << endl;
+    return meshFileNum;     // 数え終わったメッシュファイル数を代入
+
+}
+
+// 指定したディレクトリ以下のフォルダの名前をdataDirNameListに追加 ---------------------------
+void ofApp::makeDataDirNameListTargetDir(string dirPath) {
+    
+    ofDirectory ofDir;
+    
+    ofDir.listDir(dirPath);
+    vector<ofFile> files = ofDir.getFiles();
+    vector<ofFile>::iterator itr = files.begin();
+    
+    int tCount = 0;
+    while( itr != files.end() )
+    {
+        
+        if (itr->isDirectory()) {
+            
+            string s = itr->getFileName();
+            cout << s << endl;
+            dataDirNameList.push_back(s);
+            
+            if (!mapFileExists) {       // マップファイルが存在する場合
+                mapId[tCount] = s;      // 各ディレクトリ名を保存
+            }
+            
+            tCount++;
+        }
+        ++itr;
+    }
 
 }
 

@@ -85,6 +85,8 @@ public:
     void drawPlayControlMenu();
     void detailViewNextModel(int mod);
     void myGuiSetup();
+    void makeDataDirNameListTargetDir(string dirPath);
+    int countMeshFileNumTargetDir(string dirPath);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
