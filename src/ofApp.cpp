@@ -900,8 +900,8 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
     
     double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
+    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
     if (uiColorMode) {
@@ -1119,8 +1119,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         
         double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
+        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
         ofTranslate(centerX, centerY, -centerZ);
         
         
@@ -1155,12 +1155,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofScale(1, -1, 1);      // fix model direction
 
         double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        ofTranslate(-centerX*1000, -centerY*1000, 0);//-centerZ*1000);
+        double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
+        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
+        ofTranslate(-centerX*1000, -centerY*1000, -centerZ*1000+100);//-centerZ*1000);
         
-        ofSetLineWidth(5);
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
+            
+            ofSetLineWidth(5);
             ofSetColor(0,180,255, 208);
             ofMatrix4x4 matrixA = modelMatrixList[i][z];
             ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
@@ -1185,9 +1186,18 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofRotate(90, 1,0,0);
             ofRotate(angle, rotX, -rotY, rotZ);
             //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
-            ofSetColor(255,224,0,160);
+
+            ofFill();
+            ofSetColor(255, 224, 0, 192);//stroke color              ofSetColor(255,224,0,160);
             //ofDrawRectangle(posA.x*1000, posA.z*1000, posA.y*1000, 200, 100);      // iPad image
-            ofDrawRectangle(0,0,0, 200, 100);      // iPad image
+            ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
+            
+            ofSetLineWidth(2);
+            ofNoFill();
+            ofSetColor(0, 0, 0, 128);//stroke color              ofSetColor(255,224,0,160);
+            ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
+
+            ofFill();
             glPopMatrix();
             
             //cout << "posX: " << posX << " posY: " << posY << endl;
