@@ -814,15 +814,15 @@ void ofApp::drawListView(int i, int playFrameSelector) {
         
         drawListViewNormal(i, playFrameSelector);
         
-    } else if (uiGpsMapMode == 1) {
-        
-        drawListViewGpsMap(i, playFrameSelector);
-        
     } else if (uiGpsMapMode == 2) {
-    
-        drawListViewGpsMapWalkThru(i, playFrameSelector);
+        
+        //drawListViewGpsMap(i, playFrameSelector);
         
     } else if (uiGpsMapMode == 3) {
+    
+        //drawListViewGpsMapWalkThru(i, playFrameSelector);
+        
+    } else if (uiGpsMapMode == 1) {
         
         drawListViewTrackingMap(i, playFrameSelector);
         
@@ -932,6 +932,7 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     
 }
 
+/*
 void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
     
     //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
@@ -1093,7 +1094,7 @@ void ofApp::drawListViewGpsMapWalkThru(int i, int playFrameSelector) {
     glPopMatrix();
 
 }
-
+*/
 
 void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
