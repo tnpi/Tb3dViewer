@@ -670,6 +670,13 @@ void ofApp::draw(){
 
 # pragma mark - Draw Detail view
 void ofApp::drawDetailView(int i, int playFrameSelector) {
+    
+    if (mapNum[i][9]) {
+        return;
+    }
+
+    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
+
     /*
     fboCam.begin();
     {
@@ -694,7 +701,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
      //asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     */
     
-    
+    // グリッド表示
     if (uiBtnGrid && i == selectMeshId) {
         float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
         if (modelSize < 1) {
@@ -704,7 +711,6 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         }
     }
     
-    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
     glPushMatrix();
     
     // Draw Model Name
@@ -730,8 +736,6 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     ofScale(-1, -1, 1);      // fix model direction
     ofScale(1000, 1000, 1000);
     asModelObj[i][playFrameSelector].setScaleNormalization(false);
-    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-    //                ofTranslate(1500,1100,-2500);      // goto center
     
     ofRotateX(mapNum[i][3]);
     ofRotateY(mapNum[i][4]);
@@ -753,34 +757,26 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         glRotatef(180, 0, 0, 1);
     }
     
-    if (mapNum[i][9] == 0) {
 
-        if (uiColorMode) {
-            asModelObj[i][playFrameSelector].enableTextures();
-        } else {
-            asModelObj[i][playFrameSelector].disableTextures();
-        }
-        
-        if (dualColorSystem == true ) {
-            
-            if (uiMeshDrawType == 1) {
-                ofSetLineWidth(1);
-                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-            } else if (uiMeshDrawType == 2) {
-                
-                glPointSize(4);
-                //ofBlendMode(OF_BLENDMODE_ALPHA);
-                
-                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-            } else {
-                //asModelObj[i][counter].drawFaces();
-                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-            }
-            
-        }
+    if (uiColorMode) {
+        asModelObj[i][playFrameSelector].enableTextures();
+    } else {
+        asModelObj[i][playFrameSelector].disableTextures();
+    }
+
+    if (uiMeshDrawType == 1) {
+        ofSetLineWidth(1);
+        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+    } else if (uiMeshDrawType == 2) {
+        glPointSize(4);
+        //ofBlendMode(OF_BLENDMODE_ALPHA);
+        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+    } else {
+        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     }
     
     glPopMatrix();
+    
     
     // Draw Model Picture --------------------------
     glPushMatrix();
@@ -820,7 +816,6 @@ void ofApp::drawListView(int i, int playFrameSelector) {
         
     }
     
-    glPopMatrix();
 
 }
 
@@ -917,6 +912,8 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     }
     
+    glPopMatrix();
+
 }
 
 /*
@@ -1087,12 +1084,10 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
     for(int z=0; z<maxMeshNumList[i]; z++) {
         
-        displayTotalVertices += meshVertexNumList[i][z];
-
-        playFrameSelector = z;
-
         glPushMatrix();
         
+        displayTotalVertices += meshVertexNumList[i][z];
+        playFrameSelector = z;
         
         // fix model direction
         glRotatef(-90, 1, 0, 0);    // turn model
@@ -1144,18 +1139,24 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     }
     
     // Draw Moving Line
-    ofSetLineWidth(5);
-    ofSetColor(0,64,255);
-    for(int z=0; z<maxMeshNumList[i]-1; z++) {
-        ofMatrix4x4 matrixA = modelMatrixList[z];
-        ofMatrix4x4 matrixB = modelMatrixList[z+1];
+    {
+        glPushMatrix();
         
-        ofVec3f posA = matrixA.getTranslation();
-        ofVec3f posB = matrixB.getTranslation();
+        ofSetLineWidth(5);
+        ofSetColor(0,64,255);
+        for(int z=0; z<maxMeshNumList[i]-1; z++) {
+            ofMatrix4x4 matrixA = modelMatrixList[z];
+            ofMatrix4x4 matrixB = modelMatrixList[z+1];
+            
+            ofVec3f posA = matrixA.getTranslation();
+            ofVec3f posB = matrixB.getTranslation();
+            
+            ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+            
+            //cout << "posX: " << posX << " posY: " << posY << endl;
+        }
         
-        ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
-        
-        //cout << "posX: " << posX << " posY: " << posY << endl;
+        glPopMatrix();
     }
     
 }
