@@ -74,6 +74,11 @@ public:
     void drawListViewTrackingMap(int i, int playFrameSelector);
     void drawMapView(int i, int playFrameSelector);
     void updateSeekBar(int x, int y);
+    void drawSeekBar();
+    void drawDebugInfo();
+    void drawViewerModeChanger();
+    void drawModelLRSelector();
+    void drawPlayControlMenu();
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     

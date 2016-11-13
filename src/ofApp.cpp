@@ -439,13 +439,18 @@ void ofApp::updateSeekBar(int x, int y) {
                 
                 seekbarAddTime =
                     (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)
-                     - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+                     - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin)
+                        - (seekbarCalcTime - scanUnixTimeAllItemMin));
+                
+                // 総再生時間(ms)から「現在時刻からデータの再生開始時刻を引いたもの(ms)」を引き、さらに「シークバーの示す再生時間からデータの再生開始時刻を引いたもの」を引く（追加時間なので引く）
                 
             // 実時間再生
             } else if (uiPlayMode == 1) {
                 
                 seekbarAddTime =
-                    (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime);
+                    totalScanTimeRecordMaxTime
+                    - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin)
+                    - (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime));
                 
             // フレーム再生
             } else {
@@ -1304,236 +1309,31 @@ void ofApp::drawMapView(int i, int playFrameSelector) {
 
 #pragma mark - Draw UI
 void ofApp::drawUi() {
-    
-    if (uiBtnLight) {
-        
-        ofDisableLighting();
-        light.disable();
-        ofDisableDepthTest();
-    }
-    
-    // UI ---------------------------------------------------
-    
-    stringstream tSs;
-    
-    int pX = 40;
-    int pY = 80;
-    int fSize = 10;
-    int lineHeight = fSize*2;
+
+    ofDisableLighting();
+    light.disable();
+    ofDisableDepthTest();
     
     if (dispAllUiFlag) {
         
-        // Play Control Menu --------------------------
         if (dispPlayControl) {
-            ofSetColor(0, 0, 0, 32);
-            ofDrawRectangle(myGuiMain);
-            
-            pY = myGuiMain.getTop()-50;
-            
-            ofSetColor(64,64,64,255);
-            tSs.str("");
-            tSs << fixed << setprecision(1) << ofGetFrameRate() << " fps ";
-            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
-
-            tSs.str("");
-            tSs <<  "ModelName: " << meshNameList[selectMeshId];
-            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs <<  "DirectoryName: " << loadModelDirName;
-            fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
-            
+            drawPlayControlMenu();
         }
         
-        
-        pY = 80;
-        // display Debug Info -------------------------
         if (uiBtnDebugInfo) {
-            ofSetColor(64,64,64,255);
-            
-            tSs.str("");
-            tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "Vertices: " << displayTotalVertices << "pts";
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "modelNum: " << modelDataNum;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "files: " << modeldataFiles;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+            drawDebugInfo();
+        }
+        
+        drawSeekBar();
+        
+        drawViewerModeChanger();
+        
+        if (viewerMode == 0) {
+            drawModelLRSelector();
+        }
 
-            tSs.str("");
-            tSs << "skipLoadFrame: " << skipLoadFrame;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
-            tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-            
-            tSs.str("");
-            tSs << "viewerMode: " << viewerMode << endl;
-            
-            fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        }
         
-        // Seek Bar -------------------------------------------------------------
-        int barWidth = myGuiSeekBar.getWidth();
-        int barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
-        int progressPosX;
-        
-        if (frameCount>1) {
-            if (uiPlayMode == 2) {
-                progressPosX = (nowPlayTime  * barWidth ) / (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin);
-            } else if (uiPlayMode == 1) {
-                progressPosX = (nowPlayTime  * barWidth ) / totalScanTimeRecordMaxTime;
-            } else {
-                
-                if (viewerMode == 0) {
-                    progressPosX = (playCount * skipLoadFrame * barWidth ) / maxMeshNumList[selectMeshId];
-                } else if (viewerMode == 1) {
-                    progressPosX = (playCount * skipLoadFrame * barWidth ) / totalMaxMeshNum;
-                }
-            }
-        }
-        
-        ofSetColor(64,64,64, 64);
-        ofSetLineWidth(3);
-        ofDrawLine(barX, myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, barX+barWidth,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2);
-        ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 16);
-        ofSetColor(255,255,255);
-        ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 14);
-        
-        // Play Time Display ----------------------------------------------------------
-        ofSetColor(64,64,64,255);
-        if (uiPlayMode == 0) {
-            tSs.str("");
-            tSs << "" << playCount << " / " << maxMeshNumList[selectMeshId] << " frame";
-            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
-            // tSs << "frame: " << playCount << " /  " << totalMaxMeshNum;
-        }
-        
-        if (uiPlayMode == 1) {
-            if (viewerMode == 0) {
-                tSs.str("");
-                tSs << "frame: " << playCount << " / " << maxMeshNumList[selectMeshId];
-                fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
-            }
-            
-            if (viewerMode == 1) {
-                tSs.str("");
-                tSs << fixed << setprecision(3);
-                tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime/1000.0 << " sec";
-                fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
-                
-            }
-            
-        }
-        
-        
-        if (uiPlayMode == 2) {
-            tSs.str("");
-            long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
-            long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
-            cout << "nowPlayTimeForSeek: " << nowPlayTimeForSeek << " playStartDateTime:" << playStartDateTime << endl;
-            char charDateTime[100];
-            //time(&timer);
-            struct tm tempTimeStruct;
-            memset(&tempTimeStruct,0x00,sizeof(struct tm));               // Initialize important!
-            tempTimeStruct = *localtime(&nowPlayTimeForSeek);
-            ::strftime(charDateTime, sizeof(charDateTime), "%Y-%m-%d", &tempTimeStruct);
-            string strCharDateTime = charDateTime;
-            tSs <<  "" << strCharDateTime;
-            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
-            tSs.str("");
-            ::strftime(charDateTime, sizeof(charDateTime), "%H:%M:%S", &tempTimeStruct);
-            strCharDateTime = charDateTime;
-            tSs <<  "" << strCharDateTime << "." << nowPlayTimeTemp%1000;
-            fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 40);
-        }
-        
-        ofDisableDepthTest();
-        
-        // viewerMode change ----------------------------------------------------------------------------
-        if (viewerMode == 0) {
-            ofSetColor(255, 0, 0, 192);
-        } else {
-            ofSetColor(128, 128, 128, 192);
-        }
-        //ofRect(0, 700, 200, 50);
-        ofRectRounded(ofRectangle(10, myGuiMainMenu.getTop()+5, 180, 40), 10);
-        
-        ofSetColor(255,255,255,255);
-        fontSmall.drawString("Detail", 40, myGuiMainMenu.getTop()+35);
-        
-        if (viewerMode == 1) {
-            ofSetColor(255, 1, 0, 192);
-        } else {
-            //ofRect(0, 700, 200, 50);
-            ofSetColor(128, 128, 128, 192);
-        }
-        ofRectRounded(ofRectangle(210, myGuiMainMenu.getTop()+5, 180, 40), 10);
-        
-        ofSetColor(255,255,255,255);
-        fontSmall.drawString("List", 240, myGuiMainMenu.getTop()+35);
-        
-        // L-R arrow -----------------------------------------------------------------
-        if (viewerMode == 0) {
-            if (myGuiDetailLeftButton.inside(mouseX, mouseY)) {
-                ofSetColor(255, 128, 128, 192);
-            } else {
-                ofSetColor(128, 128, 128, 192);
-            }
-            ofRectRounded(myGuiDetailLeftButton, 40);
-            
-            if (myGuiDetailRightButton.inside(mouseX, mouseY)) {
-                ofSetColor(255, 128, 128, 192);
-            } else {
-                ofSetColor(128, 128, 128, 192);
-            }
-            ofRectRounded(myGuiDetailRightButton, 40);
-            
-            ofSetColor(255, 255, 255, 255);
-            font.drawString("<", myGuiDetailLeftButton.getCenter().x-14, myGuiDetailLeftButton.getCenter().y+14);
-            font.drawString(">", myGuiDetailRightButton.getCenter().x-12, myGuiDetailRightButton.getCenter().y+14);
-        }
-        
-        
-        // draw ofxGUI ----------------------------
-        
+        // draw ofxGUI
         if (uiBtnDispWindow) {
             //guiMapEdit.draw();
             //gui.draw();
@@ -1547,6 +1347,239 @@ void ofApp::drawUi() {
     }
     
 }
+
+void ofApp::drawSeekBar() {
+    
+    int barWidth = myGuiSeekBar.getWidth();
+    int barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
+    int progressPosX;
+    
+    if (frameCount>1) {
+        if (uiPlayMode == 2) {
+            progressPosX = (nowPlayTime  * barWidth ) / (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin);
+        } else if (uiPlayMode == 1) {
+            progressPosX = (nowPlayTime  * barWidth ) / totalScanTimeRecordMaxTime;
+        } else {
+            
+            if (viewerMode == 0) {
+                progressPosX = (playCount * skipLoadFrame * barWidth ) / maxMeshNumList[selectMeshId];
+            } else if (viewerMode == 1) {
+                progressPosX = (playCount * skipLoadFrame * barWidth ) / totalMaxMeshNum;
+            }
+        }
+    }
+    
+    ofSetColor(64,64,64, 64);
+    ofSetLineWidth(3);
+    ofDrawLine(barX, myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, barX+barWidth,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2);
+    ofDrawCircle(progressPosX+barX+2,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2 + 2, 16);
+    ofSetColor(255,255,255);
+    ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 14);
+
+}
+
+void ofApp::drawPlayControlMenu() {
+    stringstream tSs;
+    
+    int pX = 40;
+    int pY = 80;
+    int fSize = 10;
+    int lineHeight = fSize*2;
+    
+    ofSetColor(0, 0, 0, 32);
+    ofDrawRectangle(myGuiMain);
+    
+    pY = myGuiMain.getTop()-50;
+    
+    // upper menu display -----------------------------------------------------------------------------
+    
+    ofSetColor(64,64,64,255);
+    tSs.str("");
+    tSs << fixed << setprecision(1) << ofGetFrameRate() << " fps ";
+    fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs <<  "ModelName: " << meshNameList[selectMeshId];
+    fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs <<  "DirectoryName: " << loadModelDirName;
+    fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+    
+    
+    // play time display --------------------------------------------------------------------------------
+    
+    ofSetColor(64,64,64,255);
+    if (uiPlayMode == 0) {
+        tSs.str("");
+        tSs << "" << playCount << " / " << maxMeshNumList[selectMeshId] << " frame";
+        fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+        // tSs << "frame: " << playCount << " /  " << totalMaxMeshNum;
+    }
+    
+    if (uiPlayMode == 1) {
+        /*
+         if (viewerMode == 0) {
+         tSs.str("");
+         tSs << "frame: " << playCount << " / " << maxMeshNumList[selectMeshId];
+         fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+         }
+         */
+        
+        tSs.str("");
+        tSs << fixed << setprecision(3);
+        if (viewerMode == 0) {
+            tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime/1000.0 << " sec";
+        } else {
+            tSs << "" << nowPlayTime/1000.0 << " / " << scanTimeRecordMaxTime[selectMeshId]/1000.0 << " sec";
+        }
+        fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+        
+    }
+    
+    
+    if (uiPlayMode == 2) {
+        tSs.str("");
+        long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+        long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
+        cout << "nowPlayTimeForSeek: " << nowPlayTimeForSeek << " playStartDateTime:" << playStartDateTime << endl;
+        char charDateTime[100];
+        //time(&timer);
+        struct tm tempTimeStruct;
+        memset(&tempTimeStruct,0x00,sizeof(struct tm));               // Initialize important!
+        tempTimeStruct = *localtime(&nowPlayTimeForSeek);
+        ::strftime(charDateTime, sizeof(charDateTime), "%Y-%m-%d", &tempTimeStruct);
+        string strCharDateTime = charDateTime;
+        tSs <<  "" << strCharDateTime;
+        fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
+        tSs.str("");
+        ::strftime(charDateTime, sizeof(charDateTime), "%H:%M:%S", &tempTimeStruct);
+        strCharDateTime = charDateTime;
+        tSs <<  "" << strCharDateTime << "." << nowPlayTimeTemp%1000;
+        fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 40);
+    }
+
+    
+}
+
+void ofApp::drawDebugInfo() {
+    stringstream tSs;
+    
+    int pX = 40;
+    int pY = 80;
+    int fSize = 10;
+    int lineHeight = 20;
+    
+    // display Debug Info -------------------------
+        ofSetColor(64,64,64,255);
+        
+        tSs.str("");
+        tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "Vertices: " << displayTotalVertices << "pts";
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "modelNum: " << modelDataNum;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "files: " << modeldataFiles;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "skipLoadFrame: " << skipLoadFrame;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
+        tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+        
+        tSs.str("");
+        tSs << "viewerMode: " << viewerMode << endl;
+        
+        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+}
+
+void ofApp::drawViewerModeChanger() {
+    if (viewerMode == 0) {
+        ofSetColor(255, 0, 0, 192);
+    } else {
+        ofSetColor(128, 128, 128, 192);
+    }
+    //ofRect(0, 700, 200, 50);
+    ofRectRounded(ofRectangle(10, myGuiMainMenu.getTop()+5, 180, 40), 10);
+    
+    ofSetColor(255,255,255,255);
+    fontSmall.drawString("Detail", 40, myGuiMainMenu.getTop()+35);
+    
+    if (viewerMode == 1) {
+        ofSetColor(255, 1, 0, 192);
+    } else {
+        //ofRect(0, 700, 200, 50);
+        ofSetColor(128, 128, 128, 192);
+    }
+    ofRectRounded(ofRectangle(210, myGuiMainMenu.getTop()+5, 180, 40), 10);
+    
+    ofSetColor(255,255,255,255);
+    fontSmall.drawString("List", 240, myGuiMainMenu.getTop()+35);
+
+}
+
+void ofApp::drawModelLRSelector() {
+    
+    if (myGuiDetailLeftButton.inside(mouseX, mouseY)) {
+        ofSetColor(255, 128, 128, 192);
+    } else {
+        ofSetColor(128, 128, 128, 192);
+    }
+    ofRectRounded(myGuiDetailLeftButton, 40);
+    
+    if (myGuiDetailRightButton.inside(mouseX, mouseY)) {
+        ofSetColor(255, 128, 128, 192);
+    } else {
+        ofSetColor(128, 128, 128, 192);
+    }
+    ofRectRounded(myGuiDetailRightButton, 40);
+    
+    ofSetColor(255, 255, 255, 255);
+    font.drawString("<", myGuiDetailLeftButton.getCenter().x-14, myGuiDetailLeftButton.getCenter().y+14);
+    font.drawString(">", myGuiDetailRightButton.getCenter().x-12, myGuiDetailRightButton.getCenter().y+14);
+
+}
+
 
 void ofApp::drawOpenNi() {
     
