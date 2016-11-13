@@ -1965,7 +1965,6 @@ void ofApp::dataLoad() {
         modelSceneMax[i].z = 0;
     }
     
-    
     //  --------------------------------------------------------------------
     
     // 各モデルディレクトリ名ごとのループ
@@ -1974,8 +1973,6 @@ void ofApp::dataLoad() {
     {
         meshNameList[dirNameLoopCount] = dirName;
         cout << "dirName: " << dirName << endl;
-        
-        stringstream ss;
         
         stringstream dirPath;
         dirPath << meshDataDirPath << "/" << dirName << "/";
@@ -1994,16 +1991,17 @@ void ofApp::dataLoad() {
         if (!staticModelFlag) {
 
             // スキャンタイムレコードの読み込み　-----------------------------------------------------------------------
+            stringstream ss;
             ss.str("");
             ss << dirPath.str() << "scanTimeRecord.csv";
             loadScanTimeRecordFile(ss.str(), dirNameLoopCount);
             
             // メッシュファイルの読み込み ------------------------------------------------------
-            for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
+            for(int i=0; (i*skipLoadFrame)<maxMeshNumList[dirNameLoopCount]; i++) {
                 
                 // メッシュファイルパスの取得 -----
                 ss.str("");
-                ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
+                ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+startPlayMeshAnimNum) << ".obj";
                 //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
                 string objFilePath = ss.str();
                 
@@ -2079,8 +2077,8 @@ void ofApp::dataLoad() {
             modelFileSizeList.push_back(oneModelFileSizeList);
             
         }
+
         
-            
         modeldataFiles += maxMeshNumList[dirNameLoopCount];
 
         dirNameLoopCount++;
@@ -2118,6 +2116,7 @@ void ofApp::dataLoad() {
     modeldataLoadingEndTime = ofGetElapsedTimeMillis();
 
 }
+
 
 // 各モデルディレクトリ以下のメッシュファイル数をカウント 静的モデルの場合は-1を返す -----------------
 int ofApp::countMeshFileNumTargetDir(string dirPath){
