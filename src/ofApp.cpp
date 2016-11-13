@@ -139,7 +139,6 @@ void ofApp::setupOfxGui() {
     guiPlayControlBar.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlBar.setWidthElements(100);
     guiPlayControlBar.setShowHeader(false);
-    
     guiPlayControlBar.add(uiBtnPlayPauseParts.setup(uiBtnPlayPause.set("Play", true), 70, 50) );
     guiPlayControlBar.add(uiBtnLoopPlay.setup("Loop", true, 80, 20));
     
@@ -150,7 +149,6 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.setSize(ofGetWidth(), 50);
     guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlMenu.setShowHeader(false);
-    
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
     guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
@@ -163,8 +161,6 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
     guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
     
-    //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
-    
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(300);
@@ -172,7 +168,6 @@ void ofApp::setupOfxGui() {
     //gui.setFillColor(<#const ofColor &color#>)
     //gui.setDefaultBackgroundColor(ofColor(255,0,0,224));
     gui.setWidthElements(300);
-    
     gui.setPosition(0, 0);
     gui.setDefaultHeight(25);
     //gui.setBackgroundColor(ofColor(0,0,0,32));
@@ -195,11 +190,9 @@ void ofApp::setupOfxGui() {
     //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setDefaultHeight(25);
-    
     guiMapEdit.setPosition(0, 0);
     guiMapEdit.setWidthElements(300);
     guiMapEdit.setShowHeader(false);
-    
     //guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
     guiMapEdit.add(uiEditPosY.setup("posY",0,-5000,5000));
@@ -222,11 +215,9 @@ void ofApp::setupOfxGui() {
 
     // Page Settngs ------------------------------------------------------
     guiPage.setup("page1");
-    guiPage2.setup("page2");
-
     guiPage.setSize(300, 300);
-    
     guiPage.add(&gui);
+    guiPage2.setup("page2");
     guiPage2.add(&guiMapEdit);
     
     guiTabbedPages.setup("tabbed pages", "", 100);
@@ -259,12 +250,12 @@ void ofApp::setupOpenNi() {
             oniIr.start();
         }
         
-        //	if (color.setup(*device)) // only for kinect device
-        //	{
-        //		color.setSize(320, 240);
-        //		color.setFps(60);
-        //		color.start();
-        //	}
+        if (oniColor.setup(*oniDevice)) // only for kinect device
+        {
+        		oniColor.setSize(320, 240);
+        		oniColor.setFps(60);
+        		oniColor.start();
+        }
         
     }
 

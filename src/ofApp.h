@@ -10,8 +10,6 @@
 #include "ofxGui.h"
 #include "ofxGuiExtended.h"
 
-//#include "ofxObjLoader.h"
-
 #include "ofxNi2.h"
 //#include "ofxNiTE2.h"
 
@@ -51,7 +49,7 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
-    // ------------------
+    // my function ------------------
     
     void resetCam();
     void resetCamDetailView();
@@ -68,7 +66,7 @@ public:
     void settingAppVarsOnBoot();
     void setupOfxGui();
     void setupOpenNi();
-    
+
     void drawUi();
     void drawScaleGrid(float areaSize, int gridSpan);
     void drawOpenNi();
@@ -87,6 +85,7 @@ public:
     void drawPlayControlMenu();
     void detailViewNextModel(int mod);
     void myGuiSetup();
+    
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
     // Array --------
