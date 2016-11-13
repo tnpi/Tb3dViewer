@@ -1997,89 +1997,11 @@ void ofApp::dataLoad() {
             loadScanTimeRecordFile(ss.str(), dirNameLoopCount);
             
             // メッシュファイルの読み込み ------------------------------------------------------
-            for(int i=0; (i*skipLoadFrame)<maxMeshNumList[dirNameLoopCount]; i++) {
-                
-                // メッシュファイルパスの取得 -----
-                ss.str("");
-                ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+startPlayMeshAnimNum) << ".obj";
-                //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
-                string objFilePath = ss.str();
-                
-                //cout << ss.str() << endl;
-
-                // メッシュファイルのオープン ----
-                ofFileObj.open(objFilePath);
-                if (!ofFileObj.exists()) {          // メッシュファイルが存在しない場合
-                    
-                    cout << objFilePath << " file not found." << endl;
-                    
-                } else {         // メッシュファイルが存在する場合
-                    
-                    oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
-                    
-                    ofFileObj.close();
-                    
-                    // add
-                    ss.str("");
-                    //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
-                    ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
-                    string objImageFilePath = ss.str();
-                    if (loadPictureMode) {
-                        modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
-                    }
-
-                    //Assimp ver.
-                    
-                    asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
-
-                    // 各メッシュの頂点数の保存 ---------------
-                    if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
-                        ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
-                        meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
-                    }
-                    
-                    // モデルの物理サイズの計算と保存 -----------
-                    ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
-                    ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
-                    cout << "tMin: " << tMin << " tMax: " << tMax << endl;
-                    
-                    if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
-                        cout << "======---------- Hit! ----------------==============================================" << endl;
-                    } else  {
-                    
-                        if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
-                            modelSceneMin[dirNameLoopCount].x = tMin.x;
-                        }
-                        if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
-                            modelSceneMin[dirNameLoopCount].y = tMin.y;
-                        }
-                        if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
-                            modelSceneMin[dirNameLoopCount].z = tMin.z;
-                        }
-                        if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
-                            modelSceneMax[dirNameLoopCount].x = tMax.x;
-                        }
-                        if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
-                            modelSceneMax[dirNameLoopCount].y = tMax.y;
-                        }
-                        if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
-                            modelSceneMax[dirNameLoopCount].z = tMax.z;
-                        }
-                    }
-                    
-                }
-                
-                cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
-                cout << "modelSceneMax[" << dirNameLoopCount << "]: " << modelSceneMax[dirNameLoopCount] << endl;
-                
-                cout << "file load: " << ss.str() << endl;
-            }
-            modelFileSizeList.push_back(oneModelFileSizeList);
+            ss.str("");
+            ss << dirPath.str();
+            loadMeshDataTargetDir(ss.str(), dirNameLoopCount);
             
         }
-
-        
-        modeldataFiles += maxMeshNumList[dirNameLoopCount];
 
         dirNameLoopCount++;
     }
@@ -2297,7 +2219,93 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
     if (idx > maxLoadedMeshNumInAllMesh) {  // 数え終わったメッシュ数を保存
         maxLoadedMeshNumInAllMesh = idx;
     }
-    oneModelFileSizeList.clear();
     
 }
 
+    // メッシュファイルの読み込み ------------------------------------------------------
+void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
+    
+    stringstream ss;
+    oneModelFileSizeList.clear();
+
+    for(int i=0; (i*skipLoadFrame)<maxMeshNumList[modelIndex]; i++) {
+        
+        // 各メッシュファイルパスの取得 --------
+        ss.str("");
+        ss << dirPath << "mesh_" << ((i*skipLoadFrame)+startPlayMeshAnimNum) << ".obj";
+        //ss << "F:/ArtDKT_kuwakubo_3dscan_20160123to25/artdkt_3dscan_20160124_kouhan/artdkt_structure3d/38/mesh_" << (i+2) << ".obj";
+        string objFilePath = ss.str();
+        
+        // メッシュファイルのオープン --------
+        ofFileObj.open(objFilePath);
+        if (!ofFileObj.exists()) {          // メッシュファイルが存在しない場合
+            
+            cout << objFilePath << " file not found." << endl;
+            
+        } else {         // メッシュファイルが存在する場合
+            
+            oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
+            
+            ofFileObj.close();
+            
+            // add
+            ss.str("");
+            //ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".jpg";
+            ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
+            string objImageFilePath = ss.str();
+            if (loadPictureMode) {
+                modelImageList[modelIndex][i].loadImage(objImageFilePath);
+            }
+            
+            //Assimp ver.
+            
+            asModelObj[modelIndex][i].loadModel(objFilePath );
+            
+            // 各メッシュの頂点数の保存 ---------------
+            if (asModelObj[modelIndex][i].getMeshCount()) {
+                ofMesh tMesh = asModelObj[modelIndex][i].getMesh(0);
+                meshVertexNumList[modelIndex][i] = tMesh.getVertices().size();
+            }
+            
+            // モデルの物理サイズの計算と保存 -----------
+            ofPoint tMin = asModelObj[modelIndex][i].getSceneMin();
+            ofPoint tMax = asModelObj[modelIndex][i].getSceneMax();
+            cout << "tMin: " << tMin << " tMax: " << tMax << endl;
+            
+            if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
+                cout << "======---------- Hit! ----------------==============================================" << endl;
+            } else  {
+                
+                if (tMin.x < modelSceneMin[modelIndex].x) {
+                    modelSceneMin[modelIndex].x = tMin.x;
+                }
+                if (tMin.y < modelSceneMin[modelIndex].y) {
+                    modelSceneMin[modelIndex].y = tMin.y;
+                }
+                if (tMin.z < modelSceneMin[modelIndex].z) {
+                    modelSceneMin[modelIndex].z = tMin.z;
+                }
+                if (tMax.x > modelSceneMax[modelIndex].x) {
+                    modelSceneMax[modelIndex].x = tMax.x;
+                }
+                if (tMax.y > modelSceneMax[modelIndex].y) {
+                    modelSceneMax[modelIndex].y = tMax.y;
+                }
+                if (tMax.z > modelSceneMax[modelIndex].z) {
+                    modelSceneMax[modelIndex].z = tMax.z;
+                }
+            }
+            
+        }
+        
+        cout << "modelSceneMin[" << modelIndex << "]: " << modelSceneMin[modelIndex] << endl;
+        cout << "modelSceneMax[" << modelIndex << "]: " << modelSceneMax[modelIndex] << endl;
+        
+        cout << "file load: " << ss.str() << endl;
+    }
+    
+    modelFileSizeList.push_back(oneModelFileSizeList);
+    
+    modeldataFiles += maxMeshNumList[modelIndex];
+
+}
