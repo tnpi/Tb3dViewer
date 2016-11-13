@@ -124,11 +124,13 @@ void ofApp::settingAppVarsOnBoot() {
 void ofApp::setupOfxGui() {
     
     // Set GUI parts -------------------------------------------------------------------------------
-    ofxGuiSetDefaultWidth(300);     // ウィンドウ幅決め？
+    ofxGuiSetDefaultWidth(300);     // ウィンドウ全体幅決め？
     ofxGuiSetTextPadding(10);
     ofxGuiSetFillColor(ofColor(255,0,0));
     ofxGuiSetBackgroundColor(ofColor(0,255,0));
     
+    
+    // Play Control ----------------------------------------------------------------
     guiPlayControlBar.setup("PlayControlBar");
     guiPlayControlBar.setPosition(0, ofGetHeight()-100);
     guiPlayControlBar.setSize(ofGetWidth(), 50);
@@ -162,10 +164,11 @@ void ofApp::setupOfxGui() {
     
     //toggle_param.addListener(this, &ofApp::toggleGroupHeader);
     
+    
+    // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(300);
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
-    
     //gui.setDefaultBackgroundColor(ofColor(255,0,0,224));
     gui.setWidthElements(300);
     
@@ -185,6 +188,8 @@ void ofApp::setupOfxGui() {
     gui.add(uiBtnSelectReset.setup("quit", 40, 25));
     gui.setWidthElements(300);
     
+    
+    // Map Edit Gui ---------------------------------------------------------------------
     guiMapEdit.setDefaultWidth(300);
     //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
@@ -207,18 +212,21 @@ void ofApp::setupOfxGui() {
     guiMapEdit.add(uiEditModelSelector.setup("modelSel",0,0,100));
     guiMapEdit.add(uiEditDisplayFlag.setup("display",0,0,2));
     
+    
+    // -------------------------------------------------------------------
     prevPosX = position->x;
     prevPosY = position->y;
     
     uiBtnReset.addListener(this, &ofApp::resetCam);
-    
+
+    // Page Settngs ------------------------------------------------------
     guiPage.setup("page1");
-    guiPage.setSize(300, 300);
-    guiPage.add(&gui);
-    
     guiPage2.setup("page2");
+
+    guiPage.setSize(300, 300);
+    
+    guiPage.add(&gui);
     guiPage2.add(&guiMapEdit);
-    //guiPage2.add(&rotary);
     
     guiTabbedPages.setup("tabbed pages", "", 100);
     guiTabbedPages.setSize(300, 550);
