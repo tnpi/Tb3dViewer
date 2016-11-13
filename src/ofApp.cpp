@@ -1993,120 +1993,10 @@ void ofApp::dataLoad() {
         // 今回のモデルが動的モデルだった場合の読み込み -----------------------------------------------------------
         if (!staticModelFlag) {
 
-            struct tm tempTmStruct;
-            memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
-
-            // scanTimeRecordの読み込み ---------------------------------------
-            // scanTimeRecordへのファイルパス取得
+            // スキャンタイムレコードの読み込み　-----------------------------------------------------------------------
             ss.str("");
             ss << dirPath.str() << "scanTimeRecord.csv";
-
-            int idx = 0;
-            ofFileObj.open(ss.str());
-            if (ofFileObj.exists()) {
-                
-                ofBuffer buffer(ofFileObj);
-                
-                int targetFrame = (idx*skipLoadFrame);
-                int maxFrameOverTest = targetFrame;
-                cout << "maxMeshNumList[dirNameLoopCount]:" << maxMeshNumList[dirNameLoopCount] << endl;
-                
-                while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[dirNameLoopCount]) {
-                    
-                    string line = buffer.getNextLine();
-                    
-                    if (line != "") {
-                        auto itemList = ofSplitString(line, ",");
-                        //cout << itemList[1] << endl;
-                        scanTimeRecordList[dirNameLoopCount][idx][0] = stoi(itemList[0]);
-                        scanTimeRecordList[dirNameLoopCount][idx][1] = stoi(itemList[1]);
-                        cout << "scanTimeRecordList[dirNameLoopCount][idx][1]: " << scanTimeRecordList[dirNameLoopCount][idx][1] << endl;
-                        
-                        //itemlist[2] ... "2016/10/09 17:26:56.432"
-                        string strDateTime = itemList[2].substr(0, 19);           // 2016/10/09 17:26:56
-                        string strMilliSec = itemList[2].substr(20, 3);           // .432
-                        
-                        const char *cStrDateTime = strDateTime.c_str();
-                        
-                        ::strptime(cStrDateTime, "%Y/%m/%d %H:%M:%S", &tempTmStruct);
-                        
-                        scanTimeRecordTimeStructureList[dirNameLoopCount][idx] = mktime(&tempTmStruct);
-                        scanUnixTimeLongIntList[dirNameLoopCount][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
-                        
-                        // min/max keep -----------------
-                        if (scanUnixTimeModelMinList[dirNameLoopCount] >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                            scanUnixTimeModelMinList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                        }
-                        
-                        if (scanUnixTimeModelMaxList[dirNameLoopCount] <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                            scanUnixTimeModelMaxList[dirNameLoopCount] = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                        }
-                        
-                        if (scanUnixTimeAllItemMin >= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                            scanUnixTimeAllItemMin = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                        }
-                        
-                        if (scanUnixTimeAllItemMax <= scanUnixTimeLongIntList[dirNameLoopCount][idx]) {
-                            scanUnixTimeAllItemMax = scanUnixTimeLongIntList[dirNameLoopCount][idx];
-                        }
-                        // --------------------------
-                        
-                        if (itemList.size() >= 10) {
-                            for(int x=0; x<7; x++) {
-                                scanGpsDataList[dirNameLoopCount][idx][x] = stod(itemList[3+x]); // latitude
-                            }
-                        
-
-                            if (scanGpsDataMaxLat < stod(itemList[3])) {
-                                scanGpsDataMaxLat = stod(itemList[3]);
-                            }
-                            if (scanGpsDataMinLat > stod(itemList[3])) {
-                                scanGpsDataMinLat = stod(itemList[3]);
-                            }
-                            if (scanGpsDataMaxLong < stod(itemList[4])) {
-                                scanGpsDataMaxLong = stod(itemList[4]);
-                            }
-                            if (scanGpsDataMinLong > stod(itemList[4])) {
-                                scanGpsDataMinLong = stod(itemList[4]);
-                            }
-                            
-                        }
-                        
-                        if (itemList.size() >= 20) {
-                            cout << "load floatMatrix:";
-                            float floatMatrix[16];
-                            for(int z2=0; z2 < 16; z2++) {
-                                //floatMatrix[z2] = stof(itemList[12+z2]);
-                                floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
-                                cout << floatMatrix[z2] << ", ";
-                            }
-                            modelMatrixList[dirNameLoopCount] = ofMatrix4x4(floatMatrix);
-                            cout << endl;
-                        }
-                        
-                        idx++;
-                        
-                        //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[dirNameLoopCount][idx] << endl;
-                    }
-                    
-                    for(int p=0; p<(skipLoadFrame-1); p++) {
-                        line = buffer.getNextLine();
-                    }
-
-                }
-                
-                scanTimeRecordMaxTime[dirNameLoopCount] = scanTimeRecordList[dirNameLoopCount][idx-1][1];
-                cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[dirNameLoopCount] << endl;
-                
-                ofFileObj.close();
-                
-            } // scanTimeRecordの読み込み終了
-            if (idx > maxLoadedMeshNumInAllMesh) {  // 数え終わったメッシュ数を保存
-                maxLoadedMeshNumInAllMesh = idx;
-            }
-            oneModelFileSizeList.clear();
-            // -----------------------------------------------------------------------
-            
+            loadScanTimeRecordFile(ss.str(), dirNameLoopCount);
             
             // メッシュファイルの読み込み ------------------------------------------------------
             for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
@@ -2295,5 +2185,120 @@ void ofApp::makeDataDirNameListTargetDir(string dirPath) {
         ++itr;
     }
 
+}
+
+
+void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
+    
+    int idx = 0;
+
+    struct tm tempTmStruct;
+    memset(&tempTmStruct,0x00,sizeof(struct tm));               // Initialize important!
+    
+    ofFileObj.open(dirPath);
+    if (ofFileObj.exists()) {
+        
+        ofBuffer buffer(ofFileObj);
+        
+        int targetFrame = (idx*skipLoadFrame);
+        int maxFrameOverTest = targetFrame;
+        cout << "maxMeshNumList[modelIndex]:" << maxMeshNumList[modelIndex] << endl;
+        
+        while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[modelIndex]) {
+            
+            string line = buffer.getNextLine();
+            
+            if (line != "") {
+                auto itemList = ofSplitString(line, ",");
+                //cout << itemList[1] << endl;
+                scanTimeRecordList[modelIndex][idx][0] = stoi(itemList[0]);
+                scanTimeRecordList[modelIndex][idx][1] = stoi(itemList[1]);
+                cout << "scanTimeRecordList[modelIndex][idx][1]: " << scanTimeRecordList[modelIndex][idx][1] << endl;
+                
+                //itemlist[2] ... "2016/10/09 17:26:56.432"
+                string strDateTime = itemList[2].substr(0, 19);           // 2016/10/09 17:26:56
+                string strMilliSec = itemList[2].substr(20, 3);           // .432
+                
+                const char *cStrDateTime = strDateTime.c_str();
+                
+                ::strptime(cStrDateTime, "%Y/%m/%d %H:%M:%S", &tempTmStruct);
+                
+                scanTimeRecordTimeStructureList[modelIndex][idx] = mktime(&tempTmStruct);
+                scanUnixTimeLongIntList[modelIndex][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
+                
+                // min/max keep -----------------
+                if (scanUnixTimeModelMinList[modelIndex] >= scanUnixTimeLongIntList[modelIndex][idx]) {
+                    scanUnixTimeModelMinList[modelIndex] = scanUnixTimeLongIntList[modelIndex][idx];
+                }
+                
+                if (scanUnixTimeModelMaxList[modelIndex] <= scanUnixTimeLongIntList[modelIndex][idx]) {
+                    scanUnixTimeModelMaxList[modelIndex] = scanUnixTimeLongIntList[modelIndex][idx];
+                }
+                
+                if (scanUnixTimeAllItemMin >= scanUnixTimeLongIntList[modelIndex][idx]) {
+                    scanUnixTimeAllItemMin = scanUnixTimeLongIntList[modelIndex][idx];
+                }
+                
+                if (scanUnixTimeAllItemMax <= scanUnixTimeLongIntList[modelIndex][idx]) {
+                    scanUnixTimeAllItemMax = scanUnixTimeLongIntList[modelIndex][idx];
+                }
+                // --------------------------
+                
+                if (itemList.size() >= 10) {
+                    for(int x=0; x<7; x++) {
+                        scanGpsDataList[modelIndex][idx][x] = stod(itemList[3+x]); // latitude
+                    }
+                    
+                    
+                    if (scanGpsDataMaxLat < stod(itemList[3])) {
+                        scanGpsDataMaxLat = stod(itemList[3]);
+                    }
+                    if (scanGpsDataMinLat > stod(itemList[3])) {
+                        scanGpsDataMinLat = stod(itemList[3]);
+                    }
+                    if (scanGpsDataMaxLong < stod(itemList[4])) {
+                        scanGpsDataMaxLong = stod(itemList[4]);
+                    }
+                    if (scanGpsDataMinLong > stod(itemList[4])) {
+                        scanGpsDataMinLong = stod(itemList[4]);
+                    }
+                    
+                }
+                
+                if (itemList.size() >= 20) {
+                    cout << "load floatMatrix:";
+                    float floatMatrix[16];
+                    for(int z2=0; z2 < 16; z2++) {
+                        //floatMatrix[z2] = stof(itemList[12+z2]);
+                        floatMatrix[z2] = stof(itemList[12+(z2%4*4)+(int)(z2/4)]);
+                        cout << floatMatrix[z2] << ", ";
+                    }
+                    modelMatrixList[modelIndex] = ofMatrix4x4(floatMatrix);
+                    cout << endl;
+                }
+                
+                idx++;
+                
+                //cout << strDateTime << "  ." << strMilliSec << " --- " << scanUnixTimeLongIntList[modelIndex][idx] << endl;
+            }
+            
+            for(int p=0; p<(skipLoadFrame-1); p++) {
+                line = buffer.getNextLine();
+            }
+            
+        }
+        
+        scanTimeRecordMaxTime[modelIndex] = scanTimeRecordList[modelIndex][idx-1][1];
+        cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[modelIndex] << endl;
+        
+        ofFileObj.close();
+        
+    } // scanTimeRecordの読み込み終了
+    
+    if (idx > maxLoadedMeshNumInAllMesh) {  // 数え終わったメッシュ数を保存
+        maxLoadedMeshNumInAllMesh = idx;
+    }
+    oneModelFileSizeList.clear();
+    
 }
 

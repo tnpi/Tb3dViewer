@@ -87,6 +87,7 @@ public:
     void myGuiSetup();
     void makeDataDirNameListTargetDir(string dirPath);
     int countMeshFileNumTargetDir(string dirPath);
+    void loadScanTimeRecordFile(string dirPath, int modelIndex);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
