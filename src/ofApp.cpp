@@ -768,7 +768,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         ofSetLineWidth(1);
         asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
     } else if (uiMeshDrawType == 2) {
-        glPointSize(4);
+        glPointSize(1);
         //ofBlendMode(OF_BLENDMODE_ALPHA);
         asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
     } else {
@@ -1856,94 +1856,6 @@ ofRectangle ofApp::getSubRect( ofRectangle parentRect, ofRectangle subRect ) {
 // ///////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-// --------------------------------------------------------------------------------------------
-// Save Map File
-// --------------------------------------------------------------------------------------------
-void ofApp::saveMapFile() {
-    
-    ofstream ofs( mapFilePath);
-    
-    for(int i=0; i<modelDataNum; i++) {
-        
-        ofs << mapId[i] << ",";
-        
-        for(int j=0; j<mapDataColumns-1; j++) {
-            ofs << int(mapNum[i][j]) << ",";
-        }
-        
-        ofs << mapNum[i][mapDataColumns-1];
-        
-        ofs << endl;
-    }
-    
-    return;
-    
-}
-
-
-// --------------------------------------------------------------------------------------------
-// Load Map File
-// --------------------------------------------------------------------------------------------
-void ofApp::loadMapFile(string meshDataDirPath) {
-    
-    ///Users/doc100/Desktop/tempData/artdkt_structure3d
-    //mapFilePath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d/mapFile.csv";
-    
-    stringstream mapSs;
-    mapSs << meshDataDirPath << "/mapFile.csv";
-    mapFilePath = mapSs.str();
-    
-    cout << "mapFilePath: " << mapFilePath;
-    
-    ofFile mapFile(mapFilePath);
-    
-    if(!mapFile.exists()){
-        
-        ofLogError("The file " + mapFilePath + " is missing. I make it.");
-        
-        for(int i=0; i<256; i++) {
-            mapId[i] = "";
-            for(int j=0; j<16; j++) {
-                mapNum[i][j] = 0;
-                if (j == 6) {
-                    mapNum[i][j] = 0;
-                }
-            }
-        }
-        
-    } else {
-        
-        mapFileExists = true;
-        ofBuffer buffer(mapFile);
-        
-        loadModelDirName = mapFile.getEnclosingDirectory();
-        
-        // Read file line by line ------------------------------------------------------------------------------
-        int bufCounter = 0;
-        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
-            string line = *it;
-            //Split line into strings
-            vector<string> words = ofSplitString(line, ",");
-            
-            //Store strings into a custom container
-            if (words.size()>=2) {
-                
-                mapId[bufCounter] = words[0];
-                
-                for(int i=0; i<words.size()-1; i++) {
-                    mapNum[bufCounter][i] = stoi(words[i+1]);
-                }
-            }
-            
-            cout << line << endl;
-            bufCounter++;
-        }
-        
-    }
-
-}
-
-
 // -------------------------------------------------------------------------------------------------------------
 // Read mesh files
 // -------------------------------------------------------------------------------------------------------------
@@ -2070,7 +1982,7 @@ int ofApp::countMeshFileNumTargetDir(string dirPath){
             
         }
         
-        ++itr;                 //
+        ++itr;
     }
     
     cout << "mesh file num: " << meshFileNum << endl;
@@ -2170,7 +2082,6 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
                         scanGpsDataList[modelIndex][idx][x] = stod(itemList[3+x]); // latitude
                     }
                     
-                    
                     if (scanGpsDataMaxLat < stod(itemList[3])) {
                         scanGpsDataMaxLat = stod(itemList[3]);
                     }
@@ -2222,7 +2133,7 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
     
 }
 
-    // メッシュファイルの読み込み ------------------------------------------------------
+// メッシュファイルの読み込み ------------------------------------------------------
 void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
     
     stringstream ss;
@@ -2309,3 +2220,93 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
     modeldataFiles += maxMeshNumList[modelIndex];
 
 }
+
+
+// --------------------------------------------------------------------------------------------
+// Load Map File
+// --------------------------------------------------------------------------------------------
+void ofApp::loadMapFile(string meshDataDirPath) {
+    
+    ///Users/doc100/Desktop/tempData/artdkt_structure3d
+    //mapFilePath = "/Users/artdkt_3dscan_20160124_zenhan/artdkt_structure3d/mapFile.csv";
+    
+    stringstream mapSs;
+    mapSs << meshDataDirPath << "/mapFile.csv";
+    mapFilePath = mapSs.str();
+    
+    cout << "mapFilePath: " << mapFilePath;
+    
+    ofFile mapFile(mapFilePath);
+    
+    if(!mapFile.exists()){
+        
+        ofLogError("The file " + mapFilePath + " is missing. I make it.");
+        
+        for(int i=0; i<256; i++) {
+            mapId[i] = "";
+            for(int j=0; j<16; j++) {
+                mapNum[i][j] = 0;
+                if (j == 6) {
+                    mapNum[i][j] = 0;
+                }
+            }
+        }
+        
+    } else {
+        
+        mapFileExists = true;
+        ofBuffer buffer(mapFile);
+        
+        loadModelDirName = mapFile.getEnclosingDirectory();
+        
+        // Read file line by line ------------------------------------------------------------------------------
+        int bufCounter = 0;
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
+            //Split line into strings
+            vector<string> words = ofSplitString(line, ",");
+            
+            //Store strings into a custom container
+            if (words.size()>=2) {
+                
+                mapId[bufCounter] = words[0];
+                
+                for(int i=0; i<words.size()-1; i++) {
+                    mapNum[bufCounter][i] = stoi(words[i+1]);
+                }
+            }
+            
+            cout << line << endl;
+            bufCounter++;
+        }
+        
+    }
+    
+}
+
+
+// --------------------------------------------------------------------------------------------
+// Save Map File
+// --------------------------------------------------------------------------------------------
+void ofApp::saveMapFile() {
+    
+    ofstream ofs( mapFilePath);
+    
+    for(int i=0; i<modelDataNum; i++) {
+        
+        ofs << mapId[i] << ",";
+        
+        for(int j=0; j<mapDataColumns-1; j++) {
+            ofs << int(mapNum[i][j]) << ",";
+        }
+        
+        ofs << mapNum[i][mapDataColumns-1];
+        
+        ofs << endl;
+    }
+    
+    return;
+    
+}
+
+
