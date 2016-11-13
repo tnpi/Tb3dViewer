@@ -1347,6 +1347,7 @@ void ofApp::drawPlayControlMenu() {
 }
 
 void ofApp::drawDebugInfo() {
+    
     stringstream tSs;
     
     int pX = 40;
@@ -1355,69 +1356,70 @@ void ofApp::drawDebugInfo() {
     int lineHeight = 20;
     
     // display Debug Info -------------------------
-        ofSetColor(64,64,64,255);
-        
-        tSs.str("");
-        tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "Vertices: " << displayTotalVertices << "pts";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "modelNum: " << modelDataNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "files: " << modeldataFiles;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "skipLoadFrame: " << skipLoadFrame;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
-        tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
-        
-        tSs.str("");
-        tSs << "viewerMode: " << viewerMode << endl;
-        
-        fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    ofSetColor(64,64,64,255);
+    
+    tSs.str("");
+    tSs << "FPS: " << fixed << setprecision(1) << ofGetFrameRate() << "fps" << resetiosflags(ios_base::floatfield);
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "Vertices: " << displayTotalVertices << "pts";
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "AppInitTime: " << (appInitEndTime - appInitStartTime) << "ms";
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "modelLoadingTime: " << (modeldataLoadingEndTime - modeldataLoadingStartTime) << "ms";
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "modelNum: " << modelDataNum;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "files: " << modeldataFiles;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "totalLoadFileSize: " << (loadFileSizeAll/1000/1000) << "MB";
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "PlayStartFrame: " << startPlayMeshAnimNum;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "maxLoadMeshNum: " << maxLoadMeshNum;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "skipLoadFrame: " << skipLoadFrame;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "maxLoadedModelNum: " << maxLoadedMeshNumInAllMesh;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "mouseX: " << mouseX << " mouseY: " << mouseY << "eCam.x: " << eCam.getX() << " eCam.y: " << eCam.getY() << " eCam.z" << eCam.getZ();
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    ofVec3f worldPos = eCam.screenToWorld(ofVec3f(mouseX, mouseY, 0));
+    tSs << "worldX: " << worldPos.x << " worldY: " << worldPos.y << " worldZ: " << worldPos.z;
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
+    
+    tSs.str("");
+    tSs << "viewerMode: " << viewerMode << endl;
+    
+    fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
     
 }
 
 void ofApp::drawViewerModeChanger() {
+    
     if (viewerMode == 0) {
         ofSetColor(255, 0, 0, 192);
     } else {
@@ -1496,6 +1498,7 @@ void ofApp::drawOpenNi() {
         oniMesh.drawVertices();
         //tMesh.drawFaces();
         //tMesh.drawWireframes();
+        
     }
     // --------------------------------------------------------------
     
@@ -1598,22 +1601,6 @@ void ofApp::drawScaleGrid(float areaSize, int gridSpan) {
         
     }
     
-    /*
-     ofSetColor(128,255,128, 64);
-     for(int j=-1; j<=20; j++) {
-     ofLine(0,1,100*j,2000,1,100*j);
-     stringstream tSs;
-     tSs.str("");
-     if (j!= 0) {
-     tSs << "" << j << "0cm";
-     } else {
-     tSs << "" << j << "cm";
-     
-     }
-     
-     }
-     */
-    
 }
 
 
@@ -1662,7 +1649,7 @@ void ofApp::keyReleased(int key){
         
         resetCamListView();
         
-    } else if (key == '4') {     //
+    } else if (key == '4') {
         
         if (mapNum[0][9] == 0) {
             mapNum[0][9] = 1;
@@ -1677,7 +1664,7 @@ void ofApp::keyReleased(int key){
             
         }
         
-    } else if (key == '5') {     //
+    } else if (key == '5') {
         
         if (mapNum[1][9] == 0) {
             mapNum[1][9] = 1;
