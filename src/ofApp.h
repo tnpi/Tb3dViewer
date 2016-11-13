@@ -51,21 +51,26 @@ public:
     void dragEvent(ofDragInfo dragInfo);
     void gotMessage(ofMessage msg);
     
+    // ------------------
+    
     void resetCam();
     void resetCamDetailView();
     void resetCamListView();
     void gridSwitch();
     void debugInfoSwitch();
-     void setPos();
+    void setPos();
+    
     void dataLoad();
     void saveMapFile();
     void loadMapFile(string meshDataDirPath);
-    void drawScaleGrid(float areaSize, int gridSpan);
+    
     void initAppVars();
     void settingAppVarsOnBoot();
     void setupOfxGui();
     void setupOpenNi();
+    
     void drawUi();
+    void drawScaleGrid(float areaSize, int gridSpan);
     void drawOpenNi();
     void drawDetailView(int i, int playFrameSelector);
     void drawListView(int i, int playFrameSelector);
@@ -80,17 +85,11 @@ public:
     void drawViewerModeChanger();
     void drawModelLRSelector();
     void drawPlayControlMenu();
-    
-    ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
-    
     void detailViewNextModel(int mod);
     void myGuiSetup();
+    ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
-    ofxTrueTypeFontUC font;
-    ofxTrueTypeFontUC fontSmall;
-    ofxTrueTypeFontUC fontLarge;
-    ofxTrueTypeFontUC fontDebugPrint;
-    ofxTrueTypeFontUC fontMyGui;
+    // Array --------
     
     ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     ofMesh modelList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
@@ -126,26 +125,110 @@ public:
     vector<string> dataDirNameList;
     vector< vector<uint64_t> > modelFileSizeList;
     vector <uint64_t> oneModelFileSizeList;
+    
+    // standard vars --------
+    
     int modelDataNum;
-    uint64_t loadFileSizeAll;
     int totalMaxMeshNum;
     int totalScanTimeRecordMaxTime;
-    long seekbarAddTime;
     int skipLoadFrame;
-
-    ofMesh mesh;
-    ofLight light;
-    
-    ofEasyCam eCam;
-    
-    // openframeworksではofShaderオブジェクトを通してシェーダを使う
-    ofShader shader;
-    
-    ofFile ofFileObj;
-    ofCamera ofCam;
-    
+    int maxLoadMeshNum;
+    int startPlayMeshAnimNum;
+    int totalLoadedModelNum;
+    int maxLoadedMeshNumInAllMesh;
+    int prevSelectModel;
+    int selectMeshId;
+    int displayTotalVertices;
+    int displayTotalFaces;
+    int appInitStartTime;
+    int appInitEndTime;
+    int modeldataLoadingStartTime;
+    int modeldataLoadingEndTime;
+    int modeldataFiles;
+    int modeldataDatasetNum;
+    int playSeekTime;
+    int nowTime;
+    int viewerMode;         // Detail / List / Mapping /  MapEdit
+    int mapDataColumns;
+    int playMode;
+    int prevPlayTime;
+    int nowPlayTime;
+    int colorMode;
+    unsigned int frameCount;
+    unsigned int playCount;
+    long seekbarAddTime;
+    uint64_t loadFileSizeAll;
+    uint64_t  playStartDateTime;
+    uint64_t  playStartPrevPos;
+    float prevPosX;
+    float prevPosY;
+    float thumbnailIconDistance;
+    bool mapFileExists;
+    bool dispGui;
+    bool dispPlayControl;
+    bool dispDebugInfoFlag;
+    bool dispAllUiFlag;
+    bool dispPlayControlUiFlag;
+    bool onPlay;
+    bool loopPlay;
+    bool prevFramePlayState;
+    bool dualColorSystem;
+    bool loadPictureMode;
+    bool loadVertexColorObj;
+    bool useOpenNi;
+    bool dataLoadOnAppBoot;
     string meshDataDirPath;
     string defaultMeshDataDirPath;
+    string loadModelDirName;
+    string mapFilePath;
+    time_t unixTimeOnOfStarted;
+    struct tm *unixTimeOnOfStartedTmStruct;
+
+    // My Class --------------------
+    MyGuiItem myGuiItemList[100];
+    MyGuiItem myGuiItemDetailLeftButton;
+    MyGuiItem myGuiItemDetailRightButton;
+    
+    // oF Obj ------------------
+    
+    ofMesh mesh;
+    ofLight light;
+    ofEasyCam eCam;
+    ofShader shader;    // openframeworksではofShaderオブジェクトを通してシェーダを使う
+    ofFile ofFileObj;
+    ofCamera ofCam;
+    ofFbo fboFront;
+    ofFbo fboSide;
+    ofFbo fboTop;
+    ofFbo fboCam;
+    
+    ofxTrueTypeFontUC font;
+    ofxTrueTypeFontUC fontSmall;
+    ofxTrueTypeFontUC fontLarge;
+    ofxTrueTypeFontUC fontDebugPrint;
+    ofxTrueTypeFontUC fontMyGui;
+    
+    ofFile mapFile;
+    ofBuffer mapBuffer;
+    
+    ofRectangle mainView;
+    ofRectangle myGuiMain;
+    ofRectangle myGuiMainMenu;
+    ofRectangle myGuiMainMenuDiff;
+    ofRectangle myGuiMainTimebar;
+    ofRectangle myGuiMainTimebarDiff;
+    ofRectangle myGuiSub;
+    ofRectangle myGuiDetailLeftButton;
+    ofRectangle myGuiDetailRightButton;
+    ofRectangle myGuiDispGuiToggle;
+    ofRectangle myGuiSeekBar;
+    
+    ofRectangle myGuiPlayButton;
+    
+    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
+    
+
+    // oF addon obj ---------------
     
     // GUIのパラメーター
     ofxPanelExtended gui;
@@ -153,12 +236,9 @@ public:
     ofxPanelExtended guiPlayItem;
     ofxPanelExtended guiPlayControlBar;
     ofxPanelExtended guiPlayControlMenu;
-    
     ofxGuiPage guiPage;
-    
     ofxTabbedPages guiTabbedPages;
     ofxGuiPage guiPage1, guiPage2;
-
     
     ofxFloatSlider radius;
     ofxFloatSlider uiThumbnailIconDistance;
@@ -203,115 +283,13 @@ public:
     ofxIntSlider uiEditDisplayFlag;
     ofxIntSlider uiTestSlider;
     
-    float prevPosX;
-    float prevPosY;
-
-    unsigned int frameCount;
-    unsigned int playCount;
-    
-    
-    int maxLoadMeshNum;
-    int startPlayMeshAnimNum;
-    
-    
-    int totalLoadedModelNum;
-    int maxLoadedMeshNumInAllMesh;
-    
-    int prevSelectModel;
-    
-    int selectMeshId;
-    
-    float thumbnailIconDistance;
-
-    int viewerMode;         // Detail / List / Mapping /  MapEdit
-    
-    string mapFilePath;
-    ofFile mapFile;
-    ofBuffer mapBuffer;
-    
-    
-    time_t unixTimeOnOfStarted;
-    struct tm *unixTimeOnOfStartedTmStruct;
-
-    bool mapFileExists;
-    int mapDataColumns;
-    
-    bool dispGui;
-    bool dispPlayControl;
-    bool dispDebugInfoFlag;
-    bool dispAllUiFlag;
-    bool dispPlayControlUiFlag;
-    
-    int displayTotalVertices;
-    int displayTotalFaces;
-    
-    int appInitStartTime;
-    int appInitEndTime;
-    int modeldataLoadingStartTime;
-    int modeldataLoadingEndTime;
-    
-    int modeldataFiles;
-    int modeldataDatasetNum;
-    
-    
-    int playSeekTime;
-    int nowTime;
-    
-    bool onPlay;
-    int playMode;
-    
-    int prevPlayTime;
-    
-    uint64_t  playStartDateTime;
-    uint64_t  playStartPrevPos;
-    
-    bool loopPlay;
-    
-    int nowPlayTime;
-    
-    bool prevFramePlayState;
-    
-    bool dualColorSystem;
-    int colorMode = 0;
-
-    ofFbo fboFront;
-    ofFbo fboSide;
-    ofFbo fboTop;
-    ofFbo fboCam;
-    
-    bool loadPictureMode;
-    bool loadVertexColorObj;
-    
+    // OpenNI ----
     ofxNI2::Device *oniDevice;
     ofxNI2::IrStream oniIr;
     ofxNI2::ColorStream oniColor;
     ofxNI2::DepthStream oniDepth;
     
-    ofRectangle mainView;
-    ofRectangle myGuiMain;
-    ofRectangle myGuiMainMenu;
-    ofRectangle myGuiMainMenuDiff;
-    ofRectangle myGuiMainTimebar;
-    ofRectangle myGuiMainTimebarDiff;
-    ofRectangle myGuiSub;
-    ofRectangle myGuiDetailLeftButton;
-    ofRectangle myGuiDetailRightButton;
-    ofRectangle myGuiDispGuiToggle;
-    ofRectangle myGuiSeekBar;
-    
-    ofRectangle myGuiPlayButton;
     
     
-    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
-    
-    MyGuiItem myGuiItemList[100];
-    MyGuiItem myGuiItemDetailLeftButton;
-    MyGuiItem myGuiItemDetailRightButton;
-    
-    
-    bool useOpenNi;
-    bool dataLoadOnAppBoot;
-    
-    string loadModelDirName;
 };
 
