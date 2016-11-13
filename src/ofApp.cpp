@@ -854,7 +854,6 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     }
     
     
-    
     if (mapNum[i][7]) {
         glRotatef(180, 0, 1, 0);
     }
@@ -865,6 +864,7 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         glRotatef(180, 0, 0, 1);
         //ofTranslate(0,0,-530);
     }
+    
     ofRotateX(mapNum[i][3]);
     ofRotateY(mapNum[i][4]);
     ofRotateZ(mapNum[i][5]);
@@ -887,7 +887,6 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     } else if (modelFlagList[i] == 2) {
         ofSetColor(0, 255, 0, 64);
     }
-    
 
     glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
     
@@ -908,7 +907,6 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     } else if (uiMeshDrawType == 2) {
         asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
     } else {
-        //asModelObj[i][counter].drawFaces();
         asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     }
     
@@ -1084,6 +1082,10 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
     for(int z=0; z<maxMeshNumList[i]; z++) {
         
+        if (mapNum[i][9]) {
+            continue;
+        }
+        
         glPushMatrix();
         
         displayTotalVertices += meshVertexNumList[i][z];
@@ -1103,37 +1105,27 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         cout << "posX: " << posX << " posY: " << posY << endl;
         ofTranslate(0,0,posY);
         ofTranslate(posX,0,0);
-        
-        
-        if (modelFlagList[i] == 0) {
-            ofSetColor(255, 255, 255, 255);
-        } else if (modelFlagList[i] == 1) {
-            ofSetColor(255, 255, 255, 32);
-        } else if (modelFlagList[i] == 2) {
-            ofSetColor(0, 255, 0, 64);
+    
+    
+        if (uiColorMode) {
+            asModelObj[i][playFrameSelector].enableTextures();
+        } else {
+            asModelObj[i][playFrameSelector].disableTextures();
         }
-        
-        if (mapNum[i][9] == 0) {
-            
-            if (uiColorMode) {
-                asModelObj[i][playFrameSelector].enableTextures();
-            } else {
-                asModelObj[i][playFrameSelector].disableTextures();
-            }
 
-            if (uiMeshDrawType == 1) {
-                ofSetLineWidth(1);
-                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-            } else if (uiMeshDrawType == 2) {
-                glPointSize(5);
-                
-                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-            } else {
-                //asModelObj[i][counter].drawFaces();
-                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-            }
-                
+        if (uiMeshDrawType == 1) {
+            ofSetLineWidth(1);
+            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+        } else if (uiMeshDrawType == 2) {
+            glPointSize(5);
+            
+            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+        } else {
+            //asModelObj[i][counter].drawFaces();
+            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
         }
+            
+    
         glPopMatrix();
         
     }
