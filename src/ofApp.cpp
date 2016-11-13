@@ -430,22 +430,27 @@ void ofApp::updateSeekBar(int x, int y) {
             
             double barWidth = myGuiSeekBar.getWidth();
             double barX =  myGuiSeekBar.getLeft();//100;//ofGetWidth() / 10;
-            
             double progressPosX = mouseX - barX;
             
+            // 同期再生
             if (uiPlayMode == 2) {
                 
                 long seekbarCalcTime = (int)((progressPosX / barWidth) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
                 
-                seekbarAddTime = (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin) - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
+                seekbarAddTime =
+                    (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)
+                     - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin) - (seekbarCalcTime - scanUnixTimeAllItemMin));
                 
+            // 実時間再生
             } else if (uiPlayMode == 1) {
                 
-                seekbarAddTime = (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime);
+                seekbarAddTime =
+                    (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime);
                 
+            // フレーム再生
             } else {
                 
-                playCount = (int)((progressPosX / barWidth ) * totalMaxMeshNum );
+                playCount = (int)((progressPosX/skipLoadFrame / barWidth ) * totalMaxMeshNum );
                 
             }
         }
@@ -540,20 +545,23 @@ void ofApp::draw(){
         int counter = playCount;// % maxMeshNumList[i];
         playFrameSelector = 0;
         
+        
         if (frameCount >= 1) {
             modelFlagList[i] = 0;
             
-            if (uiPlayMode == 2) {  // Datetime-based sync play
+            // 再生位置シーク処理
+            // 同期再生
+            if (uiPlayMode == 2) {
                 
                 if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {
                     
+                    // 再生時
                     if (uiBtnPlayPause) {
                         nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
                     }
                     cout << "playStartDateTime: " << playStartDateTime << " playStartPrevPos:" << playStartPrevPos << endl;
                     
                     bool dispFlag = false;
-                    
                     long virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
                     
                      // scan play frame by time
@@ -568,18 +576,18 @@ void ofApp::draw(){
                     
                     if (!dispFlag){
                         playFrameSelector = 0;
-                        modelFlagList[i] = 2;
+                        modelFlagList[i] = 2;           //その時間にデータがなかった場合は、非表示ともまた違う処理ができるようにしておく
                     }
-
-                    
+    
                 }
-            }
-            
-            else if (uiPlayMode == 1) {
+                
+            // 実時間再生
+            } else if (uiPlayMode == 1) {
                 
                 // get play frame from play time ------------------------------------------------------------------
                 if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {       // error kaihi
                     
+                    // 再生時
                     if (uiBtnPlayPause) {
                         nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
                     }
@@ -598,7 +606,8 @@ void ofApp::draw(){
                     playFrameSelector = 0;
                     
                 }
-                
+            
+            // フレーム再生
             } else {        // uiPlayMode == 0  frame base play
                 
                 playFrameSelector = counter;
@@ -608,7 +617,7 @@ void ofApp::draw(){
         }
         
         
-        
+        // 描画 --------------------------------------------------------
         if (viewerMode == 0) {
             
             drawDetailView(i, playFrameSelector);
@@ -617,7 +626,7 @@ void ofApp::draw(){
             
             drawListView(i, playFrameSelector);
             
-        } else  {           // mapView -----------------------------------------------------------
+        } else  {
             
             drawMapView(i, playFrameSelector);
 
@@ -1414,9 +1423,9 @@ void ofApp::drawUi() {
             } else {
                 
                 if (viewerMode == 0) {
-                    progressPosX = (playCount * barWidth ) / maxMeshNumList[selectMeshId];
+                    progressPosX = (playCount * skipLoadFrame * barWidth ) / maxMeshNumList[selectMeshId];
                 } else if (viewerMode == 1) {
-                    progressPosX = (playCount * barWidth ) / maxLoadedMeshNumInAllMesh;
+                    progressPosX = (playCount * skipLoadFrame * barWidth ) / totalMaxMeshNum;
                 }
             }
         }
@@ -1796,7 +1805,9 @@ void ofApp::mouseMoved(int x, int y ){
 
 //--------------------------------------------------------------
 void ofApp::mouseDragged(int x, int y, int button){
+    
     updateSeekBar(x, y);
+    
 }
 
 //--------------------------------------------------------------
