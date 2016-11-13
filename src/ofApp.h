@@ -211,6 +211,8 @@ public:
     ofFile mapFile;
     ofBuffer mapBuffer;
     
+    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
+    
     ofRectangle mainView;
     ofRectangle myGuiMain;
     ofRectangle myGuiMainMenu;
@@ -222,10 +224,7 @@ public:
     ofRectangle myGuiDetailRightButton;
     ofRectangle myGuiDispGuiToggle;
     ofRectangle myGuiSeekBar;
-    
     ofRectangle myGuiPlayButton;
-    
-    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY];
     
 
     // oF addon obj ---------------
