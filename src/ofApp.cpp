@@ -13,25 +13,22 @@ void ofApp::setup(){
     initAppVars();
     
     // app local settings --------------------------------------------
-    
     maxLoadMeshNum = 2000;      //  2000  100
     skipLoadFrame = 10;         // 1  10
+    mapDataColumns = 16;
+    colorMode = 1;
+    viewerMode = 1;
     
     useOpenNi = false;
     dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
     loadPictureMode = false;
     loadVertexColorObj = true;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
- 
     dataLoadOnAppBoot = true;
+    dispPlayControl = true;
 
-    mapDataColumns = 16;
-    colorMode = 1;
-    viewerMode = 1;
     defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
     
-    dispPlayControl = true;
-    
-    
+
     // Get File load path --------------------------------------------------------------------------------
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
@@ -694,9 +691,9 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         ofPopMatrix();
     }
     fboCam.end();
+     //asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     */
     
-    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
     
     if (uiBtnGrid && i == selectMeshId) {
         float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
@@ -725,14 +722,10 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         glPopMatrix();
     }
     
-    
-    if (uiBtnTurnMesh) {
-        glRotatef(-90, 1, 0, 0);
-        
-    }
     glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
     
-    
+    // fix model direction
+    glRotatef(-90, 1, 0, 0);    // turn model
     ofScale(1, 1, -1);      // fix model direction
     ofScale(-1, -1, 1);      // fix model direction
     ofScale(1000, 1000, 1000);
@@ -749,17 +742,16 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
-    if (mapNum[i][7] >= 1) {
+    if (mapNum[i][7]) {
         glRotatef(180, 0, 1, 0);
         ofTranslate(0,0,0);
     }
-    if (mapNum[i][8] >= 1) {
+    if (mapNum[i][8]) {
         glRotatef(180, 1, 0, 0);
     }
-    if (mapNum[i][6] >= 1) {
+    if (mapNum[i][6]) {
         glRotatef(180, 0, 0, 1);
     }
-    
     
     if (mapNum[i][9] == 0) {
 
@@ -854,34 +846,27 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     // Draw Model Name
     {
         glPushMatrix();  //
-        ofSetColor(255,255,255,255);
-        //glTranslatef(180, 400, 700); //
-        glTranslatef(-0,0,2 );
         
-        ofDisableLighting();        //
+        ofSetColor(64,64,64,255);
+        glTranslatef(0,0,1 );      // グリッドの床面に埋もれないように少しだけ持ち上げる
+        
+        ofDisableLighting();
         ofSetColor(0,0,0);
         fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
         ofEnableLighting();
         
-        //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
         glPopMatrix();
     }
     
     
-    if (uiBtnTurnMesh) {
-        glRotatef(-90, 1, 0, 0);
-        
-    }
     
-    if (mapNum[i][7] >= 1) {
+    if (mapNum[i][7]) {
         glRotatef(180, 0, 1, 0);
-        ofTranslate(0,0,-530);
     }
-    if (mapNum[i][8] >= 1) {
+    if (mapNum[i][8]) {
         glRotatef(180, 1, 0, 0);
-        //ofTranslate(0,0,-530);
     }
-    if (mapNum[i][6] >= 1) {
+    if (mapNum[i][6]) {
         glRotatef(180, 0, 0, 1);
         //ofTranslate(0,0,-530);
     }
@@ -889,6 +874,8 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     ofRotateY(mapNum[i][4]);
     ofRotateZ(mapNum[i][5]);
     
+    // fix model direction
+    glRotatef(-90, 1, 0, 0);    // turn model
     ofScale(1, 1, -1);      // fix model direction
     ofScale(-1, -1, 1);      // fix model direction
     ofScale(1000, 1000, 1000);
@@ -1098,26 +1085,17 @@ void ofApp::drawListViewGpsMapWalkThru(int i, int playFrameSelector) {
 
 void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
-    //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
-    
     for(int z=0; z<maxMeshNumList[i]; z++) {
-        displayTotalVertices += meshVertexNumList[i][z];
         
+        displayTotalVertices += meshVertexNumList[i][z];
+
+        playFrameSelector = z;
+
         glPushMatrix();
         
-        playFrameSelector = z;
         
-        
-        
-        if (uiBtnTurnMesh) {
-            glRotatef(-90, 1, 0, 0);
-            
-        }
-        //ofTranslate(0,-1*modelHeightList[i]*1000,0);
-        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-        
-        // 6/29
-        
+        // fix model direction
+        glRotatef(-90, 1, 0, 0);    // turn model
         ofScale(1, 1, -1);      // fix model direction
         ofScale(-1, -1, 1);      // fix model direction
         ofScale(1000, 1000, 1000);
@@ -1132,14 +1110,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofTranslate(posX,0,0);
         
         
-        if (modelFlagList[i] == 0) {            // not effect vertex color object
+        if (modelFlagList[i] == 0) {
             ofSetColor(255, 255, 255, 255);
         } else if (modelFlagList[i] == 1) {
             ofSetColor(255, 255, 255, 32);
         } else if (modelFlagList[i] == 2) {
             ofSetColor(0, 255, 0, 64);
         }
-        ofSetColor(255, 255, 255, 255);
         
         if (mapNum[i][9] == 0) {
             
@@ -1166,6 +1143,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
     }
     
+    // Draw Moving Line
     ofSetLineWidth(5);
     ofSetColor(0,64,255);
     for(int z=0; z<maxMeshNumList[i]-1; z++) {
