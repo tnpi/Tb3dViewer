@@ -31,7 +31,8 @@ void ofApp::setup(){
     
     dispPlayControl = true;
     
-    // get file load path --------------------------------------------------------------------------------
+    
+    // Get File load path --------------------------------------------------------------------------------
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
     meshDataDirPath = fileDialogResult.getPath();
@@ -715,7 +716,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         }
     }
     
-    displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
     glPushMatrix();
     
     // Draw Model Name
@@ -846,7 +847,7 @@ void ofApp::drawListView(int i, int playFrameSelector) {
 
 void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     
-    displayTotalVertices += modelList[i][playFrameSelector].getNumVertices();
+    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
     
     glPushMatrix();
     
@@ -975,7 +976,7 @@ void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
     //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
     
     for(int z=0; z<maxMeshNumList[i]; z++) {
-        displayTotalVertices += modelList[i][z].getNumVertices();
+        displayTotalVertices += meshVertexNumList[i][z];
         
         glPushMatrix();
         
@@ -1177,7 +1178,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     //cout << "maxMeshNumList" << maxMeshNumList[i] << endl;
     
     for(int z=0; z<maxMeshNumList[i]; z++) {
-        displayTotalVertices += modelList[i][z].getNumVertices();
+        displayTotalVertices += meshVertexNumList[i][z];
         
         glPushMatrix();
         
@@ -2359,6 +2360,11 @@ void ofApp::dataLoad() {
                             //Assimp ver.
                             
                             asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
+
+                            if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
+                                ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
+                                meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
+                            }
                             
                             ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
                             ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();

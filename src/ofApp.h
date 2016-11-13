@@ -113,6 +113,7 @@ public:
     double scanGpsDataMaxLong;
     string meshNameList[1024];
     int maxMeshNumList[1024];
+    unsigned int meshVertexNumList[MAX_MODEL_ARRAY][1000];
     string mapId[1024];
     int mapNum[1024][16];
     float modelHeightList[1024];
