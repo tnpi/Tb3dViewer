@@ -734,13 +734,11 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     
     ofScale(1, 1, -1);      // fix model direction
-
-    asModelObj[i][playFrameSelector].setScaleNormalization(false);
     ofScale(-1, -1, 1);      // fix model direction
+    ofScale(1000, 1000, 1000);
+    asModelObj[i][playFrameSelector].setScaleNormalization(false);
     //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
     //                ofTranslate(1500,1100,-2500);      // goto center
-    
-    ofScale(1000, 1000, 1000);
     
     ofRotateX(mapNum[i][3]);
     ofRotateY(mapNum[i][4]);
@@ -757,11 +755,9 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     }
     if (mapNum[i][8] >= 1) {
         glRotatef(180, 1, 0, 0);
-        //ofTranslate(0,0,-530);
     }
     if (mapNum[i][6] >= 1) {
         glRotatef(180, 0, 0, 1);
-        //ofTranslate(0,0,-530);
     }
     
     
@@ -837,6 +833,10 @@ void ofApp::drawListView(int i, int playFrameSelector) {
 }
 
 void ofApp::drawListViewNormal(int i, int playFrameSelector) {
+
+    if (mapNum[i][9]) {
+        return;
+    }
     
     displayTotalVertices += meshVertexNumList[i][playFrameSelector];
     
@@ -889,23 +889,12 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     ofRotateY(mapNum[i][4]);
     ofRotateZ(mapNum[i][5]);
     
-    
-    if (uiColorMode == 0) {
-        //ofTranslate(0,0,1500);      // goto center
-        //ofTranslate(0,-1*modelHeightList[i]*1000,0);    // set y pos
-        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-        
-        ofScale(1000, 1000, 1000);
-    }
     ofScale(1, 1, -1);      // fix model direction
-    if (uiColorMode == 1) {
-        asModelObj[i][playFrameSelector].setScaleNormalization(false);
-        ofScale(-1, -1, 1);      // fix model direction
-        //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
-        //                ofTranslate(1500,1100,-2500);      // goto center
-        
-        ofScale(1000, 1000, 1000);
-    }
+    ofScale(-1, -1, 1);      // fix model direction
+    ofScale(1000, 1000, 1000);
+    asModelObj[i][playFrameSelector].setScaleNormalization(false);
+    //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
+    //                ofTranslate(1500,1100,-2500);      // goto center
     
     
     // ---------------------------------------------------
@@ -917,27 +906,30 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         ofSetColor(0, 255, 0, 64);
     }
     
-    if (mapNum[i][9] == 0) {
-        
-        
-        glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-        
-        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        ofTranslate(centerX, centerY, -centerZ);
-        
-        if (uiMeshDrawType == 1) {
-            ofSetLineWidth(1);
-            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-        } else if (uiMeshDrawType == 2) {
-            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-        } else {
-            //asModelObj[i][counter].drawFaces();
-            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-        }
-        
+
+    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+    
+    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    ofTranslate(centerX, centerY, -centerZ);
+    
+    if (uiColorMode) {
+        asModelObj[i][playFrameSelector].enableTextures();
+    } else {
+        asModelObj[i][playFrameSelector].disableTextures();
     }
+    
+    if (uiMeshDrawType == 1) {
+        ofSetLineWidth(1);
+        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+    } else if (uiMeshDrawType == 2) {
+        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+    } else {
+        //asModelObj[i][counter].drawFaces();
+        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+    }
+    
 }
 
 void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
@@ -985,7 +977,6 @@ void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
         ofSetColor(255, 255, 255, 255);
         
         if (mapNum[i][9] == 0) {
-            
             
             if (uiMeshDrawType == 1) {
                 ofSetLineWidth(1);
@@ -1115,11 +1106,6 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         playFrameSelector = z;
         
-        ofVec3f tr = modelMatrixList[z].getTranslation();
-        double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
-        double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
-        
-        cout << "posX: " << posX << " posY: " << posY << endl;
         
         
         if (uiBtnTurnMesh) {
@@ -1130,15 +1116,20 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
         
         // 6/29
-        ofScale(1, 1, -1);      // fix model direction
-        if (uiColorMode == 1) {
-            ofScale(-1, -1, 1);      // fix model direction
-        }
         
+        ofScale(1, 1, -1);      // fix model direction
+        ofScale(-1, -1, 1);      // fix model direction
+        ofScale(1000, 1000, 1000);
+        asModelObj[i][playFrameSelector].setScaleNormalization(false);
+        
+        ofVec3f tr = modelMatrixList[z].getTranslation();
+        double posX = tr.x*uiTestSlider;//;(scanGpsDataList[i][z][1] - scanGpsDataMinLong) * longScale;
+        double posY = tr.z*uiTestSlider; //;(scanGpsDataList[i][z][0] - scanGpsDataMinLat) * latScale;
+        
+        cout << "posX: " << posX << " posY: " << posY << endl;
         ofTranslate(0,0,posY);
         ofTranslate(posX,0,0);
         
-        ofScale(1000, 1000, 1000);  // temp debug
         
         if (modelFlagList[i] == 0) {            // not effect vertex color object
             ofSetColor(255, 255, 255, 255);
@@ -1151,7 +1142,12 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         if (mapNum[i][9] == 0) {
             
-        
+            if (uiColorMode) {
+                asModelObj[i][playFrameSelector].enableTextures();
+            } else {
+                asModelObj[i][playFrameSelector].disableTextures();
+            }
+
             if (uiMeshDrawType == 1) {
                 ofSetLineWidth(1);
                 asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);

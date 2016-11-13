@@ -10,11 +10,11 @@
             ignoreCount = "0"
             continueAfterRunningActions = "No"
             filePath = "src/ofApp.cpp"
-            timestampString = "500702851.024856"
+            timestampString = "500709160.351424"
             startingColumnNumber = "9223372036854775807"
             endingColumnNumber = "9223372036854775807"
-            startingLineNumber = "462"
-            endingLineNumber = "462"
+            startingLineNumber = "453"
+            endingLineNumber = "453"
             landmarkName = "ofApp::updateSeekBar(int x, int y)"
             landmarkType = "7">
          </BreakpointContent>
