@@ -89,6 +89,7 @@ public:
     int countMeshFileNumTargetDir(string dirPath);
     void loadScanTimeRecordFile(string dirPath, int modelIndex);
     void loadMeshDataTargetDir(string dirPath, int modelIndex);
+    void drawArrow(ofPoint posA, ofPoint posB, double arrowDeltaLineLength=0);
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
@@ -237,6 +238,7 @@ public:
     ofxPanelExtended guiPlayItem;
     ofxPanelExtended guiPlayControlBar;
     ofxPanelExtended guiPlayControlMenu;
+    ofxPanelExtended guiPlayControlMenu2;
     ofxGuiPage guiPage;
     ofxTabbedPages guiTabbedPages;
     ofxGuiPage guiPage1, guiPage2;
@@ -267,8 +269,10 @@ public:
     ofParameter<bool> toggle_param;
     ofParameter<bool> uiBtnPlayPause;
     ofParameter<bool> uiBtnDispWindow;
+    ofParameter<bool> uiBtnTraceCam;
     ofxMinimalToggle uiBtnPlayPauseParts;
     ofxMinimalToggle uiBtnDispWindowParts;
+    ofxMinimalToggle uiBtnTraceCamParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;

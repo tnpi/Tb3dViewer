@@ -14,7 +14,7 @@ void ofApp::setup(){
     
     // app local settings --------------------------------------------
     maxLoadMeshNum = 2000;      //  2000  100
-    skipLoadFrame = 10;         // 1  10
+    skipLoadFrame = 1;         // 1  10
     mapDataColumns = 16;
     colorMode = 1;
     viewerMode = 1;
@@ -143,7 +143,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.setDefaultWidth(80);
     guiPlayControlMenu.setup("PlayControlMenu");
     guiPlayControlMenu.setPosition(400, ofGetHeight()-50);
-    guiPlayControlMenu.setSize(ofGetWidth(), 50);
+    guiPlayControlMenu.setSize(ofGetWidth(), 25);
     guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlMenu.setShowHeader(false);
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
@@ -157,7 +157,16 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
     guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
-    
+
+    guiPlayControlMenu2.setWidthElements(80);
+    guiPlayControlMenu2.setDefaultWidth(80);
+    guiPlayControlMenu2.setup("PlayControlMenu");
+    guiPlayControlMenu2.setPosition(400, ofGetHeight()-25);
+    guiPlayControlMenu2.setSize(ofGetWidth(), 25);
+    guiPlayControlMenu2.setAlignHorizontal();        // ボタンを横並びにする
+    guiPlayControlMenu2.setShowHeader(false);
+    guiPlayControlMenu2.add(uiBtnTraceCamParts.setup(uiBtnTraceCam.set("Trace", false), 80, 20) );
+
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(300);
@@ -1100,7 +1109,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         double posX = tr.x * (1000 + uiTestSlider);
         double posY = tr.z * (1000 + uiTestSlider);
         double posZ = tr.y * (1000 + uiTestSlider);
-        ofTranslate(-posX, posZ, -posY);
+        //ofTranslate(-posX, posZ, -posY);
         cout << "posX: " << posX << " Y: " << posY << " Z:" << posZ << endl;
         
 
@@ -1108,7 +1117,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofScale(1000, 1000, 1000);
         asModelObj[i][playFrameSelector].setScaleNormalization(false);
         
-    
+        
+        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        ofTranslate(centerX, centerY, -centerZ);
+        
+        
         if (uiColorMode) {
             asModelObj[i][playFrameSelector].enableTextures();
         } else {
@@ -1136,21 +1151,108 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     {
         glPushMatrix();
         
+        //ofScale(1, 1, -1);      // fix model direction
+        ofScale(1, -1, 1);      // fix model direction
+
+        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+        ofTranslate(-centerX*1000, -centerY*1000, 0);//-centerZ*1000);
+        
         ofSetLineWidth(5);
-        ofSetColor(0,96,255);
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
+            ofSetColor(0,180,255, 208);
             ofMatrix4x4 matrixA = modelMatrixList[i][z];
             ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
             
             ofVec3f posA = matrixA.getTranslation();
             ofVec3f posB = matrixB.getTranslation();
             
-            ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
+            //if (z%20 == 0) {
+            if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
+                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 100 );
+            } else {
+                ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
+            }
+            
+            glPushMatrix();
+            ofQuaternion quateA = matrixA.getRotate();
+            cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
+            
+            ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
+            float angle, rotX, rotY, rotZ;
+            quateA.getRotate(angle, rotX, rotY, rotZ);
+            ofRotate(90, 1,0,0);
+            ofRotate(angle, rotX, -rotY, rotZ);
+            //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
+            ofSetColor(255,224,0,160);
+            //ofDrawRectangle(posA.x*1000, posA.z*1000, posA.y*1000, 200, 100);      // iPad image
+            ofDrawRectangle(0,0,0, 200, 100);      // iPad image
+            glPopMatrix();
             
             //cout << "posX: " << posX << " posY: " << posY << endl;
         }
         
+        
+        // show start point and end point
+        ofMatrix4x4 startMatrix = modelMatrixList[i][0];
+        ofMatrix4x4 endMatrix = modelMatrixList[i][maxMeshNumList[i]-1];
+        ofVec3f startPos = startMatrix.getTranslation();
+        ofVec3f endPos = endMatrix.getTranslation();
+        ofSetColor(255, 0, 0);
+        //ofDrawCircle(startPos.x*1000, startPos.z*1000, startPos.y*1000, 100);
+        ofDrawSphere(startPos.x*1000, startPos.z*1000, startPos.y*1000, 100);
+        ofSetColor(0, 80, 192);
+        //ofDrawCircle(endPos.x*1000, endPos.z*1000, endPos.y*1000, 100);
+        ofDrawSphere(endPos.x*1000, endPos.z*1000, endPos.y*1000, 100);
+        
+        
+        {
+            glPushMatrix();
+            ofScale(1, -1, 1);      // fix model direction
+            ofSetColor(128, 0, 0);
+            ofTranslate(0,0,startPos.z*1000);
+            fontLarge.drawString("start", startPos.x*1000, -startPos.y*1000-100);
+            glPopMatrix();
+            glPushMatrix();
+            ofScale(1, -1, 1);      // fix model direction
+            ofTranslate(0,0,endPos.z*1000);
+            ofSetColor(0, 80, 192);
+            fontLarge.drawString("end", endPos.x*1000, -endPos.y*1000-100);
+            glPopMatrix();
+        }
+    
         glPopMatrix();
+    }
+    
+}
+
+// arrowDeltaLineLengthを指定しないと、矢印の先の線の長さが、指定した線の長さの半分になる
+// 今のところ2次元的な矢印を描く
+void ofApp::drawArrow(ofPoint posA, ofPoint posB, double arrowDeltaLineLength) {
+    
+    double dx = posB.x - posA.x;
+    double dy = posB.y - posA.y;
+    double dz = posB.z - posA.z;
+    double r = 0;
+    
+    double baseLineR = sqrt( pow(dx, 2) + pow(dy, 2) );
+    if (arrowDeltaLineLength <= 0) {
+        r = baseLineR/2;               // 直線の半分
+    } else {
+        r = arrowDeltaLineLength;
+    }
+    
+    if (dx != 0 && dy != 0) {
+        double lineAngleRad = atan2(dy, dx);
+        
+        ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+        
+        // 矢印の左側の線
+        double lAngle = lineAngleRad - PI*3/4;
+        ofDrawLine(posB.x, posB.y, posB.z, posB.x + r*cos(lAngle),  posB.y + r*sin(lAngle), posB.z);
+        double rAngle = lineAngleRad + PI*3/4;
+        ofDrawLine(posB.x, posB.y, posB.z, posB.x + r*cos(rAngle),  posB.y + r*sin(rAngle), posB.z);
     }
     
 }
