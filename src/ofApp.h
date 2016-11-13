@@ -10,7 +10,7 @@
 #include "ofxGui.h"
 #include "ofxGuiExtended.h"
 
-#include "ofxObjLoader.h"
+//#include "ofxObjLoader.h"
 
 #include "ofxNi2.h"
 //#include "ofxNiTE2.h"
@@ -92,7 +92,7 @@ public:
     // Array --------
     
     ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
-    ofMesh modelList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    //ofMesh modelList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     int modelFlagList[MAX_MODEL_ARRAY];
     ofImage modelImageList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     int scanTimeRecordList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY][4];

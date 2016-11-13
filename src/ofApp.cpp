@@ -936,38 +936,16 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
         ofTranslate(centerX, centerY, -centerZ);
         
-        if (dualColorSystem == true && uiColorMode == 1) {
-            
-            if (uiMeshDrawType == 1) {
-                ofSetLineWidth(1);
-                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-            } else if (uiMeshDrawType == 2) {
-                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-            } else {
-                //asModelObj[i][counter].drawFaces();
-                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-            }
-            
+        if (uiMeshDrawType == 1) {
+            ofSetLineWidth(1);
+            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+        } else if (uiMeshDrawType == 2) {
+            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
         } else {
-            
-            if (uiMeshDrawType == 1) {
-                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                //            asModelObj[i][counter].drawWireframe();
-                ofSetLineWidth(1);
-                
-                modelList[i][playFrameSelector].drawWireframe();
-            } else if (uiMeshDrawType == 2) {
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                modelList[i][playFrameSelector].drawVertices();
-            } else {
-                
-                modelList[i][playFrameSelector].draw();
-                
-                //asModelObj[i][counter].drawFaces();
-                //asModelObj[i][counter].draw(OF_MESH_FILL);
-            }
+            //asModelObj[i][counter].drawFaces();
+            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
         }
+        
     }
 }
 
@@ -1017,42 +995,19 @@ void ofApp::drawListViewGpsMap(int i, int playFrameSelector) {
         
         if (mapNum[i][9] == 0) {
             
-            if (dualColorSystem == true && uiColorMode == 1) {
+            
+            if (uiMeshDrawType == 1) {
+                ofSetLineWidth(1);
+                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            } else if (uiMeshDrawType == 2) {
+                glPointSize(5);
                 
-                if (uiMeshDrawType == 1) {
-                    ofSetLineWidth(1);
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                } else if (uiMeshDrawType == 2) {
-                    glPointSize(5);
-                    
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                } else {
-                    //asModelObj[i][counter].drawFaces();
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                }
-                
+                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
             } else {
-                
-                if (uiMeshDrawType == 1) {
-                    //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                    //            asModelObj[i][counter].drawWireframe();
-                    ofSetLineWidth(1);
-                    
-                    modelList[i][playFrameSelector].drawWireframe();
-                } else if (uiMeshDrawType == 2) {
-                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                    glPointSize(5);
-                    
-                    modelList[i][playFrameSelector].drawVertices();
-                } else {
-                    
-                    modelList[i][playFrameSelector].draw();
-                    
-                    //asModelObj[i][counter].drawFaces();
-                    //asModelObj[i][counter].draw(OF_MESH_FILL);
-                }
+                //asModelObj[i][counter].drawFaces();
+                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             }
+            
         }
         glPopMatrix();
         
@@ -1147,23 +1102,8 @@ void ofApp::drawListViewGpsMapWalkThru(int i, int playFrameSelector) {
         
         if (mapNum[i][9] == 0) {
             
-            if (uiMeshDrawType == 1) {
-                //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                //            asModelObj[i][counter].drawWireframe();
-                ofSetLineWidth(1);
-                
-                modelList[i][playFrameSelector].drawWireframe();
-            } else if (uiMeshDrawType == 2) {
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                modelList[i][playFrameSelector].drawVertices();
-            } else {
-                
-                modelList[i][playFrameSelector].draw();
-                
-                //asModelObj[i][counter].drawFaces();
-                //asModelObj[i][counter].draw(OF_MESH_FILL);
-            }
+        
+        
         }
         glPopMatrix();
         
@@ -1220,42 +1160,19 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         if (mapNum[i][9] == 0) {
             
-            if (dualColorSystem == true && uiColorMode == 1) {
+        
+            if (uiMeshDrawType == 1) {
+                ofSetLineWidth(1);
+                asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            } else if (uiMeshDrawType == 2) {
+                glPointSize(5);
                 
-                if (uiMeshDrawType == 1) {
-                    ofSetLineWidth(1);
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
-                } else if (uiMeshDrawType == 2) {
-                    glPointSize(5);
-                    
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
-                } else {
-                    //asModelObj[i][counter].drawFaces();
-                    asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
-                }
-                
+                asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
             } else {
-                
-                if (uiMeshDrawType == 1) {
-                    //asModelObj[i][counter].draw(OF_MESH_WIREFRAME);
-                    //            asModelObj[i][counter].drawWireframe();
-                    ofSetLineWidth(1);
-                    
-                    modelList[i][playFrameSelector].drawWireframe();
-                } else if (uiMeshDrawType == 2) {
-                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                    //asModelObj[i][counter].draw(OF_MESH_POINTS);
-                    glPointSize(5);
-                    
-                    modelList[i][playFrameSelector].drawVertices();
-                } else {
-                    
-                    modelList[i][playFrameSelector].draw();
-                    
-                    //asModelObj[i][counter].drawFaces();
-                    //asModelObj[i][counter].draw(OF_MESH_FILL);
-                }
+                //asModelObj[i][counter].drawFaces();
+                asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
             }
+                
         }
         glPopMatrix();
         
@@ -2298,9 +2215,6 @@ void ofApp::dataLoad() {
                 
                 for(int i=0; (i*skipLoadFrame+2)<maxMeshNumList[dirNameLoopCount]; i++) {
                     
-                    auto& model = modelList[dirNameLoopCount][i];
-
-                    
                     // getTimestamp
                     ss.str("");
                     ss << dirPath.str() << "mesh_" << ((i*skipLoadFrame)+2+startPlayMeshAnimNum) << ".obj";
@@ -2309,16 +2223,16 @@ void ofApp::dataLoad() {
                     
                     //cout << ss.str() << endl;
 
-                    ofFileObj.open(objFilePath);       //
-                    if (ofFileObj.exists()) {
+                    ofFileObj.open(objFilePath);
+                    if (!ofFileObj.exists()) {
+                        
+                        cout << objFilePath << " file not found." << endl;
+                        
+                    } else {
                         
                         oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
                         
                         ofFileObj.close();
-                        
-                        if (loadVertexColorObj) {
-                            ofxObjLoader::load(objFilePath, modelList[dirNameLoopCount][i], false);
-                        }
                         
                         // add
                         ss.str("");
@@ -2328,6 +2242,8 @@ void ofApp::dataLoad() {
                         if (loadPictureMode) {
                             modelImageList[dirNameLoopCount][i].loadImage(objImageFilePath);
                         }
+
+                        /*
                         auto vertices = modelList[dirNameLoopCount][i].getVertices();
                         
                         float maxPosY = 0;
@@ -2353,51 +2269,47 @@ void ofApp::dataLoad() {
                             }
                         }
                         modelPosZList[dirNameLoopCount] = maxPosX;
+                         cout << "vertice.y: " << maxPosY<< endl;
+                        */
 
-                        cout << "vertice.y: " << maxPosY<< endl;
                         
-                        if (dualColorSystem) {
-                            //Assimp ver.
-                            
-                            asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
+                        //Assimp ver.
+                        
+                        asModelObj[dirNameLoopCount][i].loadModel(objFilePath );
 
-                            if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
-                                ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
-                                meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
-                            }
-                            
-                            ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
-                            ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
-                            cout << "tMin: " << tMin << " tMax: " << tMax << endl;
-                            
-                            if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
-                                cout << "======---------- Hit! ----------------==============================================" << endl;
-                            } else  {
-                            
-                                if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
-                                    modelSceneMin[dirNameLoopCount].x = tMin.x;
-                                }
-                                if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
-                                    modelSceneMin[dirNameLoopCount].y = tMin.y;
-                                }
-                                if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
-                                    modelSceneMin[dirNameLoopCount].z = tMin.z;
-                                }
-                                if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
-                                    modelSceneMax[dirNameLoopCount].x = tMax.x;
-                                }
-                                if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
-                                    modelSceneMax[dirNameLoopCount].y = tMax.y;
-                                }
-                                if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
-                                    modelSceneMax[dirNameLoopCount].z = tMax.z;
-                                }
-                            }
-   
+                        if (asModelObj[dirNameLoopCount][i].getMeshCount()) {
+                            ofMesh tMesh = asModelObj[dirNameLoopCount][i].getMesh(0);
+                            meshVertexNumList[dirNameLoopCount][i] = tMesh.getVertices().size();
                         }
                         
-                    } else {
-                        cout << objFilePath << " file not found." << endl;
+                        ofPoint tMin = asModelObj[dirNameLoopCount][i].getSceneMin();
+                        ofPoint tMax = asModelObj[dirNameLoopCount][i].getSceneMax();
+                        cout << "tMin: " << tMin << " tMax: " << tMax << endl;
+                        
+                        if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
+                            cout << "======---------- Hit! ----------------==============================================" << endl;
+                        } else  {
+                        
+                            if (tMin.x < modelSceneMin[dirNameLoopCount].x) {
+                                modelSceneMin[dirNameLoopCount].x = tMin.x;
+                            }
+                            if (tMin.y < modelSceneMin[dirNameLoopCount].y) {
+                                modelSceneMin[dirNameLoopCount].y = tMin.y;
+                            }
+                            if (tMin.z < modelSceneMin[dirNameLoopCount].z) {
+                                modelSceneMin[dirNameLoopCount].z = tMin.z;
+                            }
+                            if (tMax.x > modelSceneMax[dirNameLoopCount].x) {
+                                modelSceneMax[dirNameLoopCount].x = tMax.x;
+                            }
+                            if (tMax.y > modelSceneMax[dirNameLoopCount].y) {
+                                modelSceneMax[dirNameLoopCount].y = tMax.y;
+                            }
+                            if (tMax.z > modelSceneMax[dirNameLoopCount].z) {
+                                modelSceneMax[dirNameLoopCount].z = tMax.z;
+                            }
+                        }
+                        
                     }
                     
                     cout << "modelSceneMin[" << dirNameLoopCount << "]: " << modelSceneMin[dirNameLoopCount] << endl;
@@ -2407,36 +2319,6 @@ void ofApp::dataLoad() {
                 }
                 modelFileSizeList.push_back(oneModelFileSizeList);
                 
-            } else {        // static model
-                
-                maxMeshNumList[dirNameLoopCount] = 1;
-                scanTimeRecordList[dirNameLoopCount][0][0] = -1;
-                scanTimeRecordMaxTime[dirNameLoopCount] = 0;
-                
-                ss.str("");
-                ss << dirPath.str() << "/Model.obj";
-                
-                ofFileObj.open(ss.str());
-                
-                if (ofFileObj.exists()) {
-                    
-                    oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
-                    
-                    ofFileObj.close();
-                    
-                    ofxObjLoader::load(ss.str(), modelList[dirNameLoopCount][0], false);
-                }
-                
-                /*
-                 Assimp ver
-                asModelObj[dirNameLoopCount][0].loadModel(ss.str() , true);
-                
-                asModelObj[dirNameLoopCount][0].disableMaterials();
-                asModelObj[dirNameLoopCount][0].disableTextures();
-                 */
-                
-                cout << "Model load: " << ss.str() << endl;
-                
             }
             
             //gui->addWidgetRight(new ofxUIDropDownList("PARTICLE_IMAGE", items,150));
@@ -2444,10 +2326,9 @@ void ofApp::dataLoad() {
         
         modeldataFiles += maxMeshNumList[dirNameLoopCount];
 
-        /*
-         */
         dirNameLoopCount++;
     }
+    
     modelDataNum = dirNameLoopCount;
     //modeldataDatasetNum = dirNameLoopCount;
     
