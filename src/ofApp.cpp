@@ -156,7 +156,6 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiBtnDispWindowParts.setup(uiBtnDispWindow.set("Window", false), 80, 20) );
     guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
-    guiPlayControlMenu.add(uiBtnReset.setup("Reset", 80, 20));
 
     guiPlayControlMenu2.setWidthElements(80);
     guiPlayControlMenu2.setDefaultWidth(80);
@@ -166,6 +165,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlMenu2.setShowHeader(false);
     guiPlayControlMenu2.add(uiBtnTraceCamParts.setup(uiBtnTraceCam.set("Trace", false), 80, 20) );
+    guiPlayControlMenu2.add(uiBtnReset.setup("Reset", 80, 20));
 
     
     // Debug Window gui ----------------------------------------------------------------
@@ -271,7 +271,8 @@ void ofApp::myGuiSetup() {
 
     guiPlayControlBar.setPosition(0, ofGetHeight()-100);
     guiPlayControlMenu.setPosition(guiPlayControlMenu.getPosition().x, ofGetHeight()-50);
-    
+    guiPlayControlMenu2.setPosition(guiPlayControlMenu.getPosition().x, ofGetHeight()-25);
+
     myGuiMain = ofRectangle(0, ofGetHeight()-100, ofGetWidth(), 100);
     mainView = ofRectangle(0, 0, ofGetWidth(),ofGetHeight() - myGuiMain.height);
     
@@ -423,7 +424,7 @@ void ofApp::update(){
         }
         
     }
-
+    
 }
 
 
@@ -532,6 +533,78 @@ void ofApp::draw(){
         eCam.disableOrtho();
     }
     
+    // Walkthru
+    if (frameCount >= 1) {
+        if (frameCount == 1) {
+            defaultCamOrientation = eCam.getOrientationQuat();
+            defaultCamOrientationGlobal = eCam.getGlobalOrientation();
+        }
+        
+        if (uiBtnTraceCam && uiGpsMapMode >= 1) {
+            
+            
+            
+            double centerX = modelSceneMin[selectMeshId].x + (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) / 2;
+            double centerY = modelSceneMin[selectMeshId].y + (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) / 2;
+            double centerZ = modelSceneMin[selectMeshId].z + (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) / 2;
+//            ofTranslate(centerX, centerY, -centerZ);
+            
+            ofMatrix4x4 trackMatrix = modelMatrixList[selectMeshId][playFrameSelector];
+            ofQuaternion trackQuate = modelMatrixList[selectMeshId][playFrameSelector].getRotate();
+            ofVec3f trackPos = trackMatrix.getTranslation();
+            
+            eCam.setPosition((trackPos.x-centerX)*1000, (trackPos.z-centerY)*1000, (trackPos.y-centerZ)*1000 +500);
+
+            eCam.setOrientation(defaultCamOrientation);
+            
+            float angle, rotX, rotY, rotZ;
+            trackQuate.getRotate(angle, rotX, rotY, rotZ);
+            eCam.rotate(90, 1, 0, 0);
+            eCam.rotate(angle, rotX, rotZ, -rotY);
+            //eCam.rotate(1, 1, 0, 0);
+            
+            //ofRotate(90, 1,0,0);
+            //ofRotate(angle, rotX, -rotY, rotZ);
+            //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
+
+            //eCam.rotate(angle, rotX, -rotY, rotZ);
+            //eCam.matrix
+            //eCam.rotate(angle, rotX, -rotY, rotZ);
+            //eCam.set
+            //eCam.rotate(angle, rotX, -rotY, rotZ);
+            
+            /*
+            eCam.setPosition(trackMatrix.getTranslation());
+            eCam.rotate(trackMatrix.getRotate());
+             */
+            /*
+            ofVec3f posA = matrixA.getTranslation();
+            ofVec3f posB = matrixB.getTranslation();
+            
+            //if (z%20 == 0) {
+            if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
+                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 300 );
+            } else {
+                ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
+            }
+            
+            glPushMatrix();
+            ofQuaternion quateA = matrixA.getRotate();
+            cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
+            
+            if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
+                ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
+                float angle, rotX, rotY, rotZ;
+                quateA.getRotate(angle, rotX, rotY, rotZ);
+                ofRotate(90, 1,0,0);
+                ofRotate(angle, rotX, -rotY, rotZ);
+                //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
+
+            */
+        }
+    }
+
+    
     // base Axis Setting -------------------------------------------
     ofScale(1,-1);      // y-axis reverse! (for fix drawString text flips promblem)
 
@@ -544,8 +617,6 @@ void ofApp::draw(){
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
-    
-    int playFrameSelector;
     
     for(int i=0; i<modelDataNum; i++) {
         
@@ -1161,8 +1232,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
             
-            ofSetLineWidth(5);
-            ofSetColor(0,180,255, 208);
+            ofSetLineWidth(10);
+            ofSetColor(0,180,255, 255);
             ofMatrix4x4 matrixA = modelMatrixList[i][z];
             ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
             
@@ -1171,7 +1242,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             
             //if (z%20 == 0) {
             if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
-                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 100 );
+                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 300 );
             } else {
                 ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
             }
@@ -1180,22 +1251,26 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofQuaternion quateA = matrixA.getRotate();
             cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
             
-            ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
-            float angle, rotX, rotY, rotZ;
-            quateA.getRotate(angle, rotX, rotY, rotZ);
-            ofRotate(90, 1,0,0);
-            ofRotate(angle, rotX, -rotY, rotZ);
-            //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
+            if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
+                ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
+                float angle, rotX, rotY, rotZ;
+                quateA.getRotate(angle, rotX, rotY, rotZ);
+                ofRotate(90, 1,0,0);
+                ofRotate(angle, rotX, -rotY, rotZ);
+                //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
 
-            ofFill();
-            ofSetColor(255, 224, 0, 192);//stroke color              ofSetColor(255,224,0,160);
-            //ofDrawRectangle(posA.x*1000, posA.z*1000, posA.y*1000, 200, 100);      // iPad image
-            ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
-            
-            ofSetLineWidth(2);
-            ofNoFill();
-            ofSetColor(0, 0, 0, 128);//stroke color              ofSetColor(255,224,0,160);
-            ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
+                ofFill();
+                ofSetColor(255, 224, 0, 192);//stroke color              ofSetColor(255,224,0,160);
+                //ofDrawRectangle(posA.x*1000, posA.z*1000, posA.y*1000, 200, 100);      // iPad image
+                //ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
+                ofDrawRectangle(-200,-100,0, 400, 200);      // iPad image
+                
+                ofSetLineWidth(2);
+                ofNoFill();
+                ofSetColor(0, 0, 0, 128);//stroke color              ofSetColor(255,224,0,160);
+                //ofDrawRectangle(-100,-50,0, 200, 100);      // iPad image
+                ofDrawRectangle(-200,-100,0, 400, 200);      // iPad image
+            }
 
             ofFill();
             glPopMatrix();
@@ -1341,6 +1416,7 @@ void ofApp::drawUi() {
         if (dispPlayControl) {
             guiPlayControlBar.draw();
             guiPlayControlMenu.draw();
+            guiPlayControlMenu2.draw();
         }
         
     }

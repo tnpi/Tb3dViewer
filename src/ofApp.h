@@ -157,6 +157,7 @@ public:
     int prevPlayTime;
     int nowPlayTime;
     int colorMode;
+    int playFrameSelector;
     unsigned int frameCount;
     unsigned int playCount;
     long seekbarAddTime;
@@ -228,6 +229,9 @@ public:
     ofRectangle myGuiDispGuiToggle;
     ofRectangle myGuiSeekBar;
     ofRectangle myGuiPlayButton;
+    
+    ofQuaternion defaultCamOrientation;
+    ofQuaternion defaultCamOrientationGlobal;
     
 
     // oF addon obj ---------------
