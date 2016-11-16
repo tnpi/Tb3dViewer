@@ -255,6 +255,9 @@ public:
     ofxIntSlider uiColorMode;
     ofxIntSlider uiFramerate;
     ofxIntSlider uiGpsMapMode;
+    // ofParameter
+    ofxIntSlider uiModelTransparentParts;
+
     ofxVec2Slider position;
     ofxToggle uiBtnPlayRealtime;
     ofxToggle uiBtnLight;
@@ -274,9 +277,12 @@ public:
     ofParameter<bool> uiBtnPlayPause;
     ofParameter<bool> uiBtnDispWindow;
     ofParameter<bool> uiBtnTraceCam;
+    ofParameter<bool> uiBtnBgColor;
+    ofParameter<int> uiModelTransparent;
     ofxMinimalToggle uiBtnPlayPauseParts;
     ofxMinimalToggle uiBtnDispWindowParts;
     ofxMinimalToggle uiBtnTraceCamParts;
+    ofxMinimalToggle uiBtnBgColorParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;

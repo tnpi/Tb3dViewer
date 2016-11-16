@@ -166,7 +166,8 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.setShowHeader(false);
     guiPlayControlMenu2.add(uiBtnTraceCamParts.setup(uiBtnTraceCam.set("Trace", false), 80, 20) );
     guiPlayControlMenu2.add(uiBtnReset.setup("Reset", 80, 20));
-
+    guiPlayControlMenu2.add(uiBtnBgColorParts.setup(uiBtnBgColor.set("BgColor", false), 80, 20) );
+    guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 255, 0, 255 )) );
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(300);
@@ -491,7 +492,11 @@ void ofApp::draw(){
     displayTotalVertices = 0;
     
     // BG ---------------------------------------------
-    ofBackground(240, 240, 240);
+    if (uiBtnBgColor) {
+        ofBackground(240, 240, 240);
+    } else {
+        ofBackground(0, 0, 0);
+    }
     ofSetColor(255,255,255,255);
 
     // display now Loading -----------------------------------------
@@ -540,7 +545,7 @@ void ofApp::draw(){
             defaultCamOrientationGlobal = eCam.getGlobalOrientation();
         }
         
-        if (uiBtnTraceCam && uiGpsMapMode >= 1) {
+        if (uiBtnTraceCam ) {
             
             
             
@@ -837,6 +842,8 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         glRotatef(180, 0, 0, 1);
     }
     
+    
+    ofSetColor(255,255,255,uiModelTransparent);
 
     if (uiColorMode) {
         asModelObj[i][playFrameSelector].enableTextures();
@@ -961,7 +968,7 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     
     // ---------------------------------------------------
     if (modelFlagList[i] == 0) {            // not effect vertex color object
-        ofSetColor(255, 255, 255, 255);
+        ofSetColor(255, 255, 255, uiModelTransparent);
     } else if (modelFlagList[i] == 1) {
         ofSetColor(255, 255, 255, 32);
     } else if (modelFlagList[i] == 2) {
@@ -1181,7 +1188,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         double posY = tr.z * (1000 + uiTestSlider);
         double posZ = tr.y * (1000 + uiTestSlider);
         //ofTranslate(-posX, posZ, -posY);
-        cout << "posX: " << posX << " Y: " << posY << " Z:" << posZ << endl;
+        //cout << "posX: " << posX << " Y: " << posY << " Z:" << posZ << endl;
         
 
         
@@ -1194,6 +1201,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
         ofTranslate(centerX, centerY, -centerZ);
         
+        
+        ofSetColor(255,255,255,uiModelTransparent);
         
         if (uiColorMode) {
             asModelObj[i][playFrameSelector].enableTextures();
@@ -1249,7 +1258,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             
             glPushMatrix();
             ofQuaternion quateA = matrixA.getRotate();
-            cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
+            //cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
             
             if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
                 ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
