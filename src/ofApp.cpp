@@ -145,7 +145,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.setSize(ofGetWidth(), 25);
     guiPlayControlMenu.setAlignHorizontal();        // ボタンを横並びにする
     guiPlayControlMenu.setShowHeader(false);
-    guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 0, 0, 2));
+    guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 1, 0, 2));
     guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
     guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 1));
@@ -167,7 +167,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu2.add(uiBtnBgColorParts.setup(uiBtnBgColor.set("BgColor", false), 80, 20) );
     guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 255, 0, 255 )) );
-    guiPlayControlMenu2.add(uiTraceCamHeightParts.setup(uiTraceCamHeight.set("camH", 500, -2000, 2000 )) );
+    guiPlayControlMenu2.add(uiTraceCamHeightParts.setup(uiTraceCamHeight.set("camH", 500, -3000, 3000 )) );
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(500);
@@ -1186,7 +1186,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         glPushMatrix();
         
         displayTotalVertices += meshVertexNumList[i][z];
-        playFrameSelector = z;
+        //playFrameSelector = z;
         
         // fix model direction
         glRotatef(-90, 1, 0, 0);    // turn model
@@ -1215,21 +1215,21 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofSetColor(255,255,255,uiModelTransparent);
         
         if (uiColorMode) {
-            asModelObj[i][playFrameSelector].enableTextures();
+            asModelObj[i][z].enableTextures();
         } else {
-            asModelObj[i][playFrameSelector].disableTextures();
+            asModelObj[i][z].disableTextures();
         }
 
         if (uiMeshDrawType == 1) {
             ofSetLineWidth(1);
-            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            asModelObj[i][z].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
             glPointSize(2);
             
-            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+            asModelObj[i][z].draw(OF_MESH_POINTS);
         } else {
             //asModelObj[i][counter].drawFaces();
-            asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+            asModelObj[i][z].draw(OF_MESH_FILL);
         }
             
     
@@ -1248,7 +1248,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
         double centerZ = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
         double centerY = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
-        ofTranslate(-centerX*1000, -centerY*1000, -centerZ*1000+100);//-centerZ*1000);
+        ofTranslate(-centerX*1000, -centerY*1000, centerZ*1000);//-centerZ*1000);
         
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
             
@@ -1262,9 +1262,9 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             
             //if (z%20 == 0) {
             if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
-                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 300 );
+                drawArrow(ofPoint(posA.x*1000, posA.z*1000, -posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, -posB.y*1000), 300 );
             } else {
-                ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
+                ofDrawLine(posA.x*1000, posA.z*1000, -posA.y*1000, posB.x*1000, posB.z*1000, -posB.y*1000);
             }
             
             glPushMatrix();
@@ -1272,7 +1272,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             //cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
             
             if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
-                ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
+                ofTranslate(posA.x*1000, posA.z*1000, -posA.y*1000);
                 float angle, rotX, rotY, rotZ;
                 quateA.getRotate(angle, rotX, rotY, rotZ);
                 ofRotate(90, 1,0,0);
@@ -1302,14 +1302,20 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         // show start point and end point
         ofMatrix4x4 startMatrix = modelMatrixList[i][0];
         ofMatrix4x4 endMatrix = modelMatrixList[i][maxMeshNumList[i]-1];
+        ofMatrix4x4 movingMatrix = modelMatrixList[i][playFrameSelector];
+        
         ofVec3f startPos = startMatrix.getTranslation();
         ofVec3f endPos = endMatrix.getTranslation();
+        ofVec3f movingPos = movingMatrix.getTranslation();
+        
         ofSetColor(255, 0, 0);
         //ofDrawCircle(startPos.x*1000, startPos.z*1000, startPos.y*1000, 100);
-        ofDrawSphere(startPos.x*1000, startPos.z*1000, startPos.y*1000, 100);
+        ofDrawSphere(startPos.x*1000, startPos.z*1000, -startPos.y*1000, 100);
         ofSetColor(0, 80, 192);
         //ofDrawCircle(endPos.x*1000, endPos.z*1000, endPos.y*1000, 100);
-        ofDrawSphere(endPos.x*1000, endPos.z*1000, endPos.y*1000, 100);
+        ofDrawSphere(endPos.x*1000, endPos.z*1000, -endPos.y*1000, 100);
+        ofSetColor(255, 224, 0);
+        ofDrawSphere(movingPos.x*1000, movingPos.z*1000, -movingPos.y*1000, 100);
         
         
         {
@@ -1317,13 +1323,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofScale(1, -1, 1);      // fix model direction
             ofSetColor(128, 0, 0);
             ofTranslate(0,0,startPos.z*1000);
-            fontLarge.drawString("start", startPos.x*1000, -startPos.y*1000-100);
+            fontLarge.drawString("start", startPos.x*1000, startPos.y*1000);
             glPopMatrix();
             glPushMatrix();
             ofScale(1, -1, 1);      // fix model direction
             ofTranslate(0,0,endPos.z*1000);
             ofSetColor(0, 80, 192);
-            fontLarge.drawString("end", endPos.x*1000, -endPos.y*1000-100);
+            fontLarge.drawString("end", endPos.x*1000, endPos.y*1000);
             glPopMatrix();
         }
     
