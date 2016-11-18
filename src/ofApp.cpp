@@ -579,7 +579,6 @@ void ofApp::draw(){
             double centerX = modelSceneMin[selectMeshId].x + (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) / 2;
             double centerY = modelSceneMin[selectMeshId].y + (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) / 2;
             double centerZ = modelSceneMin[selectMeshId].z + (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) / 2;
-//            ofTranslate(centerX, centerY, -centerZ);
             
             ofMatrix4x4 trackMatrixA = modelMatrixList[selectMeshId][vPlayFrame];
             ofQuaternion trackQuateA = trackMatrixA.getRotate();
@@ -590,8 +589,8 @@ void ofApp::draw(){
             ofVec3f trackPosB = trackMatrixB.getTranslation();
             
             eCam.setPosition((trackPosA.x - centerX + ((trackPosB.x - trackPosA.x) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.z - centerZ + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
+                             (trackPosA.z - centerY + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
+                             (trackPosA.y - centerZ + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
 
             eCam.setOrientation(defaultCamOrientation);
             
