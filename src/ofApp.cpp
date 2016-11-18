@@ -426,18 +426,6 @@ void ofApp::update(){
         }
         
     }
-
-    // バーチャル再生時間計算
-    // 再生時
-    if (uiBtnPlayPause) {
-        if (uiPlayMode == 2) {
-            nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
-            virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
-        } else if (uiPlayMode == 1) {
-            // 再生時
-            nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
-        }
-    }
 }
 
 
@@ -503,7 +491,20 @@ void ofApp::draw(){
     // init vars --------------------------------------
     displayTotalVertices = 0;
     
+    
+    // バーチャル再生時間計算
+    // 再生時
+    if (uiBtnPlayPause) {
+        if (uiPlayMode == 2) {
+            nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
+            virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
+        } else if (uiPlayMode == 1) {
+            // 再生時
+            nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
+        }
+    }
 
+    
     // BG ---------------------------------------------
     if (uiBtnBgColor) {
         ofBackground(240, 240, 240);
@@ -558,6 +559,21 @@ void ofApp::draw(){
             defaultCamOrientationGlobal = eCam.getGlobalOrientation();
         }
         
+        // カメラ移動補完のためのフレーム間進捗率計算
+        int vPlayFrame = 0;
+        double progressRateBetweenFrame;
+        for (int j=0; j<maxMeshNumList[selectMeshId]-1; j++) {
+            if (virtualPlayUnixTime >= scanUnixTimeLongIntList[selectMeshId][j] &&
+                virtualPlayUnixTime <= scanUnixTimeLongIntList[selectMeshId][j+1]  ) {
+                vPlayFrame = j;
+                
+                long timeLength = scanUnixTimeLongIntList[selectMeshId][j+1] - scanUnixTimeLongIntList[selectMeshId][j];
+                long progressTime = virtualPlayUnixTime - scanUnixTimeLongIntList[selectMeshId][j];
+                progressRateBetweenFrame = (double)progressTime / (double)timeLength;
+            }
+        }
+        cout << "progressRateBetweenFrame: " << progressRateBetweenFrame << endl;
+        
         if (uiBtnTraceCam ) {
             
             double centerX = modelSceneMin[selectMeshId].x + (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) / 2;
@@ -565,18 +581,37 @@ void ofApp::draw(){
             double centerZ = modelSceneMin[selectMeshId].z + (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) / 2;
 //            ofTranslate(centerX, centerY, -centerZ);
             
-            ofMatrix4x4 trackMatrix = modelMatrixList[selectMeshId][playFrameSelector];
-            ofQuaternion trackQuate = modelMatrixList[selectMeshId][playFrameSelector].getRotate();
-            ofVec3f trackPos = trackMatrix.getTranslation();
+            ofMatrix4x4 trackMatrixA = modelMatrixList[selectMeshId][vPlayFrame];
+            ofQuaternion trackQuateA = trackMatrixA.getRotate();
+            ofVec3f trackPosA = trackMatrixA.getTranslation();
             
-            eCam.setPosition((trackPos.x-centerX)*1000, (trackPos.z-centerY)*1000, (trackPos.y-centerZ)*1000 +500);
+            ofMatrix4x4 trackMatrixB = modelMatrixList[selectMeshId][vPlayFrame+1];
+            ofQuaternion trackQuateB = trackMatrixB.getRotate();
+            ofVec3f trackPosB = trackMatrixB.getTranslation();
+            
+            eCam.setPosition((trackPosA.x - centerX + ((trackPosB.x - trackPosA.x) * progressRateBetweenFrame)) * 1000,
+                             (trackPosA.z - centerZ + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
+                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
 
             eCam.setOrientation(defaultCamOrientation);
             
-            float angle, rotX, rotY, rotZ;
-            trackQuate.getRotate(angle, rotX, rotY, rotZ);
+            float angleA, rotXA, rotYA, rotZA;
+            float angleB, rotXB, rotYB, rotZB;
+            trackQuateA.getRotate(angleA, rotXA, rotYA, rotZA);
+            trackQuateB.getRotate(angleB, rotXB, rotYB, rotZB);
             eCam.rotate(90, 1, 0, 0);
-            eCam.rotate(angle, rotX, rotZ, -rotY);
+            /*
+            eCam.rotate(angleA,
+                        rotXA,
+                        rotZA ,
+                        -rotYA
+                        );
+            */
+            eCam.rotate(angleA + (angleB-angleA)*progressRateBetweenFrame,
+                        rotXA + (rotXB-rotXA)*progressRateBetweenFrame,
+                        rotZA + (rotZB-rotZA)*progressRateBetweenFrame,
+                        -rotYA - (rotYB-rotYA)*progressRateBetweenFrame
+                        );
             //eCam.rotate(1, 1, 0, 0);
             
             //ofRotate(90, 1,0,0);
@@ -658,7 +693,7 @@ void ofApp::draw(){
                     bool dispFlag = false;
                     
                      // scan play frame by time
-                     for (int j=0; j<maxMeshNumList[i]; j++) {
+                     for (int j=0; j<maxMeshNumList[i]-1; j++) {
                          if (virtualPlayUnixTime >= scanUnixTimeLongIntList[i][j] &&
                              virtualPlayUnixTime <= scanUnixTimeLongIntList[i][j+1]  ) {
                              playFrameSelector = j;
@@ -682,7 +717,7 @@ void ofApp::draw(){
                     
                     int passedTime = nowPlayTime % scanTimeRecordMaxTime[i];
                     
-                    for (int j=0; j<maxMeshNumList[i]; j++) {
+                    for (int j=0; j<maxMeshNumList[i]-1; j++) {
                         if (passedTime <= scanTimeRecordList[i][j+1][1]) {
                             playFrameSelector = j;
                             break;
