@@ -16,13 +16,12 @@ void ofApp::setup(){
     maxLoadMeshNum = 2000;      //  2000  100
     skipLoadFrame = 1;         // 1  10
     mapDataColumns = 16;
+    mapStringColumns = 10;
     colorMode = 1;
     viewerMode = 1;
     
     useOpenNi = false;
-    dualColorSystem = true;           // 同じモデルデータを２つのライブラリで同時に読み込み、切り替えながら表示します。２倍動作に時間がかかり、メモリ消費も２倍です。
-    loadPictureMode = false;
-    loadVertexColorObj = true;         // trueにすると頂点カラー対応（テクスチャ非対応）のライブラリ用にモデルを別に読み込みます　メモリを大量に消費します。
+    loadPictureMode = true;
     dataLoadOnAppBoot = true;
     dispPlayControl = true;
 
@@ -547,8 +546,6 @@ void ofApp::draw(){
         
         if (uiBtnTraceCam ) {
             
-            
-            
             double centerX = modelSceneMin[selectMeshId].x + (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) / 2;
             double centerY = modelSceneMin[selectMeshId].y + (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) / 2;
             double centerZ = modelSceneMin[selectMeshId].z + (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) / 2;
@@ -703,6 +700,8 @@ void ofApp::draw(){
             
         }
         
+        playFrameSelectorList[i] = playFrameSelector;
+        
         
         // 描画 --------------------------------------------------------
         if (viewerMode == 0) {
@@ -735,8 +734,11 @@ void ofApp::draw(){
         
         glPushMatrix();
         //fboCam.draw(0,160);
-        ofScale(0.5,0.5,0.5);
-        modelImageList[selectMeshId][playFrameSelector].draw(0,0);
+        ofScale(0.33,0.33,0.33);
+        //modelImageList[selectMeshId][playFrameSelector].draw(0,0);
+        for(int i=0; i<modelDataNum; i++) {
+            modelImageList[i][playFrameSelectorList[i]].draw(640*i,0);
+        }
         glPopMatrix();
         
     }
@@ -798,19 +800,21 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     glPushMatrix();
     
-    // Draw Model Name
-    {
-        glPushMatrix();  //
-        ofSetColor(255,255,255,255);
-        //glTranslatef(180, 400, 700); //
-        glTranslatef(-0,0,2);
-        
-        ofDisableLighting();        //
-        fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
-        ofEnableLighting();
-        
-        //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
-        glPopMatrix();
+    if (uiBtnGrid && i == selectMeshId) {
+        // Draw Model Name
+        {
+            glPushMatrix();  //
+            ofSetColor(255,255,255,255);
+            //glTranslatef(180, 400, 700); //
+            glTranslatef(-0,0,2);
+            
+            ofDisableLighting();        //
+            fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+            ofEnableLighting();
+            
+            //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
+            glPopMatrix();
+        }
     }
     
     glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
@@ -866,14 +870,19 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     
     // Draw Model Picture --------------------------
+    /*
     glPushMatrix();
     {
         glRotatef(90, 1, 0, 0);
         ofTranslate(0,0,1000);
         ofScale(10,10,10);
-        modelImageList[i][playFrameSelector].draw(0,0);
+        for(int i=0; i<modelDataNum; i++) {
+            modelImageList[i][playFrameSelector].draw(640*i, 0);
+        }
+
     }
     glPopMatrix();
+    */
 
 }
 
@@ -2472,8 +2481,11 @@ void ofApp::loadMapFile(string meshDataDirPath) {
                 
                 mapId[bufCounter] = words[0];
                 
-                for(int i=0; i<words.size()-1; i++) {
+                for(int i=0; i<mapDataColumns; i++) {
                     mapNum[bufCounter][i] = stof(words[i+1]);
+                }
+                for(int i=0; i<mapStringColumns; i++) {
+                    mapStr[bufCounter][i] = words[mapDataColumns + i + 1];
                 }
             }
             
@@ -2497,7 +2509,11 @@ void ofApp::saveMapFile() {
         
         ofs << mapId[i] << ",";
         
-        for(int j=0; j<mapDataColumns-1; j++) {
+        for(int j=0; j<mapDataColumns; j++) {
+            ofs << mapNum[i][j] << ",";
+        }
+        
+        for(int j=0; j<mapStringColumns-1; j++) {
             ofs << mapNum[i][j] << ",";
         }
         

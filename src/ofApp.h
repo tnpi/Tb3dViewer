@@ -111,6 +111,7 @@ public:
     int selectedItemIdOnScene[MAX_MODEL_ARRAY];
     int scanTimeRecordMaxTime[MAX_MODEL_ARRAY];
     double scanGpsDataList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY][8];
+    int playFrameSelectorList[MAX_MODEL_ARRAY];
     double scanGpsDataMinLat;
     double scanGpsDataMaxLat;
     double scanGpsDataMinLong;
@@ -120,6 +121,7 @@ public:
     unsigned int meshVertexNumList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     string mapId[MAX_MESH_ARRAY];
     float mapNum[MAX_MESH_ARRAY][40];
+    string mapStr[MAX_MESH_ARRAY][10];
     float modelHeightList[MAX_MESH_ARRAY];
     ofPoint modelSceneMin[MAX_MODEL_ARRAY];
     ofPoint modelSceneMax[MAX_MODEL_ARRAY];
@@ -153,6 +155,7 @@ public:
     int nowTime;
     int viewerMode;         // Detail / List / Mapping /  MapEdit
     int mapDataColumns;
+    int mapStringColumns;
     int playMode;
     int prevPlayTime;
     int nowPlayTime;
