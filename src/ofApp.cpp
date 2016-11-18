@@ -1203,7 +1203,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
 
         
         ofScale(1000, 1000, 1000);
-        asModelObj[i][playFrameSelector].setScaleNormalization(false);
+        asModelObj[i][z].setScaleNormalization(false);
         
         
         double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
@@ -1314,9 +1314,10 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofSetColor(0, 80, 192);
         //ofDrawCircle(endPos.x*1000, endPos.z*1000, endPos.y*1000, 100);
         ofDrawSphere(endPos.x*1000, endPos.z*1000, -endPos.y*1000, 100);
-        ofSetColor(255, 224, 0);
-        ofDrawSphere(movingPos.x*1000, movingPos.z*1000, -movingPos.y*1000, 100);
-        
+        if (!uiBtnTraceCam) {
+            ofSetColor(255, 224, 0);
+            ofDrawSphere(movingPos.x*1000, movingPos.z*1000, -movingPos.y*1000, 100);
+        }
         
         {
             glPushMatrix();
