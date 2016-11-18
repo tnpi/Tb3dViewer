@@ -210,6 +210,7 @@ void ofApp::setupOfxGui() {
     guiMapEdit.add(uiEditReadStartFrame.setup("FlipV",0,0,2));
     guiMapEdit.add(uiEditReadEndFrame.setup("FlipH",0,0,2));
     guiMapEdit.add(uiEditModelSelector.setup("modelSel",0,0,100));
+    guiMapEdit.add(uiLabelModelSelectNameParts.setup("selMName", "--", 100,25));
     guiMapEdit.add(uiEditDisplayFlag.setup("display",0,0,2));
     
     
@@ -327,6 +328,7 @@ void ofApp::update(){
             uiEditReadStartFrame = mapNum[i][7];
             uiEditReadEndFrame = mapNum[i][8];
             uiEditDisplayFlag = mapNum[i][9];
+            uiLabelModelSelectNameParts = meshNameList[i];
         }
         
         // save / GUI -> Vars
