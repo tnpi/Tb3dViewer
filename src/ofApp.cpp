@@ -153,7 +153,6 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
     guiPlayControlMenu.add(uiBtnDispWindowParts.setup(uiBtnDispWindow.set("Window", false), 80, 20) );
-    guiPlayControlMenu.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
 
     guiPlayControlMenu2.setWidthElements(80);
@@ -186,6 +185,7 @@ void ofApp::setupOfxGui() {
     gui.add(uiBtnLight.setup("Light on/off", true, 40, 25));
     gui.add(uiBtnTurnMesh.setup("TurnMesh", true, 40, 25));
     gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 25));
+    gui.add(uiBtnOrtho.setup("Ortho", false, 80, 20));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnSelectReset.setup("quit", 40, 25));
     gui.setWidthElements(500);
@@ -426,7 +426,18 @@ void ofApp::update(){
         }
         
     }
-    
+
+    // バーチャル再生時間計算
+    // 再生時
+    if (uiBtnPlayPause) {
+        if (uiPlayMode == 2) {
+            nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
+            virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
+        } else if (uiPlayMode == 1) {
+            // 再生時
+            nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
+        }
+    }
 }
 
 
@@ -492,6 +503,7 @@ void ofApp::draw(){
     // init vars --------------------------------------
     displayTotalVertices = 0;
     
+
     // BG ---------------------------------------------
     if (uiBtnBgColor) {
         ofBackground(240, 240, 240);
@@ -538,7 +550,7 @@ void ofApp::draw(){
     } else {
         eCam.disableOrtho();
     }
-    
+
     // Walkthru
     if (frameCount >= 1) {
         if (frameCount == 1) {
@@ -621,7 +633,7 @@ void ofApp::draw(){
     ofSetColor(255,255,255,255);
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
-    
+
     for(int i=0; i<modelDataNum; i++) {
         
         if (viewerMode == 0 && selectMeshId != i) {
@@ -641,14 +653,9 @@ void ofApp::draw(){
                 
                 if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {
                     
-                    // 再生時
-                    if (uiBtnPlayPause) {
-                        nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
-                    }
                     cout << "playStartDateTime: " << playStartDateTime << " playStartPrevPos:" << playStartPrevPos << endl;
                     
                     bool dispFlag = false;
-                    long virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
                     
                      // scan play frame by time
                      for (int j=0; j<maxMeshNumList[i]; j++) {
@@ -672,11 +679,6 @@ void ofApp::draw(){
                 
                 // get play frame from play time ------------------------------------------------------------------
                 if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {       // error kaihi
-                    
-                    // 再生時
-                    if (uiBtnPlayPause) {
-                        nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
-                    }
                     
                     int passedTime = nowPlayTime % scanTimeRecordMaxTime[i];
                     

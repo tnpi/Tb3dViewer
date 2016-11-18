@@ -164,6 +164,7 @@ public:
     unsigned int frameCount;
     unsigned int playCount;
     long seekbarAddTime;
+    long virtualPlayUnixTime;
     uint64_t loadFileSizeAll;
     uint64_t  playStartDateTime;
     uint64_t  playStartPrevPos;
