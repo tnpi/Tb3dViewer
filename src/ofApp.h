@@ -284,12 +284,14 @@ public:
     ofParameter<bool> uiBtnDispWindow;
     ofParameter<bool> uiBtnTraceCam;
     ofParameter<bool> uiBtnBgColor;
+    ofParameter<bool> uiBtnRootDisplay;
     ofParameter<int> uiModelTransparent;
     ofParameter<string> uiLabelModelSelectName;
     ofxMinimalToggle uiBtnPlayPauseParts;
     ofxMinimalToggle uiBtnDispWindowParts;
     ofxMinimalToggle uiBtnTraceCamParts;
     ofxMinimalToggle uiBtnBgColorParts;
+    ofxMinimalToggle uiBtnRootDisplayParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;

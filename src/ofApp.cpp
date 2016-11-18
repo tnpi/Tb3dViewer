@@ -153,6 +153,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
     guiPlayControlMenu.add(uiBtnDispWindowParts.setup(uiBtnDispWindow.set("Window", false), 80, 20) );
+    guiPlayControlMenu.add(uiBtnRootDisplayParts.setup(uiBtnRootDisplay.set("Root", true), 80, 20) );
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
 
     guiPlayControlMenu2.setWidthElements(80);
@@ -1275,7 +1276,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     }
     
     // Draw Moving Line
-    {
+    if (uiBtnRootDisplay) {
+        
         glPushMatrix();
         
         //ofScale(1, 1, -1);      // fix model direction
@@ -1553,6 +1555,7 @@ void ofApp::drawCalendarClock(int x, int y) {
     int cy = 90;
     ofDrawCircle(cx, cy, 30);
     
+    ofEnableSmoothing();
     float shortNeedleR = 17;
     float longNeedleR = 27;
     float secNeedleR = 24;
