@@ -80,6 +80,7 @@ public:
     void updateSeekBar(int x, int y);
     void drawSeekBar();
     void drawDebugInfo();
+    void drawCalendarClock(int x, int y);
     void drawViewerModeChanger();
     void drawModelLRSelector();
     void drawPlayControlMenu();

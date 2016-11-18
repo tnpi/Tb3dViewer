@@ -589,8 +589,8 @@ void ofApp::draw(){
             ofVec3f trackPosB = trackMatrixB.getTranslation();
             
             eCam.setPosition((trackPosA.x - centerX + ((trackPosB.x - trackPosA.x) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.z - centerY + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.y - centerZ + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
+                             (trackPosA.z - centerZ + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
+                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
 
             eCam.setOrientation(defaultCamOrientation);
             
@@ -1282,8 +1282,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofScale(1, -1, 1);      // fix model direction
 
         double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
-        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
+        double centerZ = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
+        double centerY = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
         ofTranslate(-centerX*1000, -centerY*1000, -centerZ*1000+100);//-centerZ*1000);
         
         for(int z=0; z<maxMeshNumList[i]-1; z++) {
@@ -1456,6 +1456,8 @@ void ofApp::drawUi() {
         
         drawSeekBar();
         
+        drawCalendarClock(ofGetWidth()-200, 50);
+        
         drawViewerModeChanger();
         
         if (viewerMode == 0) {
@@ -1508,6 +1510,68 @@ void ofApp::drawSeekBar() {
     ofDrawCircle(progressPosX+barX,  myGuiSeekBar.getTop() + myGuiSeekBar.getHeight()/2, 14);
 
 }
+
+void ofApp::drawCalendarClock(int x, int y) {
+    stringstream tSs;
+
+    glPushMatrix();
+    
+    ofTranslate(x, y);
+    
+    tSs.str("");
+    long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+    long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
+    char charDateTime[100];
+    struct tm tempTimeStruct;
+    memset(&tempTimeStruct,0x00,sizeof(struct tm));               // Initialize important!
+    tempTimeStruct = *localtime(&nowPlayTimeForSeek);
+    ::strftime(charDateTime, sizeof(charDateTime), "%Y", &tempTimeStruct);
+    string strYear = charDateTime;
+    ::strftime(charDateTime, sizeof(charDateTime), "%Y %b", &tempTimeStruct);      // %m
+    string strMonth = charDateTime;
+    ::strftime(charDateTime, sizeof(charDateTime), "%m", &tempTimeStruct);
+    string strDay = charDateTime;
+
+    ::strftime(charDateTime, sizeof(charDateTime), "%H", &tempTimeStruct);
+    int hour = stoi((string)charDateTime);
+    ::strftime(charDateTime, sizeof(charDateTime), "%M", &tempTimeStruct);
+    int minute = stoi((string)charDateTime);
+    ::strftime(charDateTime, sizeof(charDateTime), "%S", &tempTimeStruct);
+    int sec = stoi((string)charDateTime);
+
+    ofFill();
+    ofSetColor(240, 240, 240);
+    ofDrawRectangle(0,0, 100, 130);
+    
+    ofSetColor(64, 64, 64);
+    fontMyGui.drawString(strMonth, 10, 20);
+    fontSmall.drawString(strDay, 30, 50);
+
+    ofSetLineWidth(4);
+    ofNoFill();
+    int cx = 50;
+    int cy = 90;
+    ofDrawCircle(cx, cy, 30);
+    
+    float shortNeedleR = 17;
+    float longNeedleR = 27;
+    float secNeedleR = 24;
+    float angle;
+    angle = -PI/2 + (2*PI*hour/12);
+    ofSetLineWidth(7);
+    ofDrawLine(cx, cy, cx+shortNeedleR*cos(angle), cy+shortNeedleR*sin(angle));
+    angle = -PI/2 + (2*PI*minute/60);
+    ofSetLineWidth(4);
+    ofDrawLine(cx, cy, cx+longNeedleR*cos(angle), cy+longNeedleR*sin(angle));
+    angle = -PI/2 + (2*PI*sec/60);
+    ofSetLineWidth(2);
+    ofDrawLine(cx, cy, cx+secNeedleR*cos(angle), cy+secNeedleR*sin(angle));
+    ofFill();
+    
+    glPopMatrix();
+   
+}
+
 
 void ofApp::drawPlayControlMenu() {
     stringstream tSs;
