@@ -262,6 +262,7 @@ public:
     ofxIntSlider uiGpsMapMode;
     // ofParameter
     ofxIntSlider uiModelTransparentParts;
+    ofxFloatSlider uiTraceCamHeightParts;
     ofxLabel uiLabelModelSelectNameParts;
 
     ofxVec2Slider position;
@@ -286,6 +287,7 @@ public:
     ofParameter<bool> uiBtnBgColor;
     ofParameter<bool> uiBtnRootDisplay;
     ofParameter<int> uiModelTransparent;
+    ofParameter<float> uiTraceCamHeight;
     ofParameter<string> uiLabelModelSelectName;
     ofxMinimalToggle uiBtnPlayPauseParts;
     ofxMinimalToggle uiBtnDispWindowParts;

@@ -167,6 +167,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu2.add(uiBtnBgColorParts.setup(uiBtnBgColor.set("BgColor", false), 80, 20) );
     guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 255, 0, 255 )) );
+    guiPlayControlMenu2.add(uiTraceCamHeightParts.setup(uiTraceCamHeight.set("camH", 500, -2000, 2000 )) );
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(500);
@@ -591,7 +592,8 @@ void ofApp::draw(){
             
             eCam.setPosition((trackPosA.x - centerX + ((trackPosB.x - trackPosA.x) * progressRateBetweenFrame)) * 1000,
                              (trackPosA.z - centerZ + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 +500);
+                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 + uiTraceCamHeight
+                             );
 
             eCam.setOrientation(defaultCamOrientation);
             
@@ -612,46 +614,6 @@ void ofApp::draw(){
                         rotZA + (rotZB-rotZA)*progressRateBetweenFrame,
                         -rotYA - (rotYB-rotYA)*progressRateBetweenFrame
                         );
-            //eCam.rotate(1, 1, 0, 0);
-            
-            //ofRotate(90, 1,0,0);
-            //ofRotate(angle, rotX, -rotY, rotZ);
-            //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
-
-            //eCam.rotate(angle, rotX, -rotY, rotZ);
-            //eCam.matrix
-            //eCam.rotate(angle, rotX, -rotY, rotZ);
-            //eCam.set
-            //eCam.rotate(angle, rotX, -rotY, rotZ);
-            
-            /*
-            eCam.setPosition(trackMatrix.getTranslation());
-            eCam.rotate(trackMatrix.getRotate());
-             */
-            /*
-            ofVec3f posA = matrixA.getTranslation();
-            ofVec3f posB = matrixB.getTranslation();
-            
-            //if (z%20 == 0) {
-            if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
-                drawArrow(ofPoint(posA.x*1000, posA.z*1000, posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, posB.y*1000), 300 );
-            } else {
-                ofDrawLine(posA.x*1000, posA.z*1000, posA.y*1000, posB.x*1000, posB.z*1000, posB.y*1000);
-            }
-            
-            glPushMatrix();
-            ofQuaternion quateA = matrixA.getRotate();
-            cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
-            
-            if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
-                ofTranslate(posA.x*1000, posA.z*1000, posA.y*1000);
-                float angle, rotX, rotY, rotZ;
-                quateA.getRotate(angle, rotX, rotY, rotZ);
-                ofRotate(90, 1,0,0);
-                ofRotate(angle, rotX, -rotY, rotZ);
-                //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
-
-            */
         }
     }
 
