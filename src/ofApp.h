@@ -119,7 +119,7 @@ public:
     int maxMeshNumList[MAX_MESH_ARRAY];
     unsigned int meshVertexNumList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     string mapId[MAX_MESH_ARRAY];
-    int mapNum[MAX_MESH_ARRAY][40];
+    float mapNum[MAX_MESH_ARRAY][40];
     float modelHeightList[MAX_MESH_ARRAY];
     ofPoint modelSceneMin[MAX_MODEL_ARRAY];
     ofPoint modelSceneMax[MAX_MODEL_ARRAY];

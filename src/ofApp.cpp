@@ -122,7 +122,7 @@ void ofApp::settingAppVarsOnBoot() {
 void ofApp::setupOfxGui() {
     
     // Set GUI parts -------------------------------------------------------------------------------
-    ofxGuiSetDefaultWidth(300);     // ウィンドウ全体幅決め？
+    ofxGuiSetDefaultWidth(500);     // ウィンドウ全体幅決め？
     ofxGuiSetTextPadding(10);
     ofxGuiSetFillColor(ofColor(255,0,0));
     ofxGuiSetBackgroundColor(ofColor(0,255,0));
@@ -170,11 +170,11 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 255, 0, 255 )) );
     
     // Debug Window gui ----------------------------------------------------------------
-    gui.setDefaultWidth(300);
+    gui.setDefaultWidth(500);
     gui.setup("settings");
     //gui.setFillColor(<#const ofColor &color#>)
     //gui.setDefaultBackgroundColor(ofColor(255,0,0,224));
-    gui.setWidthElements(300);
+    gui.setWidthElements(500);
     gui.setPosition(0, 0);
     gui.setDefaultHeight(25);
     //gui.setBackgroundColor(ofColor(0,0,0,32));
@@ -189,16 +189,16 @@ void ofApp::setupOfxGui() {
     gui.add(uiBtnTimerControl.setup("TimerControl", false, 40, 25));
     gui.add(uiTestSlider.setup("TestSlider", 0 ,  -10000, 10000));
     gui.add(uiBtnSelectReset.setup("quit", 40, 25));
-    gui.setWidthElements(300);
+    gui.setWidthElements(500);
     
     
     // Map Edit Gui ---------------------------------------------------------------------
-    guiMapEdit.setDefaultWidth(300);
+    guiMapEdit.setDefaultWidth(500);
     //guiMapEdit.setDefaultBackgroundColor(ofColor(255,0,0,224));
     guiMapEdit.setup("MapEdit");
     guiMapEdit.setDefaultHeight(25);
     guiMapEdit.setPosition(0, 0);
-    guiMapEdit.setWidthElements(300);
+    guiMapEdit.setWidthElements(500);
     guiMapEdit.setShowHeader(false);
     //guiMapEdit.setDefaultHeight(30);
     guiMapEdit.add(uiEditPosX.setup("posX",0,-5000,5000));
@@ -222,13 +222,13 @@ void ofApp::setupOfxGui() {
 
     // Page Settngs ------------------------------------------------------
     guiPage.setup("page1");
-    guiPage.setSize(300, 300);
+    guiPage.setSize(500, 300);
     guiPage.add(&gui);
     guiPage2.setup("page2");
     guiPage2.add(&guiMapEdit);
     
     guiTabbedPages.setup("tabbed pages", "", 100);
-    guiTabbedPages.setSize(300, 550);
+    guiTabbedPages.setSize(500, 550);
     guiTabbedPages.setTabWidth(70);
     guiTabbedPages.setTabHeight(30);
     guiTabbedPages.add(&guiPage);
@@ -2473,7 +2473,7 @@ void ofApp::loadMapFile(string meshDataDirPath) {
                 mapId[bufCounter] = words[0];
                 
                 for(int i=0; i<words.size()-1; i++) {
-                    mapNum[bufCounter][i] = stoi(words[i+1]);
+                    mapNum[bufCounter][i] = stof(words[i+1]);
                 }
             }
             
@@ -2498,7 +2498,7 @@ void ofApp::saveMapFile() {
         ofs << mapId[i] << ",";
         
         for(int j=0; j<mapDataColumns-1; j++) {
-            ofs << int(mapNum[i][j]) << ",";
+            ofs << mapNum[i][j] << ",";
         }
         
         ofs << mapNum[i][mapDataColumns-1];
