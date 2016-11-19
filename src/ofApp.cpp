@@ -14,7 +14,7 @@ void ofApp::setup(){
     
     // app local settings --------------------------------------------
     maxLoadMeshNum = 2000;      //  2000  100
-    skipLoadFrame = 1;         // 1  10
+    skipLoadFrame = 10;         // 1  10
     mapDataColumns = 16;
     mapStringColumns = 10;
     colorMode = 1;
@@ -735,7 +735,7 @@ void ofApp::draw(){
         
         glPushMatrix();
         //fboCam.draw(0,160);
-        ofScale(0.33,0.33,0.33);
+        ofScale(0.6,0.6,0.6);
         //modelImageList[selectMeshId][playFrameSelector].draw(0,0);
         for(int i=0; i<modelDataNum; i++) {
             modelImageList[i][playFrameSelectorList[i]].draw(640*i,0);
@@ -2559,7 +2559,7 @@ void ofApp::loadMapFile(string meshDataDirPath) {
                     mapNum[bufCounter][i] = stof(words[i+1]);
                 }
                 for(int i=0; i<mapStringColumns; i++) {
-                    mapStr[bufCounter][i] = words[mapDataColumns + i + 1];
+                //    mapStr[bufCounter][i] = words[mapDataColumns + i + 1];
                 }
             }
             
