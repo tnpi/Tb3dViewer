@@ -452,10 +452,10 @@ void ofApp::updateSeekBar(int x, int y) {
             // 同期再生
             if (uiPlayMode == 2) {
                 
-                long seekbarCalcTime = (int)((progressPosX / barWidth) * (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin));
+                long seekbarCalcTime = (int)((progressPosX / barWidth) * (scanUnixTimeAllItemMax[selSceneId] - scanUnixTimeAllItemMin[selSceneId]));
                 
                 seekbarAddTime =
-                    (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)
+                    (scanUnixTimeAllItemMax[selSceneId] - scanUnixTimeAllItemMin[selSceneId])
                      - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin[selSceneId])
                         - (seekbarCalcTime - scanUnixTimeAllItemMin[selSceneId]));
                 
@@ -505,7 +505,7 @@ void ofApp::draw(){
     // 再生時
     if (uiBtnPlayPause) {
         if (uiPlayMode == 2) {
-            nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
+            nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax[selSceneId]  - scanUnixTimeAllItemMin[selSceneId] )) + playStartPrevPos;     // 0 start realtime incremental num (msec)
             virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin[selSceneId];
         } else if (uiPlayMode == 1) {
             // 再生時
