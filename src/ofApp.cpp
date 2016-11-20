@@ -766,11 +766,11 @@ void ofApp::draw(){
 # pragma mark - Draw Detail view
 void ofApp::drawDetailView(int i, int playFrameSelector) {
     
-    if (mapNum[i][9]) {
+    if (mapNum[selSceneId][i][9]) {
         return;
     }
 
-    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
+    displayTotalVertices += meshVertexNumList[selSceneId][i][playFrameSelector];
 
     /*
     fboCam.begin();
@@ -843,14 +843,14 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     double centerZ = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
-    if (mapNum[i][7]) {
+    if (mapNum[selSceneId][i][7]) {
         glRotatef(180, 0, 1, 0);
         ofTranslate(0,0,0);
     }
-    if (mapNum[i][8]) {
+    if (mapNum[selSceneId][i][8]) {
         glRotatef(180, 1, 0, 0);
     }
-    if (mapNum[i][6]) {
+    if (mapNum[selSceneId][i][6]) {
         glRotatef(180, 0, 0, 1);
     }
     
@@ -1186,13 +1186,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
     for(int z=0; z<maxMeshNumList[selSceneId][i]; z++) {
         
-        if (mapNum[i][9]) {
+        if (mapNum[selSceneId][i][9]) {
             continue;
         }
         
         glPushMatrix();
         
-        displayTotalVertices += meshVertexNumList[i][z];
+        displayTotalVertices += meshVertexNumList[selSceneId][i][z];
         //playFrameSelector = z;
         
         // fix model direction
