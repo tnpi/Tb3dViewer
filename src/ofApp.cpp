@@ -588,7 +588,7 @@ void ofApp::draw(){
                 progressRateBetweenFrame = (double)progressTime / (double)timeLength;
             }
         }
-        cout << "progressRateBetweenFrame: " << progressRateBetweenFrame << endl;
+        //cout << "progressRateBetweenFrame: " << progressRateBetweenFrame << endl;
         
         if (uiBtnTraceCam ) {
             
@@ -1623,7 +1623,7 @@ void ofApp::drawPlayControlMenu() {
         tSs.str("");
         long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin[selSceneId];
         long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
-        cout << "nowPlayTimeForSeek: " << nowPlayTimeForSeek << " playStartDateTime:" << playStartDateTime << endl;
+        //cout << "nowPlayTimeForSeek: " << nowPlayTimeForSeek << " playStartDateTime:" << playStartDateTime << endl;
         char charDateTime[100];
         //time(&timer);
         struct tm tempTimeStruct;
@@ -1995,11 +1995,11 @@ void ofApp::keyReleased(int key){
     } else if(key == OF_KEY_UP) {
         
         selSceneId--;
-        ofClamp(selSceneId, 0, sceneDataNum-1);
+        selSceneId = ofClamp(selSceneId, 0, sceneDataNum-1);
         
     } else if (key == OF_KEY_DOWN) {
         selSceneId++;
-        ofClamp(selSceneId, 0, sceneDataNum-1);
+        selSceneId = ofClamp(selSceneId, 0, sceneDataNum-1);
         
     }
     
@@ -2311,7 +2311,7 @@ int ofApp::countMeshFileNumTargetDir(string dirPath){
         ++itr;
     }
     
-    cout << "mesh file num: " << meshFileNum << endl;
+    //cout << "mesh file num: " << meshFileNum << endl;
     return meshFileNum;     // 数え終わったメッシュファイル数を代入
 
 }
@@ -2569,10 +2569,19 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
 // --------------------------------------------------------------------------------------------
 void ofApp::loadMapFileAll(string tTargetDirPath) {
     
+    int backupSelSceneId = selSceneId;
+    
     for(int i=0; i<sceneDataNum; i++) {
-        loadMapFile(tTargetDirPath, i);
+        selSceneId = i;
+        
+        stringstream tSs;
+        tSs << targetDirPath << "/" << sceneDirNameList[i];
+        string sceneDirPath = tSs.str();
+
+        loadMapFile(sceneDirPath, i);
     }
     
+    int selSceneId = backupSelSceneId;
 }
 
 void ofApp::saveMapFileAll() {
@@ -2634,7 +2643,8 @@ void ofApp::loadMapFile(string mapDataDirPath, int index) {
                 }
             }
             
-            cout << line << endl;
+            //cout << line << endl;
+            
             bufCounter++;
         }
         
