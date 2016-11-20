@@ -15,6 +15,7 @@
 
 #define STRINGIFY(A) #A
 
+#define MAX_SCENE_ARRAY 10
 #define MAX_MODEL_ARRAY 100
 #define MAX_MESH_ARRAY 1000
 
@@ -96,7 +97,7 @@ public:
     
     // Array --------
     
-    ofxAssimpModelLoader asModelObj[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    ofxAssimpModelLoader asModelObj[MAX_SCENE_ARRAY][MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     //ofMesh modelList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     int modelFlagList[MAX_MODEL_ARRAY];
     ofImage modelImageList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
@@ -134,7 +135,8 @@ public:
     vector <uint64_t> oneModelFileSizeList;
     
     // standard vars --------
-    
+    int selectSceneId;
+    int sceneDataNum;
     int modelDataNum;
     int totalMaxMeshNum;
     int totalScanTimeRecordMaxTime;

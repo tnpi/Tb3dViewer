@@ -14,7 +14,7 @@ void ofApp::setup(){
     
     // app local settings --------------------------------------------
     maxLoadMeshNum = 2000;      //  2000  100
-    skipLoadFrame = 10;         // 1  10
+    skipLoadFrame = 1;         // 1  10
     mapDataColumns = 16;
     mapStringColumns = 10;
     colorMode = 1;
@@ -77,6 +77,7 @@ void ofApp::setup(){
 
 void ofApp::initAppVars() {
     
+    selectSceneId = 0;
     selectMeshId = 0;
     frameCount = 0;
     playCount = 0;
@@ -1961,6 +1962,7 @@ void ofApp::keyReleased(int key){
             }
         }
         
+        
     } else if (key == '9') {
 
         uiBtnPlayPause ^= true;
@@ -1976,6 +1978,15 @@ void ofApp::keyReleased(int key){
         if (viewerMode == 0) {
             detailViewNextModel(1);
         }
+        
+    } else if(key == OF_KEY_UP) {
+        
+        selectSceneId--;
+        ofClamp(selectSceneId, 0, sceneDataNum-1);
+        
+    } else if (key == OF_KEY_DOWN) {
+        selectSceneId++;
+        ofClamp(selectSceneId, 0, sceneDataNum-1);
         
     }
     
