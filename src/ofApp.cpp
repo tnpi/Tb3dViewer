@@ -1200,7 +1200,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofScale(1, 1, -1);      // fix model direction
         ofScale(-1, -1, 1);      // fix model direction
         
-        ofVec3f tr = modelMatrixList[i][z].getTranslation();
+        ofVec3f tr = modelMatrixList[selSceneId][i][z].getTranslation();
         double posX = tr.x * (1000 + uiTestSlider);
         double posY = tr.z * (1000 + uiTestSlider);
         double posZ = tr.y * (1000 + uiTestSlider);
@@ -1308,7 +1308,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         // show start point and end point
         ofMatrix4x4 startMatrix = modelMatrixList[selSceneId][i][0];
-        ofMatrix4x4 endMatrix = modelMatrixList[selSceneId][i][maxMeshNumList[i]-1];
+        ofMatrix4x4 endMatrix = modelMatrixList[selSceneId][i][maxMeshNumList[selSceneId][i]-1];
         ofMatrix4x4 movingMatrix = modelMatrixList[selSceneId][i][playFrameSelector];
         
         ofVec3f startPos = startMatrix.getTranslation();
