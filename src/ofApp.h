@@ -96,6 +96,8 @@ public:
     void loadMeshDataTargetDir(string dirPath, int modelIndex);
     void drawArrow(ofPoint posA, ofPoint posB, double arrowDeltaLineLength=0);
     
+    void loadScenesFile(string scenesFilePath);
+    
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
     // Array --------
@@ -127,6 +129,8 @@ public:
     string mapId[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
     float mapNum[MAX_SCENE_ARRAY][MAX_MESH_ARRAY][40];
     string mapStr[MAX_SCENE_ARRAY][MAX_MESH_ARRAY][10];
+    string scenesStr[MAX_SCENE_ARRAY][10];
+    
     float modelHeightList[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
     ofPoint modelSceneMin[MAX_SCENE_ARRAY][MAX_MODEL_ARRAY];
     ofPoint modelSceneMax[MAX_SCENE_ARRAY][MAX_MODEL_ARRAY];

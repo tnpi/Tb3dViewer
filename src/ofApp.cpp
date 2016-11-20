@@ -43,6 +43,11 @@ void ofApp::setup(){
     //loadMapFile(meshDataDirPath);
     loadMapFileAll(targetDirPath);
     
+    stringstream scenesSs;
+    scenesSs << targetDirPath << "/" << "scenesFile.csv";
+    
+    loadScenesFile(scenesSs.str());
+    
     // fonts load --------------------------------------------------------------
     font.loadFont("hira.otf", 38);
     fontSmall.loadFont("hira.otf", 20);
@@ -1572,9 +1577,10 @@ void ofApp::drawPlayControlMenu() {
     ofSetColor(0, 0, 0, 32);
     ofDrawRectangle(myGuiMain);
     
-    pY = myGuiMain.getTop()-50;
     
     // upper menu display -----------------------------------------------------------------------------
+    
+    pY = myGuiMain.getTop()-70;
     
     ofSetColor(64,64,64,255);
     tSs.str("");
@@ -1588,6 +1594,18 @@ void ofApp::drawPlayControlMenu() {
     tSs.str("");
     tSs <<  "DirectoryName: " << loadModelDirName[selSceneId];
     fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+
+    tSs.str("");
+    tSs <<  "TargetDirectory: " << targetDirPath;
+    fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
+
+    
+    pY = myGuiMain.getTop()-120;
+    
+    ofSetColor(160,255);
+    tSs.str("");
+    tSs << scenesStr[selSceneId][1];
+    fontLarge.drawString(tSs.str(), 20, pY); pY += lineHeight;
     
     
     // play time display --------------------------------------------------------------------------------
@@ -2680,6 +2698,51 @@ void ofApp::saveMapFile(int index) {
     }
     
     return;
+    
+}
+
+void ofApp::loadScenesFile(string scenesFilePath) {
+    
+    stringstream ss;
+    
+    cout << "scenesFilePath: " << scenesFilePath;
+    
+    ofFile scenesFile(scenesFilePath);
+    
+    if(!scenesFile.exists()){
+        
+        ofLogError("The scenesFilePath is missing.");
+        
+        for(int i=0; i<sceneDataNum; i++) {
+            for(int j=0; j<10; j++) {
+                scenesStr[i][j] = "";
+            }
+        }
+        
+    } else {
+        
+        ofBuffer buffer(scenesFile);
+        
+        // Read file line by line ------------------------------------------------------------------------------
+        int bufCounter = 0;
+        for (ofBuffer::Line it = buffer.getLines().begin(), end = buffer.getLines().end(); it != end; ++it) {
+            string line = *it;
+            //Split line into strings
+            vector<string> words = ofSplitString(line, ",");
+            
+            //Store strings into a custom container
+            if (words.size()>=2) {
+                
+                for(int i=0; i<sceneDataNum; i++) {
+                    scenesStr[bufCounter][i] = words[i];
+                }
+                
+            }
+            
+            bufCounter++;
+        }
+        
+    }
     
 }
 
