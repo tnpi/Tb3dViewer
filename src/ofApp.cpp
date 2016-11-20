@@ -108,8 +108,9 @@ void ofApp::initAppVars() {
     onPlay = true;
     prevFramePlayState = true;
     mapFileExists = false;
-
+    
     prevSelectModel = -1;
+    prevSelectScene = -1;
     
     for(int i=0; i<MAX_SCENE_ARRAY; i++) {
         
@@ -333,7 +334,7 @@ void ofApp::update(){
         int i = uiEditModelSelector;
         
         // load / Vars -> GUI
-        if (i != prevSelectModel) {
+        if (i != prevSelectModel || selSceneId != prevSelectScene) {
             uiEditPosX = mapNum[selSceneId][i][0];
             uiEditPosY = mapNum[selSceneId][i][1];
             uiEditPosZ = mapNum[selSceneId][i][2];
@@ -360,6 +361,7 @@ void ofApp::update(){
         mapNum[selSceneId][i][9] = uiEditDisplayFlag;
         
         prevSelectModel = i;
+        prevSelectScene = selSceneId;
     }
     
     // マウス座標で操作モード切替

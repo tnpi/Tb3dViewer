@@ -151,6 +151,7 @@ public:
     int totalLoadedModelNum;
     int maxLoadedMeshNumInAllMesh;
     int prevSelectModel;
+    int prevSelectScene;
     int selectMeshId;
     int displayTotalVertices;
     int displayTotalFaces;
