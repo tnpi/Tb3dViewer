@@ -77,7 +77,7 @@ void ofApp::setup(){
 
 void ofApp::initAppVars() {
     
-    selectSceneId = 0;
+    selSceneId = 0;
     sceneDataNum = 1;
     selectMeshId = 0;
     frameCount = 0;
@@ -86,7 +86,6 @@ void ofApp::initAppVars() {
     playSeekTime = 0;
     nowPlayTime = 0;
     seekbarAddTime = 0;
-    totalMaxMeshNum = 0;
     startPlayMeshAnimNum = 0;
     playStartPrevPos = 0;
     totalLoadedModelNum = 0;
@@ -105,12 +104,18 @@ void ofApp::initAppVars() {
 
     prevSelectModel = -1;
     
-    scanGpsDataMinLat = 1000;
-    scanGpsDataMinLong = 1000;
-    scanGpsDataMaxLat = 0;
-    scanGpsDataMaxLong = 0;
-    scanUnixTimeAllItemMin = LONG_MAX;
-    scanUnixTimeAllItemMax = LONG_MIN;
+    for(int i=0; i<MAX_SCENE_ARRAY; i++) {
+        
+        totalMaxMeshNum[i] = 0;
+        
+        scanGpsDataMinLat[i] = 1000;
+        scanGpsDataMinLong[i] = 1000;
+        scanGpsDataMaxLat[i] = 0;
+        scanGpsDataMaxLong[i] = 0;
+        
+        scanUnixTimeAllItemMin[i] = LONG_MAX;
+        scanUnixTimeAllItemMax[i] = LONG_MIN;
+    }
     
 }
 
@@ -322,30 +327,30 @@ void ofApp::update(){
         
         // load / Vars -> GUI
         if (i != prevSelectModel) {
-            uiEditPosX = mapNum[i][0];
-            uiEditPosY = mapNum[i][1];
-            uiEditPosZ = mapNum[i][2];
-            uiEditRotX = mapNum[i][3];
-            uiEditRotY = mapNum[i][4];
-            uiEditRotZ = mapNum[i][5];
-            uiEditScale = mapNum[i][6];
-            uiEditReadStartFrame = mapNum[i][7];
-            uiEditReadEndFrame = mapNum[i][8];
-            uiEditDisplayFlag = mapNum[i][9];
-            uiLabelModelSelectNameParts = meshNameList[i];
+            uiEditPosX = mapNum[selSceneId][i][0];
+            uiEditPosY = mapNum[selSceneId][i][1];
+            uiEditPosZ = mapNum[selSceneId][i][2];
+            uiEditRotX = mapNum[selSceneId][i][3];
+            uiEditRotY = mapNum[selSceneId][i][4];
+            uiEditRotZ = mapNum[selSceneId][i][5];
+            uiEditScale = mapNum[selSceneId][i][6];
+            uiEditReadStartFrame = mapNum[selSceneId][i][7];
+            uiEditReadEndFrame = mapNum[selSceneId][i][8];
+            uiEditDisplayFlag = mapNum[selSceneId][i][9];
+            uiLabelModelSelectNameParts = meshNameList[selSceneId][i];
         }
         
         // save / GUI -> Vars
-        mapNum[i][0] = uiEditPosX;
-        mapNum[i][1] = uiEditPosY;
-        mapNum[i][2] = uiEditPosZ;
-        mapNum[i][3] = uiEditRotX;
-        mapNum[i][4] = uiEditRotY;
-        mapNum[i][5] = uiEditRotZ;
-        mapNum[i][6] = uiEditScale;
-        mapNum[i][7] = uiEditReadStartFrame;
-        mapNum[i][8] = uiEditReadEndFrame;
-        mapNum[i][9] = uiEditDisplayFlag;
+        mapNum[selSceneId][i][0] = uiEditPosX;
+        mapNum[selSceneId][i][1] = uiEditPosY;
+        mapNum[selSceneId][i][2] = uiEditPosZ;
+        mapNum[selSceneId][i][3] = uiEditRotX;
+        mapNum[selSceneId][i][4] = uiEditRotY;
+        mapNum[selSceneId][i][5] = uiEditRotZ;
+        mapNum[selSceneId][i][6] = uiEditScale;
+        mapNum[selSceneId][i][7] = uiEditReadStartFrame;
+        mapNum[selSceneId][i][8] = uiEditReadEndFrame;
+        mapNum[selSceneId][i][9] = uiEditDisplayFlag;
         
         prevSelectModel = i;
     }
@@ -377,32 +382,32 @@ void ofApp::update(){
         if (!uiBtnLoopPlay) {       // Stop Pattern
             
             if (uiPlayMode == 1) {      // time-based
-                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
+                if (nowPlayTime >= totalScanTimeRecordMaxTime[selSceneId]) {
                     uiBtnPlayPause = false;
-                    nowPlayTime = totalScanTimeRecordMaxTime-1;
+                    nowPlayTime = totalScanTimeRecordMaxTime[selSceneId]-1;
                     //playCount = totalMaxMeshNum;
                 }
                 
             } else if (uiPlayMode == 2) {      // datetime-based sync
                 
-                if (nowPlayTime >= totalScanTimeRecordMaxTime) {
+                if (nowPlayTime >= totalScanTimeRecordMaxTime[selSceneId]) {
                     uiBtnPlayPause = false;
-                    nowPlayTime = totalScanTimeRecordMaxTime-1;
+                    nowPlayTime = totalScanTimeRecordMaxTime[selSceneId]-1;
                     //playCount = totalMaxMeshNum;
                 }
                 
             } else {                   // frame-based
                 
                 if (viewerMode == 0) {
-                    if (playCount >= maxMeshNumList[selectMeshId] ) {
+                    if (playCount >= maxMeshNumList[selSceneId][selectMeshId] ) {
                         uiBtnPlayPause = false;
-                        playCount = totalMaxMeshNum-1;
+                        playCount = totalMaxMeshNum[selSceneId]-1;
                     }
                     
                 } else if (viewerMode == 1) {
-                    if (playCount >= totalMaxMeshNum) {
+                    if (playCount >= totalMaxMeshNum[selSceneId]) {
                         uiBtnPlayPause = false;
-                        playCount = totalMaxMeshNum-1;
+                        playCount = totalMaxMeshNum[selSceneId]-1;
                     }
                 }
             }
@@ -410,10 +415,10 @@ void ofApp::update(){
         } else {                    // Loop Pattern
             
             if (uiPlayMode == 1) {      // time-based
-                nowPlayTime %= totalScanTimeRecordMaxTime;
+                nowPlayTime %= totalScanTimeRecordMaxTime[selSceneId];
             } else if (uiPlayMode == 2) {
                 if (viewerMode == 1) {
-                    nowPlayTime %= totalScanTimeRecordMaxTime;
+                    nowPlayTime %= totalScanTimeRecordMaxTime[selSceneId];
                 } else if (viewerMode == 2) {
                     
                 } else if (viewerMode == 0) {
@@ -421,9 +426,9 @@ void ofApp::update(){
                 }
             } else {            // frame-based
                 if (viewerMode == 1) {
-                    playCount %= (totalMaxMeshNum / skipLoadFrame);
+                    playCount %= (totalMaxMeshNum[selSceneId] / skipLoadFrame);
                 } else if (viewerMode == 0) {
-                    playCount %= (maxMeshNumList[selectMeshId] / skipLoadFrame);
+                    playCount %= (maxMeshNumList[selSceneId][selectMeshId] / skipLoadFrame);
                 }
             }
             
@@ -451,8 +456,8 @@ void ofApp::updateSeekBar(int x, int y) {
                 
                 seekbarAddTime =
                     (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)
-                     - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin)
-                        - (seekbarCalcTime - scanUnixTimeAllItemMin));
+                     - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin[selSceneId])
+                        - (seekbarCalcTime - scanUnixTimeAllItemMin[selSceneId]));
                 
                 // 総再生時間(ms)から「現在時刻からデータの再生開始時刻を引いたもの(ms)」を引き、さらに「シークバーの示す再生時間からデータの再生開始時刻を引いたもの」を引く（追加時間なので引く）
                 
@@ -460,14 +465,14 @@ void ofApp::updateSeekBar(int x, int y) {
             } else if (uiPlayMode == 1) {
                 
                 seekbarAddTime =
-                    totalScanTimeRecordMaxTime
-                    - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin)
-                    - (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime));
+                    totalScanTimeRecordMaxTime[selSceneId]
+                    - ((ofGetElapsedTimeMillis() - scanUnixTimeAllItemMin[selSceneId])
+                    - (int)((progressPosX / barWidth) * totalScanTimeRecordMaxTime[selSceneId]));
                 
             // フレーム再生
             } else {
                 
-                playCount = (int)((progressPosX/skipLoadFrame / barWidth ) * totalMaxMeshNum );
+                playCount = (int)((progressPosX/skipLoadFrame / barWidth ) * totalMaxMeshNum[selSceneId] );
                 
             }
         }
@@ -501,7 +506,7 @@ void ofApp::draw(){
     if (uiBtnPlayPause) {
         if (uiPlayMode == 2) {
             nowPlayTime =  ( (ofGetElapsedTimeMillis() + seekbarAddTime) % (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin)) + playStartPrevPos;     // 0 start realtime incremental num (msec)
-            virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin;
+            virtualPlayUnixTime = nowPlayTime + scanUnixTimeAllItemMin[selSceneId];
         } else if (uiPlayMode == 1) {
             // 再生時
             nowPlayTime =  ofGetElapsedTimeMillis() - playStartDateTime + playStartPrevPos;
@@ -566,13 +571,13 @@ void ofApp::draw(){
         // カメラ移動補完のためのフレーム間進捗率計算
         int vPlayFrame = 0;
         double progressRateBetweenFrame;
-        for (int j=0; j<maxMeshNumList[selectMeshId]-1; j++) {
-            if (virtualPlayUnixTime >= scanUnixTimeLongIntList[selectMeshId][j] &&
-                virtualPlayUnixTime <= scanUnixTimeLongIntList[selectMeshId][j+1]  ) {
+        for (int j=0; j<maxMeshNumList[selSceneId][selectMeshId]-1; j++) {
+            if (virtualPlayUnixTime >= scanUnixTimeLongIntList[selSceneId][selectMeshId][j] &&
+                virtualPlayUnixTime <= scanUnixTimeLongIntList[selSceneId][selectMeshId][j+1]  ) {
                 vPlayFrame = j;
                 
-                long timeLength = scanUnixTimeLongIntList[selectMeshId][j+1] - scanUnixTimeLongIntList[selectMeshId][j];
-                long progressTime = virtualPlayUnixTime - scanUnixTimeLongIntList[selectMeshId][j];
+                long timeLength = scanUnixTimeLongIntList[selSceneId][selectMeshId][j+1] - scanUnixTimeLongIntList[selSceneId][selectMeshId][j];
+                long progressTime = virtualPlayUnixTime - scanUnixTimeLongIntList[selSceneId][selectMeshId][j];
                 progressRateBetweenFrame = (double)progressTime / (double)timeLength;
             }
         }
@@ -580,15 +585,15 @@ void ofApp::draw(){
         
         if (uiBtnTraceCam ) {
             
-            double centerX = modelSceneMin[selectMeshId].x + (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) / 2;
-            double centerY = modelSceneMin[selectMeshId].y + (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) / 2;
-            double centerZ = modelSceneMin[selectMeshId].z + (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) / 2;
+            double centerX = modelSceneMin[selSceneId][selectMeshId].x + (modelSceneMax[selSceneId][selectMeshId].x - modelSceneMin[selSceneId][selectMeshId].x) / 2;
+            double centerY = modelSceneMin[selSceneId][selectMeshId].y + (modelSceneMax[selSceneId][selectMeshId].y - modelSceneMin[selSceneId][selectMeshId].y) / 2;
+            double centerZ = modelSceneMin[selSceneId][selectMeshId].z + (modelSceneMax[selSceneId][selectMeshId].z - modelSceneMin[selSceneId][selectMeshId].z) / 2;
             
-            ofMatrix4x4 trackMatrixA = modelMatrixList[selectMeshId][vPlayFrame];
+            ofMatrix4x4 trackMatrixA = modelMatrixList[selSceneId][selectMeshId][vPlayFrame];
             ofQuaternion trackQuateA = trackMatrixA.getRotate();
             ofVec3f trackPosA = trackMatrixA.getTranslation();
             
-            ofMatrix4x4 trackMatrixB = modelMatrixList[selectMeshId][vPlayFrame+1];
+            ofMatrix4x4 trackMatrixB = modelMatrixList[selSceneId][selectMeshId][vPlayFrame+1];
             ofQuaternion trackQuateB = trackMatrixB.getRotate();
             ofVec3f trackPosB = trackMatrixB.getTranslation();
             
@@ -633,7 +638,7 @@ void ofApp::draw(){
     int indexX = mouseX / uiThumbnailIconDistance;
     int indexY = mouseY / uiThumbnailIconDistance;
 
-    for(int i=0; i<modelDataNum; i++) {
+    for(int i=0; i<modelDataNum[selSceneId]; i++) {
         
         if (viewerMode == 0 && selectMeshId != i) {
             //continue;
@@ -644,22 +649,22 @@ void ofApp::draw(){
         
         
         if (frameCount >= 1) {
-            modelFlagList[i] = 0;
+            modelFlagList[selSceneId][i] = 0;
             
             // 再生位置シーク処理
             // 同期再生
             if (uiPlayMode == 2) {
                 
-                if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {
+                if (maxMeshNumList[selSceneId][i] >= 2 && scanTimeRecordMaxTime[i] > 0) {
                     
-                    cout << "playStartDateTime: " << playStartDateTime << " playStartPrevPos:" << playStartPrevPos << endl;
+                    //cout << "playStartDateTime: " << playStartDateTime << " playStartPrevPos:" << playStartPrevPos << endl;
                     
                     bool dispFlag = false;
                     
                      // scan play frame by time
-                     for (int j=0; j<maxMeshNumList[i]-1; j++) {
-                         if (virtualPlayUnixTime >= scanUnixTimeLongIntList[i][j] &&
-                             virtualPlayUnixTime <= scanUnixTimeLongIntList[i][j+1]  ) {
+                     for (int j=0; j<maxMeshNumList[selSceneId][i]-1; j++) {
+                         if (virtualPlayUnixTime >= scanUnixTimeLongIntList[selSceneId][i][j] &&
+                             virtualPlayUnixTime <= scanUnixTimeLongIntList[selSceneId][i][j+1]  ) {
                              playFrameSelector = j;
                              dispFlag = true;
                              break;
@@ -668,7 +673,7 @@ void ofApp::draw(){
                     
                     if (!dispFlag){
                         playFrameSelector = 0;
-                        modelFlagList[i] = 2;           //その時間にデータがなかった場合は、非表示ともまた違う処理ができるようにしておく
+                        modelFlagList[selSceneId][i] = 2;           //その時間にデータがなかった場合は、非表示ともまた違う処理ができるようにしておく
                     }
     
                 }
@@ -677,12 +682,12 @@ void ofApp::draw(){
             } else if (uiPlayMode == 1) {
                 
                 // get play frame from play time ------------------------------------------------------------------
-                if (maxMeshNumList[i] >= 2 && scanTimeRecordMaxTime[i] > 0) {       // error kaihi
+                if (maxMeshNumList[selSceneId][i] >= 2 && scanTimeRecordMaxTime[selSceneId][i] > 0) {       // error kaihi
                     
-                    int passedTime = nowPlayTime % scanTimeRecordMaxTime[i];
+                    int passedTime = nowPlayTime % scanTimeRecordMaxTime[selSceneId][i];
                     
-                    for (int j=0; j<maxMeshNumList[i]-1; j++) {
-                        if (passedTime <= scanTimeRecordList[i][j+1][1]) {
+                    for (int j=0; j<maxMeshNumList[selSceneId][i]-1; j++) {
+                        if (passedTime <= scanTimeRecordList[selSceneId][i][j+1][1]) {
                             playFrameSelector = j;
                             break;
                         }
@@ -703,7 +708,7 @@ void ofApp::draw(){
             
         }
         
-        playFrameSelectorList[i] = playFrameSelector;
+        playFrameSelectorList[selSceneId][i] = playFrameSelector;
         
         
         // 描画 --------------------------------------------------------
@@ -739,8 +744,8 @@ void ofApp::draw(){
         //fboCam.draw(0,160);
         ofScale(0.6,0.6,0.6);
         //modelImageList[selectMeshId][playFrameSelector].draw(0,0);
-        for(int i=0; i<modelDataNum; i++) {
-            modelImageList[i][playFrameSelectorList[i]].draw(640*i,0);
+        for(int i=0; i<modelDataNum[selSceneId]; i++) {
+            modelImageList[selSceneId][i][playFrameSelectorList[selSceneId][i]].draw(640*i,0);
         }
         glPopMatrix();
         
@@ -793,7 +798,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     
     // グリッド表示
     if (uiBtnGrid && i == selectMeshId) {
-        float modelSize = modelSceneMax[i].x - modelSceneMin[i].x;
+        float modelSize = modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x;
         if (modelSize < 1) {
             drawScaleGrid(modelSize*1000, 100);
         } else {
@@ -812,7 +817,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
             glTranslatef(-0,0,2);
             
             ofDisableLighting();        //
-            fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+            fontLarge.drawString(dataDirNameList[selSceneId][i],0,0);        // display model name
             ofEnableLighting();
             
             //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
@@ -820,22 +825,22 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         }
     }
     
-    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+    glTranslatef(mapNum[selSceneId][i][0], mapNum[selSceneId][i][1], mapNum[selSceneId][i][2]);
     
     // fix model direction
     glRotatef(-90, 1, 0, 0);    // turn model
     ofScale(1, 1, -1);      // fix model direction
     ofScale(-1, -1, 1);      // fix model direction
     ofScale(1000, 1000, 1000);
-    asModelObj[i][playFrameSelector].setScaleNormalization(false);
+    asModelObj[selSceneId][i][playFrameSelector].setScaleNormalization(false);
     
-    ofRotateX(mapNum[i][3]);
-    ofRotateY(mapNum[i][4]);
-    ofRotateZ(mapNum[i][5]);
+    ofRotateX(mapNum[selSceneId][i][3]);
+    ofRotateY(mapNum[selSceneId][i][4]);
+    ofRotateZ(mapNum[selSceneId][i][5]);
     
-    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-    double centerY = modelSceneMin[i].y + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
+    double centerX = modelSceneMin[selSceneId][i].x + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
+    double centerY = modelSceneMin[selSceneId][i].y + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
+    double centerZ = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
     if (mapNum[i][7]) {
@@ -853,20 +858,20 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
     ofSetColor(255,255,255,uiModelTransparent);
 
     if (uiColorMode) {
-        asModelObj[i][playFrameSelector].enableTextures();
+        asModelObj[selSceneId][i][playFrameSelector].enableTextures();
     } else {
-        asModelObj[i][playFrameSelector].disableTextures();
+        asModelObj[selSceneId][i][playFrameSelector].disableTextures();
     }
 
     if (uiMeshDrawType == 1) {
         ofSetLineWidth(1);
-        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_WIREFRAME);
     } else if (uiMeshDrawType == 2) {
         glPointSize(1 );
         //ofBlendMode(OF_BLENDMODE_ALPHA);
-        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_POINTS);
     } else {
-        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_FILL);
     }
     
     glPopMatrix();
@@ -920,11 +925,11 @@ void ofApp::drawListView(int i, int playFrameSelector) {
 
 void ofApp::drawListViewNormal(int i, int playFrameSelector) {
 
-    if (mapNum[i][9]) {
+    if (mapNum[selSceneId][i][9]) {
         return;
     }
     
-    displayTotalVertices += meshVertexNumList[i][playFrameSelector];
+    displayTotalVertices += meshVertexNumList[selSceneId][i][playFrameSelector];
     
     glPushMatrix();
     
@@ -946,34 +951,34 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         
         ofDisableLighting();
         ofSetColor(0,0,0);
-        fontLarge.drawString(dataDirNameList[i],0,0);        // display model name
+        fontLarge.drawString(dataDirNameList[selSceneId][i],0,0);        // display model name
         ofEnableLighting();
         
         glPopMatrix();
     }
     
     
-    if (mapNum[i][7]) {
+    if (mapNum[selSceneId][i][7]) {
         glRotatef(180, 0, 1, 0);
     }
-    if (mapNum[i][8]) {
+    if (mapNum[selSceneId][i][8]) {
         glRotatef(180, 1, 0, 0);
     }
-    if (mapNum[i][6]) {
+    if (mapNum[selSceneId][i][6]) {
         glRotatef(180, 0, 0, 1);
         //ofTranslate(0,0,-530);
     }
     
-    ofRotateX(mapNum[i][3]);
-    ofRotateY(mapNum[i][4]);
-    ofRotateZ(mapNum[i][5]);
+    ofRotateX(mapNum[selSceneId][i][3]);
+    ofRotateY(mapNum[selSceneId][i][4]);
+    ofRotateZ(mapNum[selSceneId][i][5]);
     
     // fix model direction
     glRotatef(-90, 1, 0, 0);    // turn model
     ofScale(1, 1, -1);      // fix model direction
     ofScale(-1, -1, 1);      // fix model direction
     ofScale(1000, 1000, 1000);
-    asModelObj[i][playFrameSelector].setScaleNormalization(false);
+    asModelObj[selSceneId][i][playFrameSelector].setScaleNormalization(false);
     //ofTranslate(0,-0,modelPosZList[i]*1000);        // hosei
     //                ofTranslate(1500,1100,-2500);      // goto center
     
@@ -981,32 +986,32 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     // ---------------------------------------------------
     if (modelFlagList[i] == 0) {            // not effect vertex color object
         ofSetColor(255, 255, 255, uiModelTransparent);
-    } else if (modelFlagList[i] == 1) {
+    } else if (modelFlagList[selSceneId][i] == 1) {
         ofSetColor(255, 255, 255, 32);
-    } else if (modelFlagList[i] == 2) {
+    } else if (modelFlagList[selSceneId][i] == 2) {
         ofSetColor(0, 255, 0, 64);
     }
 
-    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
+    glTranslatef(mapNum[selSceneId][i][0], mapNum[selSceneId][i][1], mapNum[selSceneId][i][2]);
     
-    double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-    double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
-    double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
+    double centerX = modelSceneMin[selSceneId][i].x + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
+    double centerY = modelSceneMin[selSceneId][i].y + (modelSceneMax[selSceneId][i].y - modelSceneMin[selSceneId][i].y) / 2;
+    double centerZ = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].z - modelSceneMin[selSceneId][i].z) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
     if (uiColorMode) {
-        asModelObj[i][playFrameSelector].enableTextures();
+        asModelObj[selSceneId][i][playFrameSelector].enableTextures();
     } else {
-        asModelObj[i][playFrameSelector].disableTextures();
+        asModelObj[selSceneId][i][playFrameSelector].disableTextures();
     }
     
     if (uiMeshDrawType == 1) {
         ofSetLineWidth(1);
-        asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_WIREFRAME);
     } else if (uiMeshDrawType == 2) {
-        asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_POINTS);
     } else {
-        asModelObj[i][playFrameSelector].draw(OF_MESH_FILL);
+        asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_FILL);
     }
     
     glPopMatrix();
@@ -1179,7 +1184,7 @@ void ofApp::drawListViewGpsMapWalkThru(int i, int playFrameSelector) {
 
 void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
-    for(int z=0; z<maxMeshNumList[i]; z++) {
+    for(int z=0; z<maxMeshNumList[selSceneId][i]; z++) {
         
         if (mapNum[i][9]) {
             continue;
@@ -1205,33 +1210,33 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
 
         
         ofScale(1000, 1000, 1000);
-        asModelObj[i][z].setScaleNormalization(false);
+        asModelObj[selSceneId][i][z].setScaleNormalization(false);
         
         
-        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerY = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
-        double centerZ = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
+        double centerX = modelSceneMin[selSceneId][i].x + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
+        double centerY = modelSceneMin[selSceneId][i].y + (modelSceneMax[selSceneId][i].y - modelSceneMin[selSceneId][i].y) / 2;
+        double centerZ = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].z - modelSceneMin[selSceneId][i].z) / 2;
         ofTranslate(centerX, centerY, -centerZ);
         
         
         ofSetColor(255,255,255,uiModelTransparent);
         
         if (uiColorMode) {
-            asModelObj[i][z].enableTextures();
+            asModelObj[selSceneId][i][z].enableTextures();
         } else {
-            asModelObj[i][z].disableTextures();
+            asModelObj[selSceneId][i][z].disableTextures();
         }
 
         if (uiMeshDrawType == 1) {
             ofSetLineWidth(1);
-            asModelObj[i][z].draw(OF_MESH_WIREFRAME);
+            asModelObj[selSceneId][i][z].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
             glPointSize(2);
             
-            asModelObj[i][z].draw(OF_MESH_POINTS);
+            asModelObj[selSceneId][i][z].draw(OF_MESH_POINTS);
         } else {
             //asModelObj[i][counter].drawFaces();
-            asModelObj[i][z].draw(OF_MESH_FILL);
+            asModelObj[selSceneId][i][z].draw(OF_MESH_FILL);
         }
             
     
@@ -1247,23 +1252,23 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         //ofScale(1, 1, -1);      // fix model direction
         ofScale(1, -1, 1);      // fix model direction
 
-        double centerX = modelSceneMin[i].x + (modelSceneMax[i].x - modelSceneMin[i].x) / 2;
-        double centerZ = modelSceneMin[i].y + (modelSceneMax[i].y - modelSceneMin[i].y) / 2;
-        double centerY = modelSceneMin[i].z + (modelSceneMax[i].z - modelSceneMin[i].z) / 2;
+        double centerX = modelSceneMin[selSceneId][i].x + (modelSceneMax[selSceneId][i].x - modelSceneMin[selSceneId][i].x) / 2;
+        double centerZ = modelSceneMin[selSceneId][i].y + (modelSceneMax[selSceneId][i].y - modelSceneMin[selSceneId][i].y) / 2;
+        double centerY = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].z - modelSceneMin[selSceneId][i].z) / 2;
         ofTranslate(-centerX*1000, -centerY*1000, centerZ*1000);//-centerZ*1000);
         
-        for(int z=0; z<maxMeshNumList[i]-1; z++) {
+        for(int z=0; z<maxMeshNumList[selSceneId][i]-1; z++) {
             
             ofSetLineWidth(10);
             ofSetColor(0,180,255, 255);
-            ofMatrix4x4 matrixA = modelMatrixList[i][z];
-            ofMatrix4x4 matrixB = modelMatrixList[i][z+1];
+            ofMatrix4x4 matrixA = modelMatrixList[selSceneId][i][z];
+            ofMatrix4x4 matrixB = modelMatrixList[selSceneId][i][z+1];
             
             ofVec3f posA = matrixA.getTranslation();
             ofVec3f posB = matrixB.getTranslation();
             
             //if (z%20 == 0) {
-            if ((maxMeshNumList[i] - z + playCount)%40 == 9) {      // アニメーション表示
+            if ((maxMeshNumList[selSceneId][i] - z + playCount)%40 == 9) {      // アニメーション表示
                 drawArrow(ofPoint(posA.x*1000, posA.z*1000, -posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, -posB.y*1000), 300 );
             } else {
                 ofDrawLine(posA.x*1000, posA.z*1000, -posA.y*1000, posB.x*1000, posB.z*1000, -posB.y*1000);
@@ -1273,7 +1278,7 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofQuaternion quateA = matrixA.getRotate();
             //cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
             
-            if ((maxMeshNumList[i] - z + playCount+10)%20 == 9) {      // アニメーション表示
+            if ((maxMeshNumList[selSceneId][i] - z + playCount+10)%20 == 9) {      // アニメーション表示
                 ofTranslate(posA.x*1000, posA.z*1000, -posA.y*1000);
                 float angle, rotX, rotY, rotZ;
                 quateA.getRotate(angle, rotX, rotY, rotZ);
@@ -1302,9 +1307,9 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         
         // show start point and end point
-        ofMatrix4x4 startMatrix = modelMatrixList[i][0];
-        ofMatrix4x4 endMatrix = modelMatrixList[i][maxMeshNumList[i]-1];
-        ofMatrix4x4 movingMatrix = modelMatrixList[i][playFrameSelector];
+        ofMatrix4x4 startMatrix = modelMatrixList[selSceneId][i][0];
+        ofMatrix4x4 endMatrix = modelMatrixList[selSceneId][i][maxMeshNumList[i]-1];
+        ofMatrix4x4 movingMatrix = modelMatrixList[selSceneId][i][playFrameSelector];
         
         ofVec3f startPos = startMatrix.getTranslation();
         ofVec3f endPos = endMatrix.getTranslation();
@@ -1379,14 +1384,14 @@ void ofApp::drawMapView(int i, int playFrameSelector) {
     
     glRotatef(180, 0, 1, 0);        // ‚Ä∞‚àè√§‚Ä∞‚àè√£√ä√±œÄ√Ç√™√´√Å√µ¬•‚Äû√Ö√¥
     
-    glTranslatef(mapNum[i][0], mapNum[i][1], mapNum[i][2]);
-    ofRotateX(mapNum[i][3]);
-    ofRotateY(mapNum[i][4]);
-    ofRotateZ(mapNum[i][5]);
+    glTranslatef(mapNum[selSceneId][i][0], mapNum[selSceneId][i][1], mapNum[selSceneId][i][2]);
+    ofRotateX(mapNum[selSceneId][i][3]);
+    ofRotateY(mapNum[selSceneId][i][4]);
+    ofRotateZ(mapNum[selSceneId][i][5]);
     
-    glTranslatef(333*mapNum[i][6]/100.0, -333*mapNum[i][6]/100.0, 0);       //
+    glTranslatef(333*mapNum[selSceneId][i][6]/100.0, -333*mapNum[selSceneId][i][6]/100.0, 0);       //
     
-    ofScale(mapNum[i][6]/100.0, mapNum[i][6]/100.0, mapNum[i][6]/100.0);
+    ofScale(mapNum[selSceneId][i][6]/100.0, mapNum[selSceneId][i][6]/100.0, mapNum[selSceneId][i][6]/100.0);
     
     if (uiBtnTurnMesh) {
         glRotatef(-90, 1, 0, 0);
@@ -1396,11 +1401,11 @@ void ofApp::drawMapView(int i, int playFrameSelector) {
     if (mapNum[i][9] == 0) {
         
         if (uiMeshDrawType == 1) {
-            asModelObj[i][playFrameSelector].draw(OF_MESH_WIREFRAME);
+            asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
-            asModelObj[i][playFrameSelector].draw(OF_MESH_POINTS);
+            asModelObj[selSceneId][i][playFrameSelector].draw(OF_MESH_POINTS);
         } else {
-            asModelObj[i][playFrameSelector].drawFaces();
+            asModelObj[selSceneId][i][playFrameSelector].drawFaces();
             //asModelObj[i][counter].draw(OF_MESH_FILL);
             
         }
@@ -1462,15 +1467,15 @@ void ofApp::drawSeekBar() {
     
     if (frameCount>1) {
         if (uiPlayMode == 2) {
-            progressPosX = (nowPlayTime  * barWidth ) / (scanUnixTimeAllItemMax - scanUnixTimeAllItemMin);
+            progressPosX = (nowPlayTime  * barWidth ) / (scanUnixTimeAllItemMax[selSceneId] - scanUnixTimeAllItemMin[selSceneId]);
         } else if (uiPlayMode == 1) {
-            progressPosX = (nowPlayTime  * barWidth ) / totalScanTimeRecordMaxTime;
+            progressPosX = (nowPlayTime  * barWidth ) / totalScanTimeRecordMaxTime[selSceneId];
         } else {
             
             if (viewerMode == 0) {
-                progressPosX = (playCount * skipLoadFrame * barWidth ) / maxMeshNumList[selectMeshId];
+                progressPosX = (playCount * skipLoadFrame * barWidth ) / maxMeshNumList[selSceneId][selectMeshId];
             } else if (viewerMode == 1) {
-                progressPosX = (playCount * skipLoadFrame * barWidth ) / totalMaxMeshNum;
+                progressPosX = (playCount * skipLoadFrame * barWidth ) / totalMaxMeshNum[selSceneId];
             }
         }
     }
@@ -1492,7 +1497,7 @@ void ofApp::drawCalendarClock(int x, int y) {
     ofTranslate(x, y);
     
     tSs.str("");
-    long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+    long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin[selSceneId];
     long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
     char charDateTime[100];
     struct tm tempTimeStruct;
@@ -1568,11 +1573,11 @@ void ofApp::drawPlayControlMenu() {
     fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
     
     tSs.str("");
-    tSs <<  "ModelName: " << meshNameList[selectMeshId];
+    tSs <<  "ModelName: " << meshNameList[selSceneId][selectMeshId];
     fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
     
     tSs.str("");
-    tSs <<  "DirectoryName: " << loadModelDirName;
+    tSs <<  "DirectoryName: " << loadModelDirName[selSceneId];
     fontDebugPrint.drawString(tSs.str(), 20, pY); pY += lineHeight;
     
     
@@ -1581,7 +1586,7 @@ void ofApp::drawPlayControlMenu() {
     ofSetColor(64,64,64,255);
     if (uiPlayMode == 0) {
         tSs.str("");
-        tSs << "" << playCount << " / " << maxMeshNumList[selectMeshId] << " frame";
+        tSs << "" << playCount << " / " << maxMeshNumList[selSceneId][selectMeshId] << " frame";
         fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
         // tSs << "frame: " << playCount << " /  " << totalMaxMeshNum;
     }
@@ -1598,9 +1603,9 @@ void ofApp::drawPlayControlMenu() {
         tSs.str("");
         tSs << fixed << setprecision(3);
         if (viewerMode == 0) {
-            tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime/1000.0 << " sec";
+            tSs << "" << nowPlayTime/1000.0 << " / " << totalScanTimeRecordMaxTime[selSceneId]/1000.0 << " sec";
         } else {
-            tSs << "" << nowPlayTime/1000.0 << " / " << scanTimeRecordMaxTime[selectMeshId]/1000.0 << " sec";
+            tSs << "" << nowPlayTime/1000.0 << " / " << scanTimeRecordMaxTime[selSceneId][selectMeshId]/1000.0 << " sec";
         }
         fontMyGui.drawString(tSs.str(), myGuiSeekBar.getRight() + 20, myGuiSeekBar.getTop() + 20);
         
@@ -1609,7 +1614,7 @@ void ofApp::drawPlayControlMenu() {
     
     if (uiPlayMode == 2) {
         tSs.str("");
-        long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin;
+        long nowPlayTimeTemp = nowPlayTime + scanUnixTimeAllItemMin[selSceneId];
         long nowPlayTimeForSeek = nowPlayTimeTemp / 1000;
         cout << "nowPlayTimeForSeek: " << nowPlayTimeForSeek << " playStartDateTime:" << playStartDateTime << endl;
         char charDateTime[100];
@@ -1660,7 +1665,7 @@ void ofApp::drawDebugInfo() {
     fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
     
     tSs.str("");
-    tSs << "modelNum: " << modelDataNum;
+    tSs << "modelNum: " << modelDataNum[selSceneId];
     fontDebugPrint.drawString(tSs.str(), pX, pY); pY += lineHeight;
     
     tSs.str("");
@@ -1806,9 +1811,9 @@ void ofApp::resetCamDetailView( ) {
     
 //    eCam.reset();
     
-    float modelSizeX = (modelSceneMax[selectMeshId].x - modelSceneMin[selectMeshId].x) *1000;
-    float modelSizeY = (modelSceneMax[selectMeshId].y - modelSceneMin[selectMeshId].y) * 1000;
-    float modelSizeZ = (modelSceneMax[selectMeshId].z - modelSceneMin[selectMeshId].z) * 1000;
+    float modelSizeX = (modelSceneMax[selSceneId][selectMeshId].x - modelSceneMin[selSceneId][selectMeshId].x) *1000;
+    float modelSizeY = (modelSceneMax[selSceneId][selectMeshId].y - modelSceneMin[selSceneId][selectMeshId].y) * 1000;
+    float modelSizeZ = (modelSceneMax[selSceneId][selectMeshId].z - modelSceneMin[selSceneId][selectMeshId].z) * 1000;
     
     eCam.setPosition(0, -modelSizeZ*1.2, modelSizeZ*1.2);
     eCam.setTarget(ofVec3f(0, 0, 0));
@@ -1826,7 +1831,7 @@ void ofApp::resetCamListView( ) {
 
 void ofApp::detailViewNextModel(int mod) {
     
-    selectMeshId = ((selectMeshId - mod) + modelDataNum) % modelDataNum;
+    selectMeshId = ((selectMeshId - mod) + modelDataNum[selSceneId]) % modelDataNum[selSceneId];
     resetCamDetailView();
     
 }
@@ -1936,13 +1941,13 @@ void ofApp::keyReleased(int key){
         
     } else if (key == '4') {
         
-        if (mapNum[0][9] == 0) {
-            mapNum[0][9] = 1;
+        if (mapNum[selSceneId][0][9] == 0) {
+            mapNum[selSceneId][0][9] = 1;
             if (selectMeshId == 0){
                 uiEditDisplayFlag = 1;
             }
         } else {
-            mapNum[0][9] = 0;
+            mapNum[selSceneId][0][9] = 0;
             if (selectMeshId == 0){
                 uiEditDisplayFlag = 0;
             }
@@ -1951,13 +1956,13 @@ void ofApp::keyReleased(int key){
         
     } else if (key == '5') {
         
-        if (mapNum[1][9] == 0) {
-            mapNum[1][9] = 1;
+        if (mapNum[selSceneId][1][9] == 0) {
+            mapNum[selSceneId][1][9] = 1;
             if (selectMeshId == 1){
                 uiEditDisplayFlag = 1;
             }
         } else {
-            mapNum[1][9] = 0;
+            mapNum[selSceneId][1][9] = 0;
             if (selectMeshId == 1){
                 uiEditDisplayFlag = 0;
             }
@@ -1982,12 +1987,12 @@ void ofApp::keyReleased(int key){
         
     } else if(key == OF_KEY_UP) {
         
-        selectSceneId--;
-        ofClamp(selectSceneId, 0, sceneDataNum-1);
+        selSceneId--;
+        ofClamp(selSceneId, 0, sceneDataNum-1);
         
     } else if (key == OF_KEY_DOWN) {
-        selectSceneId++;
-        ofClamp(selectSceneId, 0, sceneDataNum-1);
+        selSceneId++;
+        ofClamp(selSceneId, 0, sceneDataNum-1);
         
     }
     
@@ -2164,21 +2169,21 @@ void ofApp::dataLoad() {
     
     // 各モデルサイズを記録するための下準備 ----------------------------------
     for(int i=0; i<MAX_MODEL_ARRAY; i++) {
-        modelSceneMin[i].x = INT_MAX;
-        modelSceneMin[i].y = INT_MAX;
-        modelSceneMin[i].z = INT_MAX;
-        modelSceneMax[i].x = 0;
-        modelSceneMax[i].y = 0;
-        modelSceneMax[i].z = 0;
+        modelSceneMin[selSceneId][i].x = INT_MAX;
+        modelSceneMin[selSceneId][i].y = INT_MAX;
+        modelSceneMin[selSceneId][i].z = INT_MAX;
+        modelSceneMax[selSceneId][i].x = 0;
+        modelSceneMax[selSceneId][i].y = 0;
+        modelSceneMax[selSceneId][i].z = 0;
     }
     
     //  --------------------------------------------------------------------
     
     // 各モデルディレクトリ名ごとのループ
     int dirNameLoopCount = 0;
-    for (auto dirName : dataDirNameList)
+    for (auto dirName : dataDirNameList[selSceneId])
     {
-        meshNameList[dirNameLoopCount] = dirName;
+        meshNameList[selSceneId][dirNameLoopCount] = dirName;
         cout << "dirName: " << dirName << endl;
         
         stringstream dirPath;
@@ -2188,9 +2193,9 @@ void ofApp::dataLoad() {
         bool staticModelFlag = false;
         int countMeshFileNum = countMeshFileNumTargetDir(dirPath.str());
         if (countMeshFileNum >= 0) {
-            maxMeshNumList[dirNameLoopCount] = countMeshFileNum;
+            maxMeshNumList[selSceneId][dirNameLoopCount] = countMeshFileNum;
         } else {    // 静的モデルの場合
-            maxMeshNumList[dirNameLoopCount] = -countMeshFileNum;
+            maxMeshNumList[selSceneId][dirNameLoopCount] = -countMeshFileNum;
             staticModelFlag = true;
         }
         
@@ -2212,35 +2217,35 @@ void ofApp::dataLoad() {
 
         dirNameLoopCount++;
     }
-    modelDataNum = dirNameLoopCount;        // 読み込み対象のモデルデータ数合計
+    modelDataNum[selSceneId] = dirNameLoopCount;        // 読み込み対象のモデルデータ数合計
 
     
     // 読み込んだファイルの総データ容量 -------------------------
     loadFileSizeAll = 0;
-    for(auto oneModelList : modelFileSizeList) {
-        for(auto fileSize : oneModelFileSizeList) {
+    for(auto oneModelList : modelFileSizeList[selSceneId]) {
+        for(auto fileSize : oneModelFileSizeList[selSceneId]) {
             loadFileSizeAll += fileSize;
         }
     }
     
     // 読み込んだメッシュファイルの中で一番大きかったメッシュ数 -------------------------
-    totalMaxMeshNum = 0;
-    for (auto meshNum : maxMeshNumList) {
-        if (meshNum > totalMaxMeshNum) {
-            totalMaxMeshNum = meshNum;
+    totalMaxMeshNum[selSceneId] = 0;
+    for (auto meshNum : maxMeshNumList[selSceneId]) {
+        if (meshNum > totalMaxMeshNum[selSceneId]) {
+            totalMaxMeshNum[selSceneId] = meshNum;
         }
     }
 
     // 全モデルに記録された中で一番大きい（最後の）時間 -------------------------
-    totalScanTimeRecordMaxTime = 0;
-    for (auto time : scanTimeRecordMaxTime) {
-        if (time > totalScanTimeRecordMaxTime) {
-            totalScanTimeRecordMaxTime = time;
+    totalScanTimeRecordMaxTime[selSceneId] = 0;
+    for (auto time : scanTimeRecordMaxTime[selSceneId]) {
+        if (time > totalScanTimeRecordMaxTime[selSceneId]) {
+            totalScanTimeRecordMaxTime[selSceneId] = time;
         }
     }
     
     
-    cout<<"modelDataNum:"<<modelDataNum<<endl;
+    cout<<"modelDataNum:"<<modelDataNum[selSceneId]<<endl;
     
     modeldataLoadingEndTime = ofGetElapsedTimeMillis();
 
@@ -2302,10 +2307,10 @@ void ofApp::makeDataDirNameListTargetDir(string dirPath) {
             
             string s = itr->getFileName();
             cout << s << endl;
-            dataDirNameList.push_back(s);
+            dataDirNameList[selSceneId].push_back(s);
             
             if (!mapFileExists) {       // マップファイルが存在する場合
-                mapId[tCount] = s;      // 各ディレクトリ名を保存
+                mapId[selSceneId][tCount] = s;      // 各ディレクトリ名を保存
             }
             
             tCount++;
@@ -2330,17 +2335,17 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
         
         int targetFrame = (idx*skipLoadFrame);
         int maxFrameOverTest = targetFrame;
-        cout << "maxMeshNumList[modelIndex]:" << maxMeshNumList[modelIndex] << endl;
+        cout << "maxMeshNumList[selSceneId][modelIndex]:" << maxMeshNumList[selSceneId][modelIndex] << endl;
         
-        while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[modelIndex]) {
+        while (!buffer.isLastLine() && (idx < maxLoadMeshNum) && maxFrameOverTest < maxMeshNumList[selSceneId][modelIndex]) {
             
             string line = buffer.getNextLine();
             
             if (line != "") {
                 auto itemList = ofSplitString(line, ",");
                 //cout << itemList[1] << endl;
-                scanTimeRecordList[modelIndex][idx][0] = stoi(itemList[0]);
-                scanTimeRecordList[modelIndex][idx][1] = stoi(itemList[1]);
+                scanTimeRecordList[selSceneId][modelIndex][idx][0] = stoi(itemList[0]);
+                scanTimeRecordList[selSceneId][modelIndex][idx][1] = stoi(itemList[1]);
                 cout << "scanTimeRecordList[modelIndex][idx][1]: " << scanTimeRecordList[modelIndex][idx][1] << endl;
                 
                 //itemlist[2] ... "2016/10/09 17:26:56.432"
@@ -2351,43 +2356,43 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
                 
                 ::strptime(cStrDateTime, "%Y/%m/%d %H:%M:%S", &tempTmStruct);
                 
-                scanTimeRecordTimeStructureList[modelIndex][idx] = mktime(&tempTmStruct);
-                scanUnixTimeLongIntList[modelIndex][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
+                scanTimeRecordTimeStructureList[selSceneId][modelIndex][idx] = mktime(&tempTmStruct);
+                scanUnixTimeLongIntList[selSceneId][modelIndex][idx] = ((long)mktime(&tempTmStruct) * 1000) + stoi(strMilliSec);
                 
                 // min/max keep -----------------
-                if (scanUnixTimeModelMinList[modelIndex] >= scanUnixTimeLongIntList[modelIndex][idx]) {
-                    scanUnixTimeModelMinList[modelIndex] = scanUnixTimeLongIntList[modelIndex][idx];
+                if (scanUnixTimeModelMinList[selSceneId][modelIndex] >= scanUnixTimeLongIntList[selSceneId][modelIndex][idx]) {
+                    scanUnixTimeModelMinList[selSceneId][modelIndex] = scanUnixTimeLongIntList[selSceneId][modelIndex][idx];
                 }
                 
-                if (scanUnixTimeModelMaxList[modelIndex] <= scanUnixTimeLongIntList[modelIndex][idx]) {
-                    scanUnixTimeModelMaxList[modelIndex] = scanUnixTimeLongIntList[modelIndex][idx];
+                if (scanUnixTimeModelMaxList[selSceneId][modelIndex] <= scanUnixTimeLongIntList[selSceneId][modelIndex][idx]) {
+                    scanUnixTimeModelMaxList[selSceneId][modelIndex] = scanUnixTimeLongIntList[selSceneId][modelIndex][idx];
                 }
                 
-                if (scanUnixTimeAllItemMin >= scanUnixTimeLongIntList[modelIndex][idx]) {
-                    scanUnixTimeAllItemMin = scanUnixTimeLongIntList[modelIndex][idx];
+                if (scanUnixTimeAllItemMin[selSceneId] >= scanUnixTimeLongIntList[selSceneId][modelIndex][idx]) {
+                    scanUnixTimeAllItemMin[selSceneId] = scanUnixTimeLongIntList[selSceneId][modelIndex][idx];
                 }
                 
-                if (scanUnixTimeAllItemMax <= scanUnixTimeLongIntList[modelIndex][idx]) {
-                    scanUnixTimeAllItemMax = scanUnixTimeLongIntList[modelIndex][idx];
+                if (scanUnixTimeAllItemMax[selSceneId] <= scanUnixTimeLongIntList[selSceneId][modelIndex][idx]) {
+                    scanUnixTimeAllItemMax[selSceneId] = scanUnixTimeLongIntList[selSceneId][modelIndex][idx];
                 }
                 // --------------------------
                 
                 if (itemList.size() >= 10) {
                     for(int x=0; x<7; x++) {
-                        scanGpsDataList[modelIndex][idx][x] = stod(itemList[3+x]); // latitude
+                        scanGpsDataList[selSceneId][modelIndex][idx][x] = stod(itemList[3+x]); // latitude
                     }
                     
-                    if (scanGpsDataMaxLat < stod(itemList[3])) {
-                        scanGpsDataMaxLat = stod(itemList[3]);
+                    if (scanGpsDataMaxLat[selSceneId] < stod(itemList[3])) {
+                        scanGpsDataMaxLat[selSceneId] = stod(itemList[3]);
                     }
-                    if (scanGpsDataMinLat > stod(itemList[3])) {
-                        scanGpsDataMinLat = stod(itemList[3]);
+                    if (scanGpsDataMinLat[selSceneId] > stod(itemList[3])) {
+                        scanGpsDataMinLat[selSceneId] = stod(itemList[3]);
                     }
-                    if (scanGpsDataMaxLong < stod(itemList[4])) {
-                        scanGpsDataMaxLong = stod(itemList[4]);
+                    if (scanGpsDataMaxLong[selSceneId] < stod(itemList[4])) {
+                        scanGpsDataMaxLong[selSceneId] = stod(itemList[4]);
                     }
-                    if (scanGpsDataMinLong > stod(itemList[4])) {
-                        scanGpsDataMinLong = stod(itemList[4]);
+                    if (scanGpsDataMinLong[selSceneId] > stod(itemList[4])) {
+                        scanGpsDataMinLong[selSceneId] = stod(itemList[4]);
                     }
                     
                 }
@@ -2404,7 +2409,7 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
                         
                         cout << floatMatrix[z2] << ", ";
                     }
-                    modelMatrixList[modelIndex][idx] = ofMatrix4x4(floatMatrix);
+                    modelMatrixList[selSceneId][modelIndex][idx] = ofMatrix4x4(floatMatrix);
                     cout << endl;
                 }
                 
@@ -2419,8 +2424,8 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
             
         }
         
-        scanTimeRecordMaxTime[modelIndex] = scanTimeRecordList[modelIndex][idx-1][1];
-        cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[modelIndex] << endl;
+        scanTimeRecordMaxTime[selSceneId][modelIndex] = scanTimeRecordList[selSceneId][modelIndex][idx-1][1];
+        cout << "scanTimeRecordMaxTime: " << scanTimeRecordMaxTime[selSceneId][modelIndex] << endl;
         
         ofFileObj.close();
         
@@ -2436,9 +2441,9 @@ void ofApp::loadScanTimeRecordFile(string dirPath, int modelIndex) {
 void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
     
     stringstream ss;
-    oneModelFileSizeList.clear();
+    oneModelFileSizeList[selSceneId].clear();
 
-    for(int i=0; (i*skipLoadFrame)<maxMeshNumList[modelIndex]; i++) {
+    for(int i=0; (i*skipLoadFrame)<maxMeshNumList[selSceneId][modelIndex]; i++) {
         
         // 各メッシュファイルパスの取得 --------
         ss.str("");
@@ -2454,7 +2459,7 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
             
         } else {         // メッシュファイルが存在する場合
             
-            oneModelFileSizeList.push_back(ofFileObj.getSize()); // getFileSize
+            oneModelFileSizeList[selSceneId].push_back(ofFileObj.getSize()); // getFileSize
             
             ofFileObj.close();
             
@@ -2464,59 +2469,59 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
             ss << objFilePath.substr(0,objFilePath.size()-4) << ".jpg";
             string objImageFilePath = ss.str();
             if (loadPictureMode) {
-                modelImageList[modelIndex][i].loadImage(objImageFilePath);
+                modelImageList[selSceneId][modelIndex][i].loadImage(objImageFilePath);
             }
             
             //Assimp ver.
             
-            asModelObj[modelIndex][i].loadModel(objFilePath );
+            asModelObj[selSceneId][modelIndex][i].loadModel(objFilePath );
             
             // 各メッシュの頂点数の保存 ---------------
-            if (asModelObj[modelIndex][i].getMeshCount()) {
-                ofMesh tMesh = asModelObj[modelIndex][i].getMesh(0);
-                meshVertexNumList[modelIndex][i] = tMesh.getVertices().size();
+            if (asModelObj[selSceneId][modelIndex][i].getMeshCount()) {
+                ofMesh tMesh = asModelObj[selSceneId][modelIndex][i].getMesh(0);
+                meshVertexNumList[selSceneId][modelIndex][i] = tMesh.getVertices().size();
             }
             
             // モデルの物理サイズの計算と保存 -----------
-            ofPoint tMin = asModelObj[modelIndex][i].getSceneMin();
-            ofPoint tMax = asModelObj[modelIndex][i].getSceneMax();
+            ofPoint tMin = asModelObj[selSceneId][modelIndex][i].getSceneMin();
+            ofPoint tMax = asModelObj[selSceneId][modelIndex][i].getSceneMax();
             cout << "tMin: " << tMin << " tMax: " << tMax << endl;
             
             if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
                 cout << "======---------- Hit! ----------------==============================================" << endl;
             } else  {
                 
-                if (tMin.x < modelSceneMin[modelIndex].x) {
-                    modelSceneMin[modelIndex].x = tMin.x;
+                if (tMin.x < modelSceneMin[selSceneId][modelIndex].x) {
+                    modelSceneMin[selSceneId][modelIndex].x = tMin.x;
                 }
-                if (tMin.y < modelSceneMin[modelIndex].y) {
-                    modelSceneMin[modelIndex].y = tMin.y;
+                if (tMin.y < modelSceneMin[selSceneId][modelIndex].y) {
+                    modelSceneMin[selSceneId][modelIndex].y = tMin.y;
                 }
-                if (tMin.z < modelSceneMin[modelIndex].z) {
-                    modelSceneMin[modelIndex].z = tMin.z;
+                if (tMin.z < modelSceneMin[selSceneId][modelIndex].z) {
+                    modelSceneMin[selSceneId][modelIndex].z = tMin.z;
                 }
-                if (tMax.x > modelSceneMax[modelIndex].x) {
-                    modelSceneMax[modelIndex].x = tMax.x;
+                if (tMax.x > modelSceneMax[selSceneId][modelIndex].x) {
+                    modelSceneMax[selSceneId][modelIndex].x = tMax.x;
                 }
-                if (tMax.y > modelSceneMax[modelIndex].y) {
-                    modelSceneMax[modelIndex].y = tMax.y;
+                if (tMax.y > modelSceneMax[selSceneId][modelIndex].y) {
+                    modelSceneMax[selSceneId][modelIndex].y = tMax.y;
                 }
-                if (tMax.z > modelSceneMax[modelIndex].z) {
-                    modelSceneMax[modelIndex].z = tMax.z;
+                if (tMax.z > modelSceneMax[selSceneId][modelIndex].z) {
+                    modelSceneMax[selSceneId][modelIndex].z = tMax.z;
                 }
             }
             
         }
         
-        cout << "modelSceneMin[" << modelIndex << "]: " << modelSceneMin[modelIndex] << endl;
-        cout << "modelSceneMax[" << modelIndex << "]: " << modelSceneMax[modelIndex] << endl;
+        cout << "modelSceneMin[" << modelIndex << "]: " << modelSceneMin[selSceneId][modelIndex] << endl;
+        cout << "modelSceneMax[" << modelIndex << "]: " << modelSceneMax[selSceneId][modelIndex] << endl;
         
         cout << "file load: " << ss.str() << endl;
     }
     
-    modelFileSizeList.push_back(oneModelFileSizeList);
+    modelFileSizeList[selSceneId].push_back(oneModelFileSizeList[selSceneId]);
     
-    modeldataFiles += maxMeshNumList[modelIndex];
+    modeldataFiles += maxMeshNumList[selSceneId][modelIndex];
 
 }
 
@@ -2539,11 +2544,11 @@ void ofApp::loadMapFile(string meshDataDirPath) {
         ofLogError("The file " + mapFilePath + " is missing. make it.");
         
         for(int i=0; i<256; i++) {
-            mapId[i] = "";
+            mapId[selSceneId][i] = "";
             for(int j=0; j<16; j++) {
-                mapNum[i][j] = 0;
+                mapNum[selSceneId][i][j] = 0;
                 if (j == 6) {
-                    mapNum[i][j] = 0;
+                    mapNum[selSceneId][i][j] = 0;
                 }
             }
         }
@@ -2565,10 +2570,10 @@ void ofApp::loadMapFile(string meshDataDirPath) {
             //Store strings into a custom container
             if (words.size()>=2) {
                 
-                mapId[bufCounter] = words[0];
+                mapId[selSceneId][bufCounter] = words[0];
                 
                 for(int i=0; i<mapDataColumns; i++) {
-                    mapNum[bufCounter][i] = stof(words[i+1]);
+                    mapNum[selSceneId][bufCounter][i] = stof(words[i+1]);
                 }
                 for(int i=0; i<mapStringColumns; i++) {
                 //    mapStr[bufCounter][i] = words[mapDataColumns + i + 1];
@@ -2591,19 +2596,19 @@ void ofApp::saveMapFile() {
     
     ofstream ofs( mapFilePath);
     
-    for(int i=0; i<modelDataNum; i++) {
+    for(int i=0; i<modelDataNum[selSceneId]; i++) {
         
-        ofs << mapId[i] << ",";
+        ofs << mapId[selSceneId][i] << ",";
         
         for(int j=0; j<mapDataColumns; j++) {
-            ofs << mapNum[i][j] << ",";
+            ofs << mapNum[selSceneId][i][j] << ",";
         }
         
         for(int j=0; j<mapStringColumns-1; j++) {
-            ofs << mapNum[i][j] << ",";
+            ofs << mapNum[selSceneId][i][j] << ",";
         }
         
-        ofs << mapNum[i][mapDataColumns-1];
+        ofs << mapNum[selSceneId][i][mapDataColumns-1];
         
         ofs << endl;
     }

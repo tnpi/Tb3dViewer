@@ -135,16 +135,17 @@ public:
     vector <uint64_t> oneModelFileSizeList[MAX_SCENE_ARRAY];
     
     // standard vars --------
-    int selectSceneId;
+    int userSelSceneId;
+    int selSceneId;
     int sceneDataNum;
-    int modelDataNum;
+    int modelDataNum[MAX_SCENE_ARRAY];
     int totalMaxMeshNum[MAX_SCENE_ARRAY];
     int totalScanTimeRecordMaxTime[MAX_SCENE_ARRAY];
     int skipLoadFrame;
     int maxLoadMeshNum;
     int startPlayMeshAnimNum;
-    int totalLoadedModelNum[MAX_SCENE_ARRAY];
-    int maxLoadedMeshNumInAllMesh[MAX_SCENE_ARRAY];
+    int totalLoadedModelNum;
+    int maxLoadedMeshNumInAllMesh;
     int prevSelectModel;
     int selectMeshId;
     int displayTotalVertices;
@@ -222,7 +223,7 @@ public:
     ofFile mapFile;
     ofBuffer mapBuffer;
     
-    ofMatrix4x4 modelMatrixList[MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
+    ofMatrix4x4 modelMatrixList[selSceneId][MAX_MODEL_ARRAY][MAX_MESH_ARRAY];
     
     ofRectangle mainView;
     ofRectangle myGuiMain;
