@@ -37,6 +37,8 @@ void ofApp::setup(){
 
     sceneDirNameList = makeDirNameListTargetDir(targetDirPath);
     
+    sceneDataNum = sceneDirNameList.size();
+    
     // Read Map File ----------------------------------------------------------------
     //loadMapFile(meshDataDirPath);
     loadMapFileAll(targetDirPath);
@@ -499,7 +501,7 @@ void ofApp::draw(){
     ofEnableSmoothing();
 
     if (frameCount == 1) {  // app start
-        dataLoad();
+        dataLoadAll();
     }
     
     // init vars --------------------------------------
@@ -2164,10 +2166,22 @@ ofRectangle ofApp::getSubRect( ofRectangle parentRect, ofRectangle subRect ) {
 // -------------------------------------------------------------------------------------------------------------
 // Read mesh files
 // -------------------------------------------------------------------------------------------------------------
-void ofApp::dataLoad() {
-    
+
+void ofApp::dataLoadAll() {
     modeldataLoadingStartTime = ofGetElapsedTimeMillis();
     modeldataFiles = 0;
+    
+    int backupSelSceneId = selSceneId;
+    for(int i=0; i<sceneDataNum; i++) {
+        selSceneId = i;
+        dataLoad();
+    }
+
+    selSceneId = backupSelSceneId;
+    
+}
+
+void ofApp::dataLoad() {
     
     stringstream tSs;
     tSs << targetDirPath << "/" << sceneDirNameList[selSceneId];
@@ -2175,13 +2189,9 @@ void ofApp::dataLoad() {
     string sceneDirPath = tSs.str();
 
     cout << "sceneDirPath: " << sceneDirPath <<endl;
-
     
     // 指定したディレクトリ以下のフォルダの名前をmodelDirNameListに追加 ---------------------------
     modelDirNameList[selSceneId] = makeDirNameListTargetDir(sceneDirPath);
-    
-
-    
     
     // 各モデルサイズを記録するための下準備 ----------------------------------
     for(int i=0; i<MAX_MODEL_ARRAY; i++) {

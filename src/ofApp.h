@@ -60,6 +60,7 @@ public:
     void setPos();
     
     void dataLoad();
+    void dataLoadAll();
     void saveMapFile(int index);
     void loadMapFile(string meshDataDirPath, int index);
     void saveMapFileAll();
