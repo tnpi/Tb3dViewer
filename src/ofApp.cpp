@@ -78,6 +78,7 @@ void ofApp::setup(){
 void ofApp::initAppVars() {
     
     selectSceneId = 0;
+    sceneDataNum = 1;
     selectMeshId = 0;
     frameCount = 0;
     playCount = 0;
