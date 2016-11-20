@@ -1516,7 +1516,7 @@ void ofApp::drawCalendarClock(int x, int y) {
     string strYear = charDateTime;
     ::strftime(charDateTime, sizeof(charDateTime), "%Y %b", &tempTimeStruct);      // %m
     string strMonth = charDateTime;
-    ::strftime(charDateTime, sizeof(charDateTime), "%m", &tempTimeStruct);
+    ::strftime(charDateTime, sizeof(charDateTime), "%d", &tempTimeStruct);
     string strDay = charDateTime;
 
     ::strftime(charDateTime, sizeof(charDateTime), "%H", &tempTimeStruct);
@@ -1552,7 +1552,7 @@ void ofApp::drawCalendarClock(int x, int y) {
     ofSetLineWidth(4);
     ofDrawLine(cx, cy, cx+longNeedleR*cos(angle), cy+longNeedleR*sin(angle));
     angle = -PI/2 + (2*PI*sec/60);
-    ofSetLineWidth(2);
+    ofSetLineWidth(3);
     ofDrawLine(cx, cy, cx+secNeedleR*cos(angle), cy+secNeedleR*sin(angle));
     ofFill();
     
