@@ -25,16 +25,21 @@ void ofApp::setup(){
     dataLoadOnAppBoot = true;
     dispPlayControl = true;
 
-    defaultMeshDataDirPath = "/Users/artdkt/Desktop/3dscan_data_for0630/artdkt_structure3d";
+    defaultTargetDirPath = "/Users/artdkt/Desktop/";
     
 
     // Get File load path --------------------------------------------------------------------------------
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
-    meshDataDirPath = fileDialogResult.getPath();
+    targetDirPath = fileDialogResult.getPath();
+    
+    cout << "targetDirPath: " << targetDirPath <<endl;
+
+    sceneDirNameList = makeDirNameListTargetDir(targetDirPath);
     
     // Read Map File ----------------------------------------------------------------
-    loadMapFile(meshDataDirPath);
+    //loadMapFile(meshDataDirPath);
+    loadMapFileAll(targetDirPath);
     
     // fonts load --------------------------------------------------------------
     font.loadFont("hira.otf", 38);
@@ -817,7 +822,7 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
             glTranslatef(-0,0,2);
             
             ofDisableLighting();        //
-            fontLarge.drawString(dataDirNameList[selSceneId][i],0,0);        // display model name
+            fontLarge.drawString(modelDirNameList[selSceneId][i],0,0);        // display model name
             ofEnableLighting();
             
             //font.drawString(to_string(asModelObj[i][counter].getNumMeshes()),600,500);
@@ -951,7 +956,7 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
         
         ofDisableLighting();
         ofSetColor(0,0,0);
-        fontLarge.drawString(dataDirNameList[selSceneId][i],0,0);        // display model name
+        fontLarge.drawString(modelDirNameList[selSceneId][i],0,0);        // display model name
         ofEnableLighting();
         
         glPopMatrix();
@@ -2074,7 +2079,7 @@ void ofApp::exit() {
     //    if (viewerMode = 3) {      // EDIT‚Äû√â¬¢‚Äû√â¬∫‚Äû√â√¢
     // if (uiBtnDebugInfo) {
     cout << "save map file." << endl;
-    saveMapFile();
+    saveMapFileAll();
     //}
     //    }
     
@@ -2164,8 +2169,19 @@ void ofApp::dataLoad() {
     modeldataLoadingStartTime = ofGetElapsedTimeMillis();
     modeldataFiles = 0;
     
-    // 指定したディレクトリ以下のフォルダの名前をdataDirNameListに追加 ---------------------------
-    makeDataDirNameListTargetDir(meshDataDirPath);
+    stringstream tSs;
+    tSs << targetDirPath << "/" << sceneDirNameList[selSceneId];
+    
+    string sceneDirPath = tSs.str();
+
+    cout << "sceneDirPath: " << sceneDirPath <<endl;
+
+    
+    // 指定したディレクトリ以下のフォルダの名前をmodelDirNameListに追加 ---------------------------
+    modelDirNameList[selSceneId] = makeDirNameListTargetDir(sceneDirPath);
+    
+
+    
     
     // 各モデルサイズを記録するための下準備 ----------------------------------
     for(int i=0; i<MAX_MODEL_ARRAY; i++) {
@@ -2181,13 +2197,13 @@ void ofApp::dataLoad() {
     
     // 各モデルディレクトリ名ごとのループ
     int dirNameLoopCount = 0;
-    for (auto dirName : dataDirNameList[selSceneId])
+    for (auto dirName : modelDirNameList[selSceneId])
     {
         meshNameList[selSceneId][dirNameLoopCount] = dirName;
         cout << "dirName: " << dirName << endl;
         
         stringstream dirPath;
-        dirPath << meshDataDirPath << "/" << dirName << "/";
+        dirPath << targetDirPath << "/" << sceneDirNameList[selSceneId] << "/" << dirName << "/";
         
         // 各モデルディレクトリ以下のメッシュファイル数をカウント
         bool staticModelFlag = false;
@@ -2290,14 +2306,22 @@ int ofApp::countMeshFileNumTargetDir(string dirPath){
 
 }
 
-// 指定したディレクトリ以下のフォルダの名前をdataDirNameListに追加 ---------------------------
-void ofApp::makeDataDirNameListTargetDir(string dirPath) {
+// 指定したディレクトリ以下のフォルダの名前をmodelDirNameListに追加 ---------------------------
+vector<string> ofApp::makeDirNameListTargetDir(string dirPath) {
+    
+    vector<string> tDirNameList;
     
     ofDirectory ofDir;
+
+    cout << "makeDirNameListTargetDir start " << endl;
     
     ofDir.listDir(dirPath);
     vector<ofFile> files = ofDir.getFiles();
     vector<ofFile>::iterator itr = files.begin();
+    
+    
+    cout << "loop start " << endl;
+    
     
     int tCount = 0;
     while( itr != files.end() )
@@ -2307,7 +2331,7 @@ void ofApp::makeDataDirNameListTargetDir(string dirPath) {
             
             string s = itr->getFileName();
             cout << s << endl;
-            dataDirNameList[selSceneId].push_back(s);
+            tDirNameList.push_back(s);
             
             if (!mapFileExists) {       // マップファイルが存在する場合
                 mapId[selSceneId][tCount] = s;      // 各ディレクトリ名を保存
@@ -2317,6 +2341,10 @@ void ofApp::makeDataDirNameListTargetDir(string dirPath) {
         }
         ++itr;
     }
+    
+    cout << "makeDirNameListTargetDir end " << tCount << endl;
+    
+    return tDirNameList;
 
 }
 
@@ -2529,19 +2557,35 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
 // --------------------------------------------------------------------------------------------
 // Load Map File
 // --------------------------------------------------------------------------------------------
-void ofApp::loadMapFile(string meshDataDirPath) {
+void ofApp::loadMapFileAll(string tTargetDirPath) {
+    
+    for(int i=0; i<sceneDataNum; i++) {
+        loadMapFile(tTargetDirPath, i);
+    }
+    
+}
+
+void ofApp::saveMapFileAll() {
+
+    for(int i=0; i<sceneDataNum; i++) {
+        saveMapFile(i);
+    }
+
+}
+
+void ofApp::loadMapFile(string mapDataDirPath, int index) {
     
     stringstream mapSs;
-    mapSs << meshDataDirPath << "/mapFile.csv";
-    mapFilePath = mapSs.str();
+    mapSs << mapDataDirPath << "/mapFile.csv";
+    mapFilePath[selSceneId] = mapSs.str();
     
-    cout << "mapFilePath: " << mapFilePath;
+    cout << "mapFilePath: " << mapFilePath[selSceneId];
     
-    ofFile mapFile(mapFilePath);
+    ofFile mapFile(mapFilePath[selSceneId]);
     
     if(!mapFile.exists()){
         
-        ofLogError("The file " + mapFilePath + " is missing. make it.");
+        ofLogError("The file " + mapFilePath[selSceneId] + " is missing. make it.");
         
         for(int i=0; i<256; i++) {
             mapId[selSceneId][i] = "";
@@ -2592,23 +2636,23 @@ void ofApp::loadMapFile(string meshDataDirPath) {
 // --------------------------------------------------------------------------------------------
 // Save Map File
 // --------------------------------------------------------------------------------------------
-void ofApp::saveMapFile() {
+void ofApp::saveMapFile(int index) {
     
-    ofstream ofs( mapFilePath);
+    ofstream ofs( mapFilePath[index]);
     
-    for(int i=0; i<modelDataNum[selSceneId]; i++) {
+    for(int i=0; i<modelDataNum[index]; i++) {
         
-        ofs << mapId[selSceneId][i] << ",";
+        ofs << mapId[index][i] << ",";
         
         for(int j=0; j<mapDataColumns; j++) {
-            ofs << mapNum[selSceneId][i][j] << ",";
+            ofs << mapNum[index][i][j] << ",";
         }
         
         for(int j=0; j<mapStringColumns-1; j++) {
-            ofs << mapNum[selSceneId][i][j] << ",";
+            ofs << mapNum[index][i][j] << ",";
         }
         
-        ofs << mapNum[selSceneId][i][mapDataColumns-1];
+        ofs << mapNum[index][i][mapDataColumns-1];
         
         ofs << endl;
     }

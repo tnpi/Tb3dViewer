@@ -60,8 +60,10 @@ public:
     void setPos();
     
     void dataLoad();
-    void saveMapFile();
-    void loadMapFile(string meshDataDirPath);
+    void saveMapFile(int index);
+    void loadMapFile(string meshDataDirPath, int index);
+    void saveMapFileAll();
+    void loadMapFileAll(string targetDirPath);
     
     void initAppVars();
     void settingAppVarsOnBoot();
@@ -87,7 +89,7 @@ public:
     void drawPlayControlMenu();
     void detailViewNextModel(int mod);
     void myGuiSetup();
-    void makeDataDirNameListTargetDir(string dirPath);
+    vector<string> makeDirNameListTargetDir(string dirPath);
     int countMeshFileNumTargetDir(string dirPath);
     void loadScanTimeRecordFile(string dirPath, int modelIndex);
     void loadMeshDataTargetDir(string dirPath, int modelIndex);
@@ -130,7 +132,8 @@ public:
     ofPoint modelSceneCenter[MAX_SCENE_ARRAY][MAX_MODEL_ARRAY];
     float modelPosXList[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
     float modelPosZList[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
-    vector<string> dataDirNameList[MAX_SCENE_ARRAY];
+    vector<string> modelDirNameList[MAX_SCENE_ARRAY];
+    vector<string> sceneDirNameList;
     vector< vector<uint64_t> > modelFileSizeList[MAX_SCENE_ARRAY];
     vector <uint64_t> oneModelFileSizeList[MAX_SCENE_ARRAY];
     
@@ -192,7 +195,9 @@ public:
     string meshDataDirPath;
     string defaultMeshDataDirPath;
     string loadModelDirName;
-    string mapFilePath;
+    string mapFilePath[MAX_SCENE_ARRAY];
+    string targetDirPath;
+    string defaultTargetDirPath;
     time_t unixTimeOnOfStarted;
     struct tm *unixTimeOnOfStartedTmStruct;
 
