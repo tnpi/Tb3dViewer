@@ -15,7 +15,7 @@
 
 #define STRINGIFY(A) #A
 
-#define MAX_SCENE_ARRAY 10
+#define MAX_SCENE_ARRAY 15
 #define MAX_MODEL_ARRAY 100
 #define MAX_MESH_ARRAY 1000
 
@@ -89,6 +89,7 @@ public:
     void drawModelLRSelector();
     void drawPlayControlMenu();
     void detailViewNextModel(int mod);
+    void detailViewNextScene(int mod);
     void myGuiSetup();
     vector<string> makeDirNameListTargetDir(string dirPath);
     int countMeshFileNumTargetDir(string dirPath);
@@ -97,6 +98,7 @@ public:
     void drawArrow(ofPoint posA, ofPoint posB, double arrowDeltaLineLength=0);
     
     void loadScenesFile(string scenesFilePath);
+    void setDemoStateByScene();
     
     ofRectangle getSubRect(ofRectangle parentRect, ofRectangle subRect);
     
@@ -129,7 +131,7 @@ public:
     string mapId[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
     float mapNum[MAX_SCENE_ARRAY][MAX_MESH_ARRAY][40];
     string mapStr[MAX_SCENE_ARRAY][MAX_MESH_ARRAY][10];
-    string scenesStr[MAX_SCENE_ARRAY][10];
+    string scenesStr[MAX_SCENE_ARRAY][100];
     
     float modelHeightList[MAX_SCENE_ARRAY][MAX_MESH_ARRAY];
     ofPoint modelSceneMin[MAX_SCENE_ARRAY][MAX_MODEL_ARRAY];
@@ -300,6 +302,8 @@ public:
     ofParameter<bool> uiBtnTraceCam;
     ofParameter<bool> uiBtnBgColor;
     ofParameter<bool> uiBtnRootDisplay;
+    ofParameter<bool> uiBtnDetailNoMix;
+    ofParameter<bool> uiBtnDemoPlay;
     ofParameter<int> uiModelTransparent;
     ofParameter<float> uiTraceCamHeight;
     ofParameter<string> uiLabelModelSelectName;
@@ -308,6 +312,8 @@ public:
     ofxMinimalToggle uiBtnTraceCamParts;
     ofxMinimalToggle uiBtnBgColorParts;
     ofxMinimalToggle uiBtnRootDisplayParts;
+    ofxMinimalToggle uiBtnDetailNoMixParts;
+    ofxMinimalToggle uiBtnDemoPlayParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;
