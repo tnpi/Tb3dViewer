@@ -168,7 +168,7 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu.add(uiMeshDrawType.setup("mesh", 1, 0, 2));
     guiPlayControlMenu.add(uiColorMode.setup("color", 1, 0, 1));
     guiPlayControlMenu.add(uiPlayMode.setup("play", 2, 0, 2));
-    guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 2));
+    guiPlayControlMenu.add(uiGpsMapMode.setup("map", 0, 0, 3));
     guiPlayControlMenu.add(new ofxGuiSpacer(10));
     guiPlayControlMenu.add(uiBtnGrid.setup("Grid", true, 80, 20));
     guiPlayControlMenu.add(uiBtnDebugInfo.setup("Info", false, 80, 20));
@@ -434,7 +434,7 @@ void ofApp::update(){
                 nowPlayTime %= totalScanTimeRecordMaxTime[selSceneId];
             } else if (uiPlayMode == 2) {
                 if (viewerMode == 1) {
-                    cout << "totalScanTimeRecordMaxTime[selSceneId]:" << totalScanTimeRecordMaxTime[selSceneId];
+                    //cout << "totalScanTimeRecordMaxTime[selSceneId]:" << totalScanTimeRecordMaxTime[selSceneId];
                     nowPlayTime %= totalScanTimeRecordMaxTime[selSceneId];
                 } else if (viewerMode == 2) {
                     
@@ -566,6 +566,9 @@ void ofApp::draw(){
         light.setDiffuseColor(ofFloatColor(0.4, 0.4, 0.4));
         light.setSpecularColor(ofFloatColor(1.0, 1.0, 1.0));
         ofEnableDepthTest();
+    } else {
+        ofEnableDepthTest();
+        
     }
     
     // Camera Settings ----------------------------------------
@@ -619,7 +622,7 @@ void ofApp::draw(){
             
             eCam.setPosition((trackPosA.x - centerX + ((trackPosB.x - trackPosA.x) * progressRateBetweenFrame)) * 1000,
                              (trackPosA.z - centerZ + ((trackPosB.z - trackPosA.z) * progressRateBetweenFrame)) * 1000,
-                             (trackPosA.y - centerY + ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 + uiTraceCamHeight
+                             (-trackPosA.y + centerY - ((trackPosB.y - trackPosA.y) * progressRateBetweenFrame)) * 1000 + uiTraceCamHeight
                              );
 
             eCam.setOrientation(defaultCamOrientation);
@@ -932,23 +935,15 @@ void ofApp::drawListView(int i, int playFrameSelector) {
         drawScaleGrid(10000, 1000);
     }
     
+        drawListViewTrackingMap(i, playFrameSelector);
+
+	/*
     if (uiGpsMapMode == 0) {
-        
+       
         drawListViewNormal(i, playFrameSelector);
         
-    } else if (uiGpsMapMode == 2) {
-        
-        //drawListViewGpsMap(i, playFrameSelector);
-        
-    } else if (uiGpsMapMode == 3) {
-    
-        //drawListViewGpsMapWalkThru(i, playFrameSelector);
-        
-    } else if (uiGpsMapMode >= 1) {
-        
-        drawListViewTrackingMap(i, playFrameSelector);
-        
     }
+	*/
     
 
 }
@@ -1029,6 +1024,7 @@ void ofApp::drawListViewNormal(int i, int playFrameSelector) {
     double centerZ = modelSceneMin[selSceneId][i].z + (modelSceneMax[selSceneId][i].z - modelSceneMin[selSceneId][i].z) / 2;
     ofTranslate(centerX, centerY, -centerZ);
     
+    ofSetColor(255,255,255,uiModelTransparent);
     if (uiColorMode) {
         asModelObj[selSceneId][i][playFrameSelector].enableTextures();
     } else {
@@ -1052,7 +1048,11 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
     
     for(int z=0; z<maxMeshNumList[selSceneId][i]; z++) {
         
-        if (mapNum[selSceneId][i][9] || (uiGpsMapMode == 2 && z > playFrameSelector)) {
+        if (mapNum[selSceneId][i][9] || (uiGpsMapMode == 1 && z > playFrameSelector) || (uiGpsMapMode == 3 && z <= playFrameSelector)) {
+            continue;
+        }
+
+        if ( (uiGpsMapMode == 0 && z != playFrameSelector)) {
             continue;
         }
         
@@ -1139,22 +1139,32 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             ofVec3f posB = matrixB.getTranslation();
             
             //if (z%20 == 0) {
-            if ((maxMeshNumList[selSceneId][i] - z + playCount)%40 == 9) {      // アニメーション表示
-                drawArrow(ofPoint(posA.x*1000, posA.z*1000, -posA.y*1000), ofPoint(posB.x*1000, posB.z*1000, -posB.y*1000), 300 );
-            } else {
+            ofDrawLine(posA.x*1000, posA.z*1000, -posA.y*1000, posB.x*1000, posB.z*1000, -posB.y*1000);
+            if ((maxMeshNumList[selSceneId][i] - z)%20 == 9) {      // アニメーション表示
+                ofSetColor(255,255,255,255);
+                drawArrow(ofPoint(posA.x*1000, posA.z*1000, -posA.y*1000+1), ofPoint(posB.x*1000, posB.z*1000, -posB.y*1000+1), 150 );
+           } /*else {
                 ofDrawLine(posA.x*1000, posA.z*1000, -posA.y*1000, posB.x*1000, posB.z*1000, -posB.y*1000);
-            }
+            }*/
             
             glPushMatrix();
             ofQuaternion quateA = matrixA.getRotate();
             //cout << "quateA: " << quateA << " w:" << quateA.w() << " x:" << quateA.x() << " y:" << quateA.y() << " z:" << quateA.z() << endl;
+
+            ofTranslate(posA.x*1000, posA.z*1000, -posA.y*1000);
+            float angle, rotX, rotY, rotZ;
+            quateA.getRotate(angle, rotX, rotY, rotZ);
+            ofRotate(90, 1,0,0);
+            ofRotate(angle, rotX, -rotY, rotZ);
             
-            if ((maxMeshNumList[selSceneId][i] - z + playCount+10)%20 == 9) {      // アニメーション表示
+            if ((maxMeshNumList[selSceneId][i] - z +10)%20 == 9 || (!uiBtnTraceCam && z == playFrameSelector)) {      // アニメーション表示
+/*
                 ofTranslate(posA.x*1000, posA.z*1000, -posA.y*1000);
                 float angle, rotX, rotY, rotZ;
                 quateA.getRotate(angle, rotX, rotY, rotZ);
                 ofRotate(90, 1,0,0);
                 ofRotate(angle, rotX, -rotY, rotZ);
+*/
                 //ofRotate(quateA.w(), quateA.x(), quateA.y(), quateA.z());
 
                 ofFill();
@@ -1236,12 +1246,12 @@ void ofApp::drawArrow(ofPoint posA, ofPoint posB, double arrowDeltaLineLength) {
     if (dx != 0 && dy != 0) {
         double lineAngleRad = atan2(dy, dx);
         
-        ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
+        //ofDrawLine(posA.x, posA.y, posA.z, posB.x, posB.y, posB.z);
         
         // 矢印の左側の線
-        double lAngle = lineAngleRad - PI*3/4;
+        double lAngle = lineAngleRad - PI*3.25/4;
         ofDrawLine(posB.x, posB.y, posB.z, posB.x + r*cos(lAngle),  posB.y + r*sin(lAngle), posB.z);
-        double rAngle = lineAngleRad + PI*3/4;
+        double rAngle = lineAngleRad + PI*3.25/4;
         ofDrawLine(posB.x, posB.y, posB.z, posB.x + r*cos(rAngle),  posB.y + r*sin(rAngle), posB.z);
     }
     
@@ -1709,8 +1719,8 @@ void ofApp::resetCamListView( ) {
     viewerMode = 1;
     
     //eCam.reset();
-    eCam.setPosition(3000, -3000, 9000);
-    eCam.setTarget(ofVec3f(3000, -3000, 0));
+    eCam.setPosition(0, -0, 9000);
+    eCam.setTarget(ofVec3f(0, 0, 0));
 }
 
 void ofApp::detailViewNextModel(int mod) {
@@ -1728,7 +1738,11 @@ void ofApp::detailViewNextScene(int mod) {
 
     //setDemoStateByScene();
     
+	if (playMode == 0) {
     resetCamDetailView();
+	} else {
+    resetCamListView();
+	}
     
 }
 
@@ -2243,7 +2257,7 @@ vector<string> ofApp::makeDirNameListTargetDir(string dirPath) {
     vector<ofFile>::iterator itr = files.begin();
     
     
-    cout << "loop start " << endl;
+    cout << "makeDirNameListTargetDir loop start " << endl;
     
     
     int tCount = 0;
@@ -2265,7 +2279,7 @@ vector<string> ofApp::makeDirNameListTargetDir(string dirPath) {
         ++itr;
     }
     
-    cout << "makeDirNameListTargetDir end " << tCount << endl;
+    cout << "makeDirNameListTargetDir end / count: " << tCount << endl;
     
     return tDirNameList;
 
@@ -2436,7 +2450,7 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
             // モデルの物理サイズの計算と保存 -----------
             ofPoint tMin = asModelObj[selSceneId][modelIndex][i].getSceneMin();
             ofPoint tMax = asModelObj[selSceneId][modelIndex][i].getSceneMax();
-            cout << "tMin: " << tMin << " tMax: " << tMax << endl;
+            //cout << "tMin: " << tMin << " tMax: " << tMax << endl;
             
             if (tMin.x == 0 && tMin.y == 0 && tMin.z == 0 && tMax.x == 0 && tMax.y == 0 && tMax.z == 0) {
                 cout << "======---------- Hit! ----------------==============================================" << endl;
@@ -2464,8 +2478,8 @@ void ofApp::loadMeshDataTargetDir(string dirPath, int modelIndex) {
             
         }
         
-        cout << "modelSceneMin[" << modelIndex << "]: " << modelSceneMin[selSceneId][modelIndex] << endl;
-        cout << "modelSceneMax[" << modelIndex << "]: " << modelSceneMax[selSceneId][modelIndex] << endl;
+        //cout << "modelSceneMin[" << modelIndex << "]: " << modelSceneMin[selSceneId][modelIndex] << endl;
+        //cout << "modelSceneMax[" << modelIndex << "]: " << modelSceneMax[selSceneId][modelIndex] << endl;
         
         cout << "file load: " << ss.str() << endl;
     }

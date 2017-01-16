@@ -15,8 +15,8 @@
 
 #define STRINGIFY(A) #A
 
-#define MAX_SCENE_ARRAY 15
-#define MAX_MODEL_ARRAY 100
+#define MAX_SCENE_ARRAY 10
+#define MAX_MODEL_ARRAY 10
 #define MAX_MESH_ARRAY 1000
 
 
