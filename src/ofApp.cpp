@@ -25,13 +25,15 @@ void ofApp::setup(){
     dataLoadOnAppBoot = true;
     dispPlayControl = true;
 
-    defaultTargetDirPath = "/Users/artdkt/Desktop/";
+    targetDirPath = "./default/";
     
 
     // Get File load path --------------------------------------------------------------------------------
+    /*
     ofFileDialogResult fileDialogResult = ofSystemLoadDialog("Select Time-based 3D Record base directory.", true, defaultMeshDataDirPath);
     
     targetDirPath = fileDialogResult.getPath();
+     */
     
     cout << "targetDirPath: " << targetDirPath <<endl;
 
@@ -49,12 +51,13 @@ void ofApp::setup(){
     loadScenesFile(scenesSs.str());
     
     // fonts load --------------------------------------------------------------
-    font.loadFont("hira.otf", 38);
-    fontSmall.loadFont("hira.otf", 20);
-    fontLarge.loadFont("hira.otf", 100);
-    fontDebugPrint.loadFont("hira.otf", 12);
-    fontMyGui.loadFont("hira.otf", 11);
-    ofxGuiSetFont("hira.otf", 11, true, true);
+    string fontName = "ipagp.ttf";
+    font.loadFont(fontName, 38);          // hira.otf
+    fontSmall.loadFont(fontName, 20);
+    fontLarge.loadFont(fontName, 100);
+    fontDebugPrint.loadFont(fontName, 12);
+    fontMyGui.loadFont(fontName, 11);
+    ofxGuiSetFont(fontName, 11, true, true);
     
     // FBO ------------------------------------------------------------------------
     fboFront.allocate(640, 480, GL_RGBA);
