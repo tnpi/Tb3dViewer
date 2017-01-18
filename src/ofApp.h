@@ -279,6 +279,8 @@ public:
     // ofParameter
     ofxIntSlider uiModelTransparentParts;
     ofxFloatSlider uiTraceCamHeightParts;
+    ofxFloatSlider uiChronoHoloMoveXParts;
+    ofxFloatSlider uiChronoHoloMoveYParts;
     ofxLabel uiLabelModelSelectNameParts;
 
     ofxVec2Slider position;
@@ -304,7 +306,11 @@ public:
     ofParameter<bool> uiBtnRootDisplay;
     ofParameter<bool> uiBtnDetailNoMix;
     ofParameter<bool> uiBtnDemoPlay;
+    ofParameter<bool> uiBtnChronoAnim;
     ofParameter<int> uiModelTransparent;
+    ofParameter<int> uiChronoFrameSkip;
+    ofParameter<float> uiChronoHoloMoveX;
+    ofParameter<float> uiChronoHoloMoveY;
     ofParameter<float> uiTraceCamHeight;
     ofParameter<string> uiLabelModelSelectName;
     ofxMinimalToggle uiBtnPlayPauseParts;
@@ -314,6 +320,7 @@ public:
     ofxMinimalToggle uiBtnRootDisplayParts;
     ofxMinimalToggle uiBtnDetailNoMixParts;
     ofxMinimalToggle uiBtnDemoPlayParts;
+    ofxMinimalToggle uiBtnChronoAnimParts;
     ofxGuiSpacer uiTimeBarSpacer;
     
     ofxFloatSlider uiEditPosX;

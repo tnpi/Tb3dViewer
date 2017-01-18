@@ -18,7 +18,7 @@ void ofApp::setup(){
     mapDataColumns = 16;
     mapStringColumns = 10;
     colorMode = 1;
-    viewerMode = 1;
+    viewerMode = 0;
     
     useOpenNi = false;
     loadPictureMode = true;
@@ -191,8 +191,11 @@ void ofApp::setupOfxGui() {
     guiPlayControlMenu2.add(uiBtnTraceCamParts.setup(uiBtnTraceCam.set("Trace", false), 80, 20) );
     guiPlayControlMenu2.add(uiBtnReset.setup("Reset", 80, 20));
     guiPlayControlMenu2.add(uiBtnBgColorParts.setup(uiBtnBgColor.set("BgColor", false), 80, 20) );
-    guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 255, 0, 255 )) );
-    guiPlayControlMenu2.add(uiTraceCamHeightParts.setup(uiTraceCamHeight.set("camH", 500, -3000, 3000 )) );
+    guiPlayControlMenu2.add(uiModelTransparentParts.setup(uiModelTransparent.set("Alpha", 215, 0, 255 )) );
+    guiPlayControlMenu2.add(uiTraceCamHeightParts.setup(uiTraceCamHeight.set("ht.", 0, -3000, 3000 )) );
+    guiPlayControlMenu2.add(uiChronoHoloMoveXParts.setup(uiChronoHoloMoveX.set("HoloX", 0, -3000, 3000 )) );
+    guiPlayControlMenu2.add(uiChronoHoloMoveYParts.setup(uiChronoHoloMoveY.set("HoloY", 0, -3000, 3000 )) );
+    guiPlayControlMenu2.add(uiBtnChronoAnimParts.setup(uiBtnChronoAnim.set("HoloAnim", false), 80, 20) );
     
     // Debug Window gui ----------------------------------------------------------------
     gui.setDefaultWidth(500);
@@ -577,7 +580,7 @@ void ofApp::draw(){
     // Camera Settings ----------------------------------------
     eCam.setFarClip( 100000.0f );
     if(frameCount==1){
-        resetCamListView();
+        resetCamDetailView();
     }
     
     eCam.begin();
@@ -862,12 +865,16 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         
         glTranslatef(mapNum[selSceneId][i][0], mapNum[selSceneId][i][1], mapNum[selSceneId][i][2]);
         
+        ofTranslate(uiChronoHoloMoveX*z, uiChronoHoloMoveY*z); // ChronoHolo move
+
+        
         // fix model direction
         glRotatef(-90, 1, 0, 0);    // turn model
         ofScale(1, 1, -1);      // fix model direction
         ofScale(-1, -1, 1);      // fix model direction
         ofScale(1000, 1000, 1000);
         asModelObj[selSceneId][i][z].setScaleNormalization(false);
+        
         
         ofRotateX(mapNum[selSceneId][i][3]);
         ofRotateY(mapNum[selSceneId][i][4]);
@@ -890,23 +897,28 @@ void ofApp::drawDetailView(int i, int playFrameSelector) {
         }
         
         
+        int tPlayFrame = z;
+        if (uiBtnChronoAnim) {
+            tPlayFrame = (z + frameCount) % maxMeshNumList[selSceneId][i];
+        }
+        
         ofSetColor(255,255,255,uiModelTransparent);
 
         if (uiColorMode) {
-            asModelObj[selSceneId][i][z].enableTextures();
+            asModelObj[selSceneId][i][tPlayFrame].enableTextures();
         } else {
-            asModelObj[selSceneId][i][z].disableTextures();
+            asModelObj[selSceneId][i][tPlayFrame].disableTextures();
         }
 
         if (uiMeshDrawType == 1) {
             ofSetLineWidth(1);
-            asModelObj[selSceneId][i][z].draw(OF_MESH_WIREFRAME);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
             glPointSize(1 );
             //ofBlendMode(OF_BLENDMODE_ALPHA);
-            asModelObj[selSceneId][i][z].draw(OF_MESH_POINTS);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_POINTS);
         } else {
-            asModelObj[selSceneId][i][z].draw(OF_MESH_FILL);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_FILL);
         }
         
         glPopMatrix();
@@ -1059,6 +1071,13 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
             continue;
         }
         
+        
+        int tPlayFrame = z;
+        if (uiBtnChronoAnim) {
+            tPlayFrame = (z + frameCount) % maxMeshNumList[selSceneId][i];
+        }
+        
+        
         glPushMatrix();
         
         displayTotalVertices += meshVertexNumList[selSceneId][i][z];
@@ -1078,7 +1097,8 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         
         glTranslatef(mapNum[selSceneId][i][0], mapNum[selSceneId][i][1], mapNum[selSceneId][i][2]);
 
-        
+        ofTranslate(uiChronoHoloMoveX*z, uiChronoHoloMoveY*z); // ChronoHolo move
+
         ofScale(1000, 1000, 1000);
         asModelObj[selSceneId][i][z].setScaleNormalization(false);
         
@@ -1092,21 +1112,21 @@ void ofApp::drawListViewTrackingMap(int i, int playFrameSelector) {
         ofSetColor(255,255,255,uiModelTransparent);
         
         if (uiColorMode) {
-            asModelObj[selSceneId][i][z].enableTextures();
+            asModelObj[selSceneId][i][tPlayFrame].enableTextures();
         } else {
-            asModelObj[selSceneId][i][z].disableTextures();
+            asModelObj[selSceneId][i][tPlayFrame].disableTextures();
         }
 
         if (uiMeshDrawType == 1) {
             ofSetLineWidth(1);
-            asModelObj[selSceneId][i][z].draw(OF_MESH_WIREFRAME);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_WIREFRAME);
         } else if (uiMeshDrawType == 2) {
             glPointSize(2);
             
-            asModelObj[selSceneId][i][z].draw(OF_MESH_POINTS);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_POINTS);
         } else {
             //asModelObj[i][counter].drawFaces();
-            asModelObj[selSceneId][i][z].draw(OF_MESH_FILL);
+            asModelObj[selSceneId][i][tPlayFrame].draw(OF_MESH_FILL);
         }
             
     
